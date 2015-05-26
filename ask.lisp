@@ -64,6 +64,8 @@
   '(:yesno :string :pickone :picksome :integer :date :month :datetime 
     :datetime-local))
 
+(defvar *ask-control-url*)
+
 
 (t-ask
  (q some "Are there any?" :yesno)
@@ -139,6 +141,7 @@
 		  (collect (generate-q-data q)))))))
 
 (defun ps-ask-lib ()
+  ;FIXME: divide into solid and doubtful, form and control
   (ps
     (defmacro do-keyvalue ((key val obj) &body body)
       (let ((obj-v (gensym)))
@@ -156,6 +159,7 @@
 	     ,@body)
 	   ,res)))
 
+    ;FIXME: should decide between current and original default for fill.
     (defun make-control (name data)
       (who-ps-html
        (:div (:span (getprop data :label)) 
@@ -172,11 +176,44 @@
 	(do-keyvalue (kk vv v)
 	  (setf (chain stor k kk) vv))))
 
+    (defun get-form-for-control (control)
+      (if (== (@ control tag-name) "FORM")
+	  (@ control id)
+	  (get-form-for-control (@ control parent-element))))
+
+    (defun control-updated (name control value) ;FIXME: doesn't have auto
+      (let ((form (get-form-for-control control)))
+	(setf (chain document askdata form name current) value)))
+
+    (defun post-ask-update (form (url (lisp *ask-control-url*)))
+      (let ((data
+	     (apply #'create
+		    (collecting
+		      (do-keyvalue (k v (chain document askdata form))
+			(if (chain v (has-own-property :current))
+			    (progn (collect k)
+				   (collect (@ v current))
+				   (setf (@ v current-saved) (@ v current))
+				   (delete (@ v current)))))))))
+	(chain $ (get-j-s-o-n (+ url form "/") data
+		   (lambda (x)
+		     (update-form-data (chain document askdata form) x)
+		     (display-specified-controls
+		      (chain document (get-element-by-id form) 
+			     first-element-child)
+		      (chain document askdata form)
+		      x))))))		    
+
+    (defmacro updatecode ()
+      '(ps-inline (control-updated name this (@ this value))))
+
     (defun client-yesno (name params)
       (ps-html
        ((:input :type "radio" :name name :value "Yes" 
+		:on-change (updatecode)
 		(getprop params :default) :checked "checked") "Yes")
        ((:input :type "radio" :name name :value "No" 
+		:on-change (updatecode)
 		(not (getprop params :default)) :checked "checked") "No")))
 
     (defun client-pickone (name params)
@@ -185,13 +222,15 @@
 	 (collect 
 	   (ps-html
 	    ((:input :type "radio" :name name :value x
+	       :on-change (updatecode)
 	       (eq (getprop params :default) x) :checked "checked") x))))))
 
     (defmacro make-simple-client-control (name type)
       `(defun ,(lisp (symb 'client- name)) (name params)
 	 (ps-html
 	  ((:input :type ,(lisp (string-downcase (mkstr type))) :name name
-		   :value (getprop params :default))))))
+		   :value (getprop params :default)
+		   :on-change (updatecode))))))
     
     (make-simple-client-control string text)
     (make-simple-client-control email email)
@@ -311,30 +350,44 @@
     (setf (gethash id stor) aman)
     id))
 
-(defun call-ask-manager (aman data &key (session *session*))
-  (funcall (gethash aman (gethash :askstore session)) data))
+(defun call-ask-manager (aname data &key (session *session*))
+  (funcall (gethash aname (gethash :askstore session)) data))
+
+(defun ask-page-insert (formname formdata initstate)
+  "The part of an Ask that gets stuck into the web page, including the 
+HTML form."
+  `(html-out 
+    (:form 
+     :id ,formname
+     (:div)
+     (:input :type "button"
+	     :on-click 
+	     (ps-inline (post-ask-update (lisp formname)))
+	     "Next"))
+    (:script
+     :type "text/javascript"
+     (ps
+       (let ((formname ,formname)
+	     (formdata ,formdata)
+	     (initstate (lisp-raw ,initstate)))
+	 (if (chain document (has-own-property "askdata"))
+	     (setf (getprop (chain document askdata) ,formname) formdata)
+	     (setf (getprop document askdata) (create ,formname formdata)))
+	 (display-specified-controls 
+	  (chain document (get-element-by-id formname) first-element-child)
+	  (chain document askdata formname)
+	  initstate))))))
 
 (defmacro ask (&body body)
   (multiple-value-bind (nbody qs names)
       (process-ask-code body)
-     `(ps 
-	(defvar formdata
-	  ,(generate-client-data names qs))
-	(defvar formname
-	  (lisp (register-ask-manager 
-		 ,(create-ask-manager nbody qs names)))))))
-
-(defmacro ask (&body body)
-  (multiple-value-bind (nbody qs names)
-      (process-ask-code body)
-     `(let* ((formname (register-ask-manager
+    `(let* ((formname (register-ask-manager
                        ,(create-ask-manager nbody qs names)))
             (initdisp (call-ask-manager formname nil)))
-	(ps
-	  (let ((initdisp (lisp-raw (encode-json-alist-to-string initdisp)))
-		(formdata ,(generate-client-data names qs))
-		(formname (lisp formname)))
-
+       (ask-page-insert
+	formname
+	,(generate-client-data names qs)
+	(encode-json-alist-to-string initdisp)))))
 
 
 (defmacro t-ask (&body body)
