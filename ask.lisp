@@ -67,14 +67,14 @@
 (defvar *ask-control-url*)
 
 
-(t-ask
- (q some "Are there any?" :yesno)
- (if (a some)
-     (q enough? "How many?" :pickone :source '(3 5 6 18))
-     (q want "Why not?" :string))
- (and (q are :yesno)
-      (q you :yesno)
-      (q sure? :yesno)))
+'(t-ask
+  (q some "Are there any?" :yesno)
+  (if (a some)
+      (q enough? "How many?" :pickone :source '(3 5 6 18))
+      (q want "Why not?" :string))
+  (and (q are :yesno)
+   (q you :yesno)
+   (q sure? :yesno)))
 
 (defun extract-qs (code)
   (collecting 
@@ -185,7 +185,7 @@
       (let ((form (get-form-for-control control)))
 	(setf (chain document askdata form name current) value)))
 
-    (defun post-ask-update (form (url (lisp *ask-control-url*)))
+    (defun post-ask-update (form &optional (url (lisp *ask-control-url*)))
       (let ((data
 	     (apply #'create
 		    (collecting
@@ -256,7 +256,7 @@
 (defun %default-validator (q)
   (aif (%ratify-sym-for-type (get-q-type q))
        (ratify-wrapper it)
-       (case (get-q-type q)1
+       (case (get-q-type q)
 	 (:pickone 
 	  (mkparse-in-list (fetch-keyword :source q)))
 	 (:picksome
@@ -389,7 +389,6 @@ HTML form."
 	,(generate-client-data names qs)
 	(encode-json-alist-to-string initdisp)))))
 
-
 (defmacro t-ask (&body body)
   (multiple-value-bind (nbody qs names)
       (process-ask-code body)
@@ -414,22 +413,15 @@ HTML form."
     (print (funcall askman `((,(third names) . "fred"))))
     (print (funcall askman `((,(fourth names) . "false"))))))
 
+
 (defun tester ()
-  (concatenate 'string
-     (ps-ask-lib)
-     (ask
-	   (q some "Are there any?" :yesno)
-	   (if (a some)
-	       (q enough? "How many?" :pickone :source '(3 5 6 18))
-	       (q want "Why not?" :string))
-	   (and (q are :yesno)
-		(q you :yesno)
-		(q sure? :yesno)))
-     (ps 
-       (setf (chain document (get-element-by-id "xyz") inner-h-t-m-l)
-	     (let ((res ""))
-	       (do-keyvalue (k v formdata)
-		 (setf res (+ res (make-control k v))))
-	       res)))))
+  (ask
+    (q some "Are there any?" :yesno)
+    (if (a some)
+	(q enough? "How many?" :pickone :source '(3 5 6 18))
+	(q want "Why not?" :string))
+    (and (q are :yesno)
+	 (q you :yesno)
+	 (q sure? :yesno))))
 
 	     
