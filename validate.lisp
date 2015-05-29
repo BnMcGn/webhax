@@ -22,10 +22,10 @@
 (defmethod message ((condition condition))
   (princ-to-string condition))
 
-(defvar *webhax-default-input-limit* 200)
+(defvar *webhax-input-limit* 200)
 
 (define-test overlength (item)
-  (if (< (length item) *webhax-default-input-limit*)
+  (if (< (length item) *webhax-input-limit*)
     item
     (ratification-error item 
       (format nil "Field is longer than system limit of ~a chars."
@@ -33,6 +33,7 @@
 
 (defun mkparse-in-list (items)
   (lambda (item)
+    (break)
     (aif2only (first-match items (lambda (x) (eq-symb x item)))
 	      (values it t)
 	      (values "Value not in list of options" nil))))
