@@ -177,6 +177,7 @@
 	     (:span (funcall (getprop data :function) name data)))))
 
     (defun display-specified-controls (target commands data)
+      (setf (getprop data :_curr-disp) (chain commands :next))
       (setf (chain target inner-h-t-m-l)
 	    (collecting-string
 	     (dolist (k (chain -object (keys (chain commands :next))))
@@ -197,14 +198,18 @@
 	(setf (getprop (chain document askdata) form name :current) value)))
 
     (defun post-ask-update (form &optional (url (lisp *ask-control-url*)))
-      (let ((data (-object)))
-	(do-keyvalue (k v (getprop (chain document askdata) form))
-	  (say "here")
-	  (if (chain v (has-own-property :current))
-	      (progn (setf (getprop data k) (@ v current))
-		     (setf (@ v current-saved) (@ v current))
-		     (delete (@ v current)))))
-	(say data)
+      (let ((data (-object))
+	    (currkeys
+	     (chain -object (keys 
+	       (getprop document 'askdata form :_curr-disp)))))
+	(dolist (k currkeys)
+	  (let ((v (getprop document 'askdata form k)))
+	    (if (chain v (has-own-property :current))
+		(progn (setf (getprop data k) (@ v current))
+		       (setf (@ v current-saved) (@ v current))
+		       (delete (@ v current)))
+		(if (chain v (has-own-property :default))
+		    (setf (getprop data k) (@ v default))))))
 	(chain $ (get-j-s-o-n (+ url form) data
 		   (lambda (x)
 		     (update-form-data 
@@ -307,10 +312,10 @@
 	       (aif2only (keyword-value :default q) it nil)))))))))
 
 (defun %unquote-q (q)
-  "Decide what portions of the q should be executed."
+  "Decide what portions of the q should not be executed."
   (let ((newq (copy-list q)))
-    (quotef (first newq))
-    (quotef (second newq))
+    (quotef (first newq)) ;The q
+    (quotef (second newq)) ;The symbol/label
     (cons 'list newq)))
 
 (defun %dispatch-keys (disp)
@@ -321,7 +326,8 @@
     `(let ((,stor (make-hash-table))
 	   (,continuations nil)
 	   (,dispatch nil)
-	   (,inproc (%create-input-processor ',qs ',names)))
+	   (,inproc (%create-input-processor 
+		     (list ,@(mapcar #'%unquote-q qs)) ',names)))
        (labels ((exists-answer (name)
 		  (nth-value 1 (gethash name ,stor)))
 		(answer (name)
@@ -340,7 +346,7 @@
 			(push k ,continuations))
 		      (answer name))))
 	       ,@code
-	       (setf ,dispatch '((:success . t))))))		
+	       (setf ,dispatch '((:success . t))))))
 	 (lambda (data)
 	   (aif (funcall ,inproc data ,stor)
 		(progn

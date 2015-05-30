@@ -33,7 +33,6 @@
 
 (defun mkparse-in-list (items)
   (lambda (item)
-    (break)
     (aif2only (first-match items (lambda (x) (eq-symb x item)))
 	      (values it t)
 	      (values "Value not in list of options" nil))))
