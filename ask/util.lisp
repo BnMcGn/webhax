@@ -18,7 +18,7 @@
 (defun make-q-label (q)
   (if (stringp (third q))
       (third q)
-      (thing-lister:thing-label	(second q))))
+      (thing-labels:thing-label (second q))))
 
 (defun get-q-type (q)
     (aif (first-match *ask-control-types* (lambda (x) (member x (cddr q))))
