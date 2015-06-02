@@ -101,7 +101,7 @@
 		    (unless (cdr templates)
 		      (error "Last template should not contain :@inner"))
 		    (%expand-templates (cdr templates) parts-sym params-sym))
-		   ((member tree *page-part-names*)
+		   ((member tree *metaplate-part-names*)
 		    `(,(%get-render-func tree) ,tree 
 		       ,parts-sym ,params-sym))
 		   (t tree))

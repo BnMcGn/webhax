@@ -18,6 +18,8 @@
   :components ((:file "package")
                (:file "webhax")
                (:file "validate")
+               (:file "metaplate")
+               (:file "html-s-exp")
                (:module :ask
                         :serial t
                         :components ((:file "util")
