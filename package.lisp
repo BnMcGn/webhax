@@ -19,7 +19,24 @@
    #:*webhax-output*
    #:html-out
    #:call-ask-manager
-   #:ps-gadgets))
+   #:ps-gadgets
+   #:do-keyvalue
+   #:collecting-string
+   #:collecting
+   #:->html
+   #:*->html-list-handler*
+   #:*->html-hash-handler*
+   #:*->html-alist-handler*
+   #:*->html-symbol-handler*
+   #:*->html-misc-handler*
+   #:*->html-main-handler*
+   #:*->html-depth*
+   #:*metaplate-part-names*
+   #:define-parts
+   #:define-layout
+   #:define-page
+   #:page-base
+   #:two-side-columns))
 
 
 
