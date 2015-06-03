@@ -36,7 +36,11 @@
    #:define-layout
    #:define-page
    #:page-base
-   #:two-side-columns))
+   #:two-side-columns
+   #:def-webspecial
+   #:*webspecial-validators*
+   #:bind-webspecials
+   #:>>integer))
 
 
 

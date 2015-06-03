@@ -20,6 +20,7 @@
                (:file "validate")
                (:file "metaplate")
                (:file "html-s-exp")
+               (:file "web-input")
                (:module :ask
                         :serial t
                         :components ((:file "util")
