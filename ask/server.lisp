@@ -126,3 +126,78 @@
 	 (funcall it data)
 	 (error 
 	  (format nil "Form ~a not found in askstore." aname)))))
+
+(defclass ask-store ()
+  ((stor
+    :initarg :storage
+    :initform (make-hash-table))
+   (qs 
+    :initarg :q-clauses)
+   (names
+    :initarg :names)
+   validators))
+
+(defmethod initialize-instance :after ((stor ask-store) &key)
+  (with-slots (qs names validators) stor
+    (setf validators 
+	  (collecting-hash-table (:mode :replace)
+	    (loop for q in qs
+	       for n in names
+	       do (collect n (%q-validator q)))))))
+
+(defgeneric add-input (stor input)
+  (:documentation
+   "Add input from a web source (alist format) to a storage object. Returns
+   error messages if any input items don't validate."))
+
+(defmethod add-input ((astor ask-store) input)
+  (with-slots (validators names stor) astor
+    (multiple-value-bind (good errors)
+	(with-collectors (g< e<)
+	  (dolist (n names)
+	    (awhen (assoc n input :test #'equal)
+	      (aif2only
+	       (funcall (gethash n validators) (cdr it))
+	       (g< (cons n it))
+	       (e< (cons n it))))))
+      (if errors
+	  errors
+	  (dolist (itm good)
+	    (setf (gethash (first itm) stor) (cons (cdr itm) t)))))))
+
+(defgeneric translate-key (stor key)
+  (:documentation "Given the original symbol supplied by the user, return the
+applicable numbered key."))
+(defmethod translate-key ((astor ask-store) key)
+  (with-slots (qs names) astor
+    (assoc-cdr key (pairlis (mapcar #'second qs)
+			    names))))
+      
+(defgeneric exists-answer (stor key &key translate))
+(defmethod exists-answer ((astor ask-store) key &key translate)
+  (with-slots (stor) astor
+      (nth-value 1 (gethash 
+		    (if translate (translate-key astor key) key) 
+		    stor))))
+
+(defgeneric answer (stor key &key translate))
+(defmethod answer ((astor ask-store) key &key translate)
+  (with-slots (stor) astor
+    (car (gethash 
+	  (if translate (translate-key astor key) key)
+	  stor))))
+
+(defgeneric all-answers (stor &key translate))
+(defmethod all-answers ((astor ask-store) &key translate)
+  (with-slots (qs names stor) astor
+    (if translate
+	(let ((trans-table
+	       (pairlis names (mapcar #'second qs))))
+	  (collecting-hash-table (:mode :replace)
+	    (maphash 
+	     (lambda (k v)
+	       (collect (assoc-cdr k trans-table) v))
+	     stor))))
+    stor))
+	     
+	   
