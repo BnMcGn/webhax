@@ -47,6 +47,13 @@
 (defun %dispatch-keys (disp)
   (hash-table-keys (assoc-cdr :next disp)))
 
+(defun %process-form (code)
+  `(%form-display
+    (collecting
+	(labels ((display (name)
+		   (collect name)))
+	  ,@code))))
+
 (defun create-ask-manager (code qs names)
   (with-gensyms (continuations dispatch stor)
     `(let ((,continuations nil)
@@ -54,21 +61,24 @@
 	   (,stor (make-instance 'ask-store  
 			 :q-clauses (list ,@(mapcar #'%unquote-q qs))
 			 :names ',names)))
-       (flet ((%%answer (thing)
-		(answer ,stor thing :translate t)))
+       (flet ((answer (&rest params)
+		(apply #'answer ,stor params))
+	      (exists-answer (&rest params)
+		(apply #'exists-answer ,stor params)))
 	 (macrolet ((a (itm)
-		      `(%%answer ',itm)))
+		      `(answer ',itm :translate t))
+		    (form (&body body)
+		      (%process-form body)))
 	   (cl-cont:with-call/cc
 	     (labels 
 		 ((display (name)
-		    (let ((q (assoc-cdr name ',(pairlis names qs))))
-		      (setf ,dispatch 
-			    (%prep-q-dispatch q name 
-					      (and (exists-answer ,stor name)
-						   (answer ,stor name))))
-		      (cl-cont:let/cc k
-			(push k ,continuations))
-		      (answer ,stor name))))
+		    (setf ,dispatch (dispatch-for-names ,stor (list name)))
+		    (cl-cont:let/cc k (push k ,continuations))
+		    (answer name)) ;What does this do?
+		  (%form-display (namelist)
+		    (setf ,dispatch (dispatch-for-names ,stor namelist))
+		    (cl-cont:let/cc k (push k ,continuations))
+		    :???))
 	       ,@code
 	       (setf ,dispatch '((:success . t)))))))
        (lambda (data)
@@ -176,5 +186,24 @@ applicable numbered key."))
 	       (collect (assoc-cdr k trans-table) v))
 	     stor))))
     stor))
-	     
-	   
+
+(defgeneric dispatch-for-names (stor namelist)
+  (:documentation 
+   "Create a dispatch for conversion to JSON for the names in namelist"))
+(defmethod dispatch-for-names ((astor ask-store) namelist)
+  (with-slots (qs stor names) astor
+      (let ((name-qs (pairlis names qs)))
+	(list
+	 (cons :next 
+	       (collecting-hash-table (:mode :replace)
+		 (dolist (n namelist)
+		   (collect
+		     n
+		     (plist-hash-table 
+		      `(,@(if (exists-answer astor n) 
+			      (list :default
+				    (answer astor n))
+			      (multiple-value-bind (val sig)
+				  (keyword-value :default (assoc-cdr n name-qs))
+				(when sig
+				  (list :default val))))))))))))))
