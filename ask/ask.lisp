@@ -100,7 +100,6 @@
     (print (funcall askman `((,(third names) . "fred"))))
     (print (funcall askman `((,(fourth names) . "false"))))))
 
-
 (defun tester ()
   (ask
     (q some "Are there any?" :yesno)
@@ -110,5 +109,3 @@
     (form (q are :yesno)
 	 (q you :yesno)
 	 (q sure? :yesno))))
-
-

@@ -40,7 +40,10 @@
    #:def-webspecial
    #:*webspecial-validators*
    #:bind-webspecials
-   #:>>integer))
+   #:>>integer
+   #:pbit-featurebox-side
+   #:pbit-featurebox-content
+   #:str))
 
 
 
