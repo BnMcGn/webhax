@@ -54,7 +54,7 @@
 		   (collect name)))
 	  ,@code))))
 
-(defun create-ask-manager (code qs names)
+(defun create-ask-manager (code qs names &key target)
   (with-gensyms (continuations dispatch stor)
     `(let ((,continuations nil)
 	   (,dispatch nil)
@@ -64,7 +64,12 @@
        (flet ((answer (&rest params)
 		(apply #'answer ,stor params))
 	      (exists-answer (&rest params)
-		(apply #'exists-answer ,stor params)))
+		(apply #'exists-answer ,stor params))
+	      (finish () ;FIXME: Needs deregister?
+		,(if target
+		     `(funcall-in-macro 
+		       ,target (all-answers ,stor :translate t)) 
+		     nil)))
 	 (macrolet ((a (itm)
 		      `(answer ',itm :translate t))
 		    (form (&body body)
@@ -80,39 +85,46 @@
 		    (cl-cont:let/cc k (push k ,continuations))
 		    :???))
 	       ,@code
-	       (setf ,dispatch '((:success . t)))))))
-       (lambda (data)
-	 (aif (add-input ,stor data)
-	      (progn
-		(print data)
-		(print `((:error . ,it))))
-	      (values
-	       (progn
-		 (when (with-any/all/none
-			 (dolist (keyname (%dispatch-keys ,dispatch))
-			   (all (exists-answer ,stor keyname))) t)
-		   (funcall (car ,continuations)))
-		 ,dispatch)
-	       ,stor))))))
+	       (setf ,dispatch '((:success . t)))
+	       (finish)))))
+       (lambda (command data)
+	 (case command
+	   (:update
+	    (aif (add-input ,stor data)
+		 (progn
+		   (print data)
+		   (print `((:error . ,it))))
+		 (progn
+		   (when (with-any/all/none
+			   (dolist (keyname (%dispatch-keys ,dispatch))
+			     (all (exists-answer ,stor keyname))) t)
+		     (funcall (car ,continuations)))
+		   ,dispatch)))
+	   (:done
+	    (error "Not implemented"))
+	   (:back
+	    (error "Not implemented")))))))
 
+
+;FIXME: Should have some way of cleaning old askstores from session/askdata
 (defun register-ask-manager (aman &key (session *session*))
-  (unless (gethash :askstore session)
-    (setf (gethash :askstore session) (make-hash-table :test #'equal)))
-  (let* ((stor (gethash :askstore session))
+  (unless (gethash :askdata session)
+    (setf (gethash :askdata session) (make-hash-table :test #'equal)))
+  (let* ((stor (gethash :askdata session))
 	 (id (loop for idx = (create-numbered-name :ask)
 		while (gethash idx stor)
 		finally (return idx))))
     (setf (gethash id stor) aman)
     id))
 
-(defun call-ask-manager (aname data &key (session *session*))
-  (let ((askstore (gethash :askstore session)))
-    (unless (hash-table-p askstore)
-      (error "Askstore not found."))
-    (aif (gethash aname askstore)
-	 (funcall it data)
+(defun call-ask-manager (aname command data &key (session *session*))
+  (let ((askdata (gethash :askdata session)))
+    (unless (hash-table-p askdata)
+      (error "Askdata not found."))
+    (aif (gethash aname askdata)
+	 (funcall it command data)
 	 (error 
-	  (format nil "Form ~a not found in askstore." aname)))))
+	  (format nil "Form ~a not found in askdata." aname)))))
 
 (defclass ask-store ()
   ((stor

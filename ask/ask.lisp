@@ -27,7 +27,7 @@
 ;   (or :picksome :pickone :string :yesno :integer -other validation specs
 ;       :subform? :date :time etc, etc)
 ;   (or :source :source-url(discouraged - not portable to other interfaces)))
-;   (or :validator :validator-and :validator-or)
+;   (or :validator :and-validator :or-validator)
 ;  
 ;Symbol-or-string will be used as a visible label (via thing-labels) if no other label is provided. Also used as a key for return data.
 ;-Q must decide whether it has been successfully filled. Validation. Use 1st return value for value(s), second for status. Can return failed items!
@@ -37,6 +37,9 @@
 ;(form (list #q #q #q #dq ,@dq))
 ;-Might also contain text additions.
 ;-Should it output a page-parts collection?
+
+;Termination:
+;:target 
 
 ;Multiform:
 ;(?? (or/and form #dq ...) (numspec or add one more on successful fill))

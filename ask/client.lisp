@@ -65,13 +65,25 @@
 		    (setf (getprop data k) (@ v default))))))
 	(chain $ (get-j-s-o-n (+ url form) data
 		   (lambda (x)
-		     (update-form-data 
-		      (getprop (chain document askdata) form) x)
-		     (display-specified-controls
-		      (chain document (get-element-by-id form) 
-			     first-element-child)
-		      x
-		      (getprop (chain document askdata) form)))))))))		
+		     (cond 
+		       ((chain x (has-own-property :next))
+			(update-form-data 
+			 (getprop (chain document askdata) form) x)
+			(display-specified-controls
+			 (chain document (get-element-by-id form) 
+				first-element-child)
+			 x
+			 (getprop (chain document askdata) form)))
+		       ((chain x (has-own-property :error))
+			(alert
+			 (collecting-string
+			  (do-keyvalue (k v (getprop x :error))
+			    (collect 
+			      (getprop (chain document askdata) form k 'label))
+			    (collect ": ")
+			    (collect v)))))
+		       ((chain x (has-own-property :success))
+			(alert "arrived"))))))))))
 
 (defun ps-widget-lib ()
   (ps

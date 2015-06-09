@@ -69,7 +69,8 @@
 		   (multiple-value-bind (val sig) (funcall vald x)
 		     (if sig
 			 (values val sig)
-			 (funcall or-vald val)))))))))
+			 (funcall or-vald val)))))
+	(t vald)))))
 			 
 
 
