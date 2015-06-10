@@ -73,11 +73,14 @@
    (q you :yesno)
    (q sure? :yesno)))
 
+(defvar *ask-target*)
 
 (defmacro ask (&body body)
-  (multiple-value-bind (nbody qs names)
-      (process-ask-code body)
-    (ask-page-insert nbody qs names)))
+  (bind-extracted-keywords (body short-body :target)
+    (let ((*ask-target* target))
+      (multiple-value-bind (nbody qs names)
+	  (process-ask-code short-body)
+	(ask-page-insert nbody qs names)))))
 
 (defmacro t-ask (&body body)
   (multiple-value-bind (nbody qs names)
@@ -105,6 +108,7 @@
 
 (defun tester ()
   (ask
+    :target #'print
     (q some "Are there any?" :yesno)
     (if (a some)
 	(q enough? "How many?" :pickone :source '(3 5 6 18))

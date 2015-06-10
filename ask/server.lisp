@@ -54,7 +54,7 @@
 		   (collect name)))
 	  ,@code))))
 
-(defun create-ask-manager (code qs names &key target)
+(defun create-ask-manager (code qs names &key (target *ask-target*))
   (with-gensyms (continuations dispatch stor)
     `(let ((,continuations nil)
 	   (,dispatch nil)

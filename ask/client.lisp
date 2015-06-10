@@ -143,7 +143,7 @@
 HTML form."
   `(let* ((formname (register-ask-manager
 		     ,(create-ask-manager nbody qs names)))
-	  (initial-display (call-ask-manager formname nil)))
+	  (initial-display (call-ask-manager formname :update nil)))
      (html-out 
        (:form 
 	:id formname
