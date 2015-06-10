@@ -43,7 +43,12 @@
    #:>>integer
    #:pbit-featurebox-side
    #:pbit-featurebox-content
-   #:str))
+   #:str
+   #:ps-page-mod
+   #:assemble-page-mod
+   #:set-value
+   #:replace-with
+   #:page-mod))
 
 
 

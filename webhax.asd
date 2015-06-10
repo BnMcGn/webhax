@@ -21,6 +21,7 @@
                (:file "metaplate")
                (:file "html-s-exp")
                (:file "web-input")
+               (:file "page-mod")
                (:module :ask
                         :serial t
                         :components ((:file "util")
