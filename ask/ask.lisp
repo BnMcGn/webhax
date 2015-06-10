@@ -77,7 +77,7 @@
 
 (defmacro ask (&body body)
   (bind-extracted-keywords (body short-body :target)
-    (let ((*ask-target* target))
+    (let ((*ask-target* (when (boundp 'target) target)))
       (multiple-value-bind (nbody qs names)
 	  (process-ask-code short-body)
 	(ask-page-insert nbody qs names)))))
@@ -85,9 +85,10 @@
 (defmacro t-ask (&body body)
   (multiple-value-bind (nbody qs names)
       (process-ask-code body)
-    `(values
-      ,(create-ask-manager nbody qs names)
-      ',names)))
+    (let ((*ask-target* nil))
+      `(values
+	,(create-ask-manager nbody qs names)
+	',names))))
 
 (defun server-test ()
   (multiple-value-bind (askman names)
