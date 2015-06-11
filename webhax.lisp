@@ -41,7 +41,9 @@
   (ps
     (defun say (thing)
       (chain console (log thing)))
+
+    (defun member (item list)
+      (>= (chain list (index-of item)) 0))
+
     )); End ps-gadgets
 
-
-  
