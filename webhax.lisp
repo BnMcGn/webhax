@@ -47,3 +47,12 @@
 
     )); End ps-gadgets
 
+(defparameter *input-normalize*)
+
+(defun clack-input-normalize (input)
+  (values (awhen (assoc :splat input) (split-sequence #\/ (cdr it)))
+	   (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
+		      input)))
+
+
+    

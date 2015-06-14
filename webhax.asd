@@ -22,6 +22,7 @@
                (:file "html-s-exp")
                (:file "web-input")
                (:file "page-mod")
+               (:file "bind-validated-input")
                (:module :ask
                         :serial t
                         :components ((:file "util")
