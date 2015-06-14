@@ -59,11 +59,14 @@ anything that can be converted to JSON by the json:encode-json function."
 
 (defmacro define-page-mod (name (&rest lambda-list) &body body)
   
-  `(concatenate 'string *defined-pagemods*
-     (ps 
-       (defun ,name ,lambda-list
-	 (chain $ (get-j-s-o-n ,(concatenate 'string (page-mod-url) name)
-			       ,(%proc-lambda-list lambda-list)
-			       (lambda (x)
-				 (page-mod x)))))))
+  `(progn
+     (setf (gethash ,name *defined-pagemods*)
+       (ps 
+	 (defun ,name ,lambda-list
+	   (chain $ (get-j-s-o-n ,(concatenate 'string (page-mod-url) name)
+				 ,(%proc-lambda-list lambda-list)
+				 (lambda (x)
+				   (page-mod x)))))))
+     (defun ,name ,lambda-list
+       ,@body)
 		
