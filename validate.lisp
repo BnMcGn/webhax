@@ -29,7 +29,7 @@
     item
     (ratification-error item 
       (format nil "Field is longer than system limit of ~a chars."
-	      *webhax-default-input-limit*))))
+	      *webhax-input-limit*))))
 
 (defun mkparse-in-list (items)
   (lambda (item)
@@ -37,3 +37,15 @@
 	      (values it t)
 	      (values "Value not in list of options" nil))))
 
+(defun mkparse-all-members (subtest)
+  (lambda (itemlist)
+    (block exit
+      (values 
+       (collecting
+	 (dolist (itm itemlist)
+	   (aif2only (funcall subtest itm)
+		     (collect it)
+		     (return-from exit (values it nil)))))
+       t))))
+
+		    

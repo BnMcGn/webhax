@@ -47,7 +47,7 @@
 
     )); End ps-gadgets
 
-(defparameter *input-normalize*)
+(defparameter *input-normalize* nil)
 
 (defun clack-input-normalize (input)
   (values (awhen (assoc :splat input) (split-sequence #\/ (cdr it)))

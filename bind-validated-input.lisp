@@ -15,7 +15,7 @@
 	  (progn 
 	    (when (fetch-keyword :rest itm)
 	      (error ":rest and :optional not allowed in same spec."))
-	    (incf min-vals)
+	    (incf max-vals)
 	    (setf found-optional t))
 	  (if (fetch-keyword :rest itm)
 	      (setf found-rest t)
@@ -36,7 +36,7 @@
 			   (make-list (- ,vlength l-in))))
 	     (values 
 	      input
-	      (make-list ,vlength t)))))))
+	      (make-list ,vlength :initial-element t)))))))
 
 (defun %spec-name (valspec)
   (car (ensure-list (car valspec))))
@@ -45,10 +45,10 @@
   (bind-extracted-keywords (keyspec other :multiple :required)
     (with-gensyms (value)
       `(let ((,value ,(if multiple 
-			  `(assoc-all ,(%spec-name other) 
-				      ,input :test #'eq-symb)
-			  `(assoc ,(%spec-name other)
-				  ,input :test #'eq-symb))))
+			 `(assoc-all ',(%spec-name other) 
+				     ,input :test #'eq-symb)
+			 `(assoc ',(%spec-name other)
+				 ,input :test #'eq-symb))))
 	 ,@(when required
 		 `(unless ,value
 		    (error 
@@ -56,23 +56,30 @@
 			     "No value found for required keyword parameter ~a"
 			     ,(%spec-name other)))))
 	 (if ,value
-	     (values ,(if multiple `(cdr ,value) value) t)
+	     (values ,(if multiple value `(cdr ,value)) t)
 	     (values nil nil))))))
 
 (defun %%default-decider (valspec inputform foundvar)
-  (let ((filledp? (and (listp (car valspec)) (symbolp (third (car valspec))))))
+  (let ((filledp? (and (listp (car valspec)) 
+		       (third (car valspec)) 
+		       (symbolp (third (car valspec)))))
+	(multiple (fetch-keyword :multiple valspec)))
     (with-gensyms (item found vitem valid) 
       (collecting
 	(collect
 	    (list (%spec-name valspec)
 		  `(multiple-value-bind (,item ,found) ,inputform
 		     ,@(when filledp?
-			     `(setf ,foundvar ,found))
+			    `((setf ,foundvar ,found)))
 		     (if ,found
 			 (multiple-value-bind 
 			       (,vitem ,valid)
-			     (funcall-in-macro ,(second valspec))
-		       
+			     ,(if multiple
+				  `(funcall
+				    (mkparse-all-members ,(second valspec))
+				    ,item)
+				  `(funcall-in-macro 
+				    ,(second valspec) ,item))
 			   (if ,valid
 			       ,vitem
 			       (error ,vitem)))
@@ -100,11 +107,12 @@
 	   (multiple-value-bind (,regvals ,regfill)
 	       (funcall ,(%%make-regular-params-fetcher regular) ,reg-input)
 	     (let ((,foundp nil))
-	       (let ,(concatenate 
+	       ,foundp ;whine-stopper
+	       (let ,(apply #'concatenate 
 		      'list
 		      (loop for i from 0
 			 for regspec in regular
-			 collect 
+			 append
 			   (%%default-decider regspec `(values 
 							(elt ,regvals ,i)
 							(elt ,regfill ,i))
@@ -112,6 +120,8 @@
 		      (collecting
 			(dolist (kspec keys)
 			  (collect 
-			      (%%make-key-param-fetcher kspec key-input)))))
+			      (%%default-decider 
+			       kspec (%%make-key-param-fetcher kspec key-input)
+			       foundp)))))
 		 ,@body)))))))
     
