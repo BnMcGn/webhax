@@ -56,17 +56,26 @@ anything that can be converted to JSON by the json:encode-json function."
 	   (cons :target ,locspec)
 	   (cons :value (if htstring htstring other)))))
 
+(defun page-mod-url ()
+  "/page-mod/")
 
-(defmacro define-page-mod (name (&rest lambda-list) &body body)
-  
-  `(progn
-     (setf (gethash ,name *defined-pagemods*)
-       (ps 
-	 (defun ,name ,lambda-list
-	   (chain $ (get-j-s-o-n ,(concatenate 'string (page-mod-url) name)
-				 ,(%proc-lambda-list lambda-list)
-				 (lambda (x)
-				   (page-mod x)))))))
-     (defun ,name ,lambda-list
-       ,@body)
-		
+(defmacro define-page-mod (name (&rest validation-list) &body body)
+  (with-gensyms (input)
+    `(progn
+       (setf (gethash ,name *defined-pagemods*)
+	     (ps 
+	       (defun ,name (&rest params)
+		 (let ((url (+ ,(concatenate 'string (page-mod-url) name)
+			       "/"
+			       (chain params 
+				      (slice 0 (- (getprop params length) 1))
+				      (join "/")))))
+		   (chain $ (get-j-s-o-n 
+			     url
+			     (chain params (- (getprop params length) 1))
+			     (lambda (x)
+			       (page-mod x))))))))
+       (defun ,name (,input)
+	 (bind-validated-input (,input ,@validation-list)
+	   ,@body))
+       
