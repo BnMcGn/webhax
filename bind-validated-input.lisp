@@ -124,4 +124,3 @@
 			       kspec (%%make-key-param-fetcher kspec key-input)
 			       foundp)))))
 		 ,@body)))))))
-    

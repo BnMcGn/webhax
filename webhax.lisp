@@ -48,11 +48,20 @@
     )); End ps-gadgets
 
 (defparameter *input-normalize* nil)
+(defparameter *output-to-string?* nil)
+(defparameter *set-content-type* nil)
 
-(defun clack-input-normalize (input)
-  (values (awhen (assoc :splat input) (split-sequence #\/ (cdr it)))
-	   (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
-		      input)))
+(defun route-handler-wrapper (handler &key content-type)
+  (lambda (input)
+    (when content-type
+      (funcall *set-content-type* content-type))
+    (if *output-to-string?*
+	(with-output-to-string (*webhax-output*)
+	  (funcall handler input))
+	(funcall handler input))))
 
-
-    
+(defun initialize (host-type)
+  (let ((hostpack (find-package (symb 'webhax- host-type))))
+    (unless hostpack
+      (error (format nil "Package ~a not found" (symb 'webhax- host-type))))
+    (use-package hostpack)))
