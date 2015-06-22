@@ -59,7 +59,7 @@ anything that can be converted to JSON by the json:encode-json function."
 (defun page-mod-url ()
   "/page-mod/")
 
-(defmacro define-page-mod (name (&rest validation-list) &body body)
+'(defmacro define-page-mod (name (&rest validation-list) &body body)
   (with-gensyms (input)
     `(progn
        (setf (gethash ,name *defined-pagemods*)
@@ -77,5 +77,5 @@ anything that can be converted to JSON by the json:encode-json function."
 			       (page-mod x))))))))
        (defun ,name (,input)
 	 (bind-validated-input (,input ,@validation-list)
-	   ,@body))
+	   ,@body)))))
        

@@ -16,11 +16,11 @@
                #:thing-labels)
   :serial t
   :components ((:file "package")
-               (:file "webhax")
+               (:file "web-input")
+               (:file "webhax" :depends-on ("web-input"))
                (:file "validate")
                (:file "metaplate")
                (:file "html-s-exp")
-               (:file "web-input")
                (:file "page-mod")
                (:file "bind-validated-input")
                (:module :ask

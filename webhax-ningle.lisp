@@ -3,7 +3,9 @@
 (defpackage #:webhax-ningle
   (:use #:cl
 	#:ningle
-	#:clack.request)
+	#:clack.request
+	#:gadgets)
+  (:shadowing-import-from #:ningle.context #:make-request)
   (:export #:*request* ;Begin borrowed from clack.request
 	   #:content-length
 	   #:content-type
@@ -18,6 +20,7 @@
 	   #:server-protocol
 	   #:user-agent
 	   ;End borrowed from clack.request
+	   #:make-request
 
 	   #:*session* ;ningle's *session*; a hash table.
 	   #:output-to-string?
@@ -39,3 +42,4 @@
 (defparameter *input-normalize* #'input-normalize)
 (defparameter *set-content-type* #'set-content-type)
 (defparameter *output-to-string?* t)
+

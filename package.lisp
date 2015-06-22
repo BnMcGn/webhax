@@ -4,7 +4,8 @@
   (:use #:cl #:gadgets #:ratify)
   (:export
    #:mkparse-in-list
-   #:ratify-wrapper))
+   #:ratify-wrapper
+   #:mkparse-all-members))
 
 (defpackage #:webhax
   (:use #:cl #:gadgets #:parenscript #:anaphora 
@@ -48,7 +49,10 @@
    #:assemble-page-mod
    #:set-value
    #:replace-with
-   #:page-mod))
+   #:page-mod
+   #:bind-validated-input
+   #:route-handler-wrapper
+   #:initialize))
 
 
 
