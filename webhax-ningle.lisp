@@ -6,7 +6,7 @@
 	#:clack.request
 	#:gadgets)
   (:shadowing-import-from #:ningle.context #:make-request)
-  (:export #:*request* ;Begin borrowed from clack.request
+  (:export ;Begin borrowed from clack.request
 	   #:content-length
 	   #:content-type
 	   #:parameter
@@ -22,7 +22,6 @@
 	   ;End borrowed from clack.request
 	   #:make-request
 
-	   #:*session* ;ningle's *session*; a hash table.
 	   #:output-to-string?
 	   #:set-content-type
 	   #:input-normalize))

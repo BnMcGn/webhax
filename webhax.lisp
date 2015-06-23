@@ -50,24 +50,29 @@
 (defparameter *input-normalize* nil)
 (defparameter *output-to-string?* nil)
 (defparameter *set-content-type* nil)
-(defparameter *webhax-host* nil)
+(defparameter *host-object* nil)
+(defparameter *host-package* nil)
 
 (defun route-handler-wrapper (handler &key content-type)
   (lambda (input)
-    (print *input-normalize*)
     (when content-type
       (funcall *set-content-type* content-type))
-    (bind-webspecials (nth-value 1 (funcall *input-normalize* input))
-      (if *output-to-string?*
-	  (with-output-to-string (*webhax-output*)
-	    (funcall handler input))
-	  (funcall handler input)))))
+    (let ((*request* (symbol-value 
+		      (symbolize '*request* :package *host-package*)))
+	  (*session* (symbol-value 
+		      (symbolize '*session* :package *host-package*))))
+      (bind-webspecials (nth-value 1 (funcall *input-normalize* input))
+	(if *output-to-string?*
+	    (with-output-to-string (*webhax-output*)
+	      (funcall handler input))
+	    (funcall handler input))))))
 
 (defun initialize (host-type &key host)
-  (setf *webhax-host* host)
+  (setf *host-object* host)
   (let ((hostpack (find-package (symb 'webhax- host-type))))
     (unless hostpack
       (error (format nil "Package ~a not found" (symb 'webhax- host-type))))
+    (setf *host-package* hostpack)
     (let ((*package* (find-package :webhax)))
       (use-package hostpack))
     (dolist (sym '(*input-normalize* *set-content-type* *output-to-string?*))
