@@ -38,7 +38,18 @@
 (defun set-content-type (ctype)
   (setf (clack.response:headers *response* :content-type) ctype))
 
+(defun activate-routes (routes host-object)
+  (maphash 
+   (lambda (k v)
+     (let ((route 
+	    (if (second v)
+		(second v)
+		(format nil "/~a/*" (string-downcase (mkstr k))))))
+       (setf (ningle:route host-object route) v)))
+   routes))
+
 (defparameter *input-normalize* #'input-normalize)
 (defparameter *set-content-type* #'set-content-type)
 (defparameter *output-to-string?* t)
+(defparameter *activate-routes* #'activate-routes)
 

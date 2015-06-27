@@ -50,22 +50,13 @@
 (defparameter *input-normalize* nil)
 (defparameter *output-to-string?* nil)
 (defparameter *set-content-type* nil)
+(defparameter *activate-routes* nil)
 (defparameter *host-object* nil)
 (defparameter *host-package* nil)
-
-(defun route-handler-wrapper (handler &key content-type)
-  (lambda (input)
-    (when content-type
-      (funcall *set-content-type* content-type))
-    (let ((*request* (symbol-value 
-		      (symbolize '*request* :package *host-package*)))
-	  (*session* (symbol-value 
-		      (symbolize '*session* :package *host-package*))))
-      (bind-webspecials (nth-value 1 (funcall *input-normalize* input))
-	(if *output-to-string?*
-	    (with-output-to-string (*webhax-output*)
-	      (funcall handler input))
-	    (funcall handler input))))))
+(defvar *regular-web-input*)
+(defvar *key-web-input*)
+(defvar *request*)
+(defvar *session*)
 
 (defun initialize (host-type &key host)
   (setf *host-object* host)
@@ -75,6 +66,32 @@
     (setf *host-package* hostpack)
     (let ((*package* (find-package :webhax)))
       (use-package hostpack))
-    (dolist (sym '(*input-normalize* *set-content-type* *output-to-string?*))
+    (dolist (sym '(*input-normalize* *set-content-type* *output-to-string?*
+		   *activate-routes*))
       (setf (symbol-value sym) (symbol-value 
-				(symbolize sym :package hostpack))))))
+				(symbolize sym :package hostpack))))
+    (funcall *activate-routes* *registered-routes* host)))
+
+(defun input-function-wrapper (handler &key content-type)
+  (lambda (input)
+    (when content-type
+      (funcall *set-content-type* content-type))
+    (let ((*request* (symbol-value 
+		      (symbolize '*request* :package *host-package*)))
+	  (*session* (symbol-value 
+		      (symbolize '*session* :package *host-package*))))
+      (multiple-value-bind (*regular-web-input* *key-web-input*)
+	  (funcall *input-normalize* input)
+	(bind-webspecials (nth-value 1 (funcall *input-normalize* input))
+	  (if *output-to-string?*
+	      (with-output-to-string (*webhax-output*)
+		(funcall handler))
+	      (funcall handler)))))))
+
+(defvar *registered-routes* (make-hash-table))
+
+(defun create-simple-route (name function &key route-spec content-type)
+  (setf (gethash name *registered-routes*) 
+	(list (input-function-wrapper function :content-type content-type)
+	      route-spec)))
+

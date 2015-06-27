@@ -51,8 +51,13 @@
    #:replace-with
    #:page-mod
    #:bind-validated-input
-   #:route-handler-wrapper
-   #:initialize))
+   #:initialize
+   #:create-route
+   #:*request*
+   #:*regular-web-input*
+   #:*key-web-input*
+   #:input-function-wrapper
+   #:create-simple-route))
 
 
 

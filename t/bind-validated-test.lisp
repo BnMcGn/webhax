@@ -13,13 +13,14 @@
 
 (defmacro twrap (&body body)
   `(let ((webhax::*input-normalize* #'test-input-normalize))
-     ,@body))
+     (destructuring-bind (webhax::*regular-web-input* webhax::*key-web-input*)
+	 input
+       ,@body)))
 
 (defun testfunc1 ()
   (twrap
     (bind-validated-input 
-	(input
-	 (item1 (ratify-wrapper :overlength))
+	((item1 (ratify-wrapper :overlength))
 	 (item2 (ratify-wrapper :integer))
 	 (item3 (ratify-wrapper :integer) :optional t)
 	 (a (ratify-wrapper :overlength) :key t)

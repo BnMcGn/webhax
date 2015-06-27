@@ -96,31 +96,43 @@
 ;  &keys key (required multiple) -or- &keys (key nil) (rest optional))
 
 
-(defmacro bind-validated-input ((input &rest valspecs) &body body)
+(defmacro bind-validated-input ((&rest valspecs) &body body)
   (multiple-value-bind (keys regular) 
       (splitfilter valspecs
 		   (lambda (x)
 		     (fetch-keyword :key x)))
     (with-gensyms (foundp regvals regfill reg-input key-input)
-	`(multiple-value-bind (,reg-input ,key-input)
-	     (funcall *input-normalize* ,input)
-	   (multiple-value-bind (,regvals ,regfill)
-	       (funcall ,(%%make-regular-params-fetcher regular) ,reg-input)
-	     (let ((,foundp nil))
-	       ,foundp ;whine-stopper
-	       (let ,(apply #'concatenate 
-		      'list
-		      (loop for i from 0
-			 for regspec in regular
-			 append
-			   (%%default-decider regspec `(values 
-							(elt ,regvals ,i)
-							(elt ,regfill ,i))
-					      foundp))
-		      (collecting
-			(dolist (kspec keys)
-			  (collect 
-			      (%%default-decider 
-			       kspec (%%make-key-param-fetcher kspec key-input)
-			       foundp)))))
-		 ,@body)))))))
+      `(let ((,reg-input *regular-web-input*)
+	     (,key-input *key-web-input*))
+	 (multiple-value-bind (,regvals ,regfill)
+	     (funcall ,(%%make-regular-params-fetcher regular) ,reg-input)
+	   (let ((,foundp nil))
+	     ,foundp ;whine-stopper
+	     (let ,(apply #'concatenate 
+			  'list
+			  (loop for i from 0
+			     for regspec in regular
+			     append
+			       (%%default-decider regspec `(values 
+							    (elt ,regvals ,i)
+							    (elt ,regfill ,i))
+						  foundp))
+			  (collecting
+			      (dolist (kspec keys)
+				(collect 
+				    (%%default-decider 
+				     kspec 
+				     (%%make-key-param-fetcher kspec key-input)
+				     foundp)))))
+	       ,@body)))))))
+
+(defmacro create-route ((name &key route-spec content-type) 
+			(&rest valspecs) 
+			&body body)
+  `(setf (gethash ,name *registered-routes*)
+	 (list
+	  (input-function-wrapper
+	   (lambda ()
+	     (bind-validated-input ,valspecs ,@body))
+	   :content-type ,content-type)
+	  ,route-spec)))
