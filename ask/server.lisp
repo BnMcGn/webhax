@@ -1,4 +1,4 @@
-;;;; ask.lisp
+;;;; server.lisp
 
 (in-package #:webhax)
 
@@ -85,7 +85,8 @@
 		    (cl-cont:let/cc k (push k ,continuations))
 		    :???))
 	       ,@code
-	       (setf ,dispatch '((:success . t)))
+	       (setf ,dispatch (list (cons :success 
+					   (all-answers ,stor :translate t))))
 	       (finish)))))
        (lambda (command data)
 	 (case command
@@ -118,6 +119,7 @@
     id))
 
 (defun call-ask-manager (aname command data &key (session *session*))
+  (print data)
   (let ((askdata (gethash :askdata session)))
     (unless (hash-table-p askdata)
       (error "Askdata not found."))
@@ -196,8 +198,8 @@ applicable numbered key."))
 	    (maphash 
 	     (lambda (k v)
 	       (collect (assoc-cdr k trans-table) v))
-	     stor))))
-    stor))
+	     stor)))
+	stor)))
 
 (defgeneric dispatch-for-names (stor namelist)
   (:documentation 

@@ -101,11 +101,11 @@
 	     (q you :yesno)
 	     (q sure? :yesno)))
     (print names)
-    (print (funcall askman nil))
-    (print (funcall askman `((,(car names) . "true"))))
-    (print (funcall askman `((,(second names) . "5"))))
-    (print (funcall askman `((,(third names) . "fred"))))
-    (print (funcall askman `((,(fourth names) . "false"))))))
+    (print (funcall askman :update nil))
+    (print (funcall askman :update `((,(car names) . "true"))))
+    (print (funcall askman :update `((,(second names) . "5"))))
+    (print (funcall askman :update `((,(third names) . "fred"))))
+    (print (funcall askman :update `((,(fourth names) . "false"))))))
 
 (defun tester ()
   (ask
