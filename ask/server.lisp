@@ -188,6 +188,7 @@ applicable numbered key."))
 	  (if translate (translate-key astor key) key)
 	  stor))))
 
+;FIXME: should all-answers return cleaned up stuff?
 (defgeneric all-answers (stor &key translate))
 (defmethod all-answers ((astor ask-store) &key translate)
   (with-slots (qs names stor) astor
