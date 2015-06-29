@@ -35,8 +35,10 @@
 	      (concatenate 'list (make-list l-in :initial-element t)
 			   (make-list (- ,vlength l-in))))
 	     (values 
-	      (concatenate 'list (subseq input 0 (1- ,vlength))
-			   (list (nthcdr (1- ,vlength) input)))
+	      (if (> l-in ,vlength)
+		     (concatenate 'list (subseq input 0 (1- ,vlength))
+				  (list (nthcdr (1- ,vlength) input)))
+		     input)
 	      (make-list ,vlength :initial-element t)))))))
 
 (defun %spec-name (valspec)

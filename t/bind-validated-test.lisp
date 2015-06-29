@@ -28,12 +28,6 @@
 	 ((d 5) (ratify-wrapper :integer) :key t))
       (list item2 item3 d item1 b a))))
 
-(test bind-validated-input1
-  (is (= 10
-	 (reduce #'+ (remove-if-not #'integerp (testfunc1)))))
-  (is (= 2 (length (fifth (testfunc1)))))
-  (is (every #'stringp (fifth (testfunc1)))))
-
 (defun testfunc2 ()
   (twrap
     (bind-validated-input
@@ -41,6 +35,19 @@
 	 (item2 (ratify-wrapper :integer) :rest t))
       (values item1 (reduce #'+ item2)))))
 
-(test bind-validated-input2
+(defun testfunc3 ()
+  (twrap
+    (bind-validated-input
+	((item1 (ratify-wrapper :overlength))
+	 (item2 (ratify-wrapper :integer))
+	 (item3 (ratify-wrapper :integer)))
+      (values (+ item2 item3) item1))))
+
+(test bind-validated-input
+  (is (= 10
+	 (reduce #'+ (remove-if-not #'integerp (testfunc1)))))
+  (is (= 2 (length (fifth (testfunc1)))))
+  (is (every #'stringp (fifth (testfunc1))))
   (is (= 5 (nth-value 1 (testfunc2))))
-  (is (string-equal "one" (testfunc2))))
+  (is (string-equal "one" (testfunc2)))
+  (is (= 5 (testfunc3))))

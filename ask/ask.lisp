@@ -80,7 +80,7 @@
     (let ((*ask-target* (when (boundp 'target) target)))
       (multiple-value-bind (nbody qs names)
 	  (process-ask-code short-body)
-	(ask-page-insert nbody qs names)))))
+	(ask-page-insert nbody qs names)))))	     
 
 (defmacro t-ask (&body body)
   (multiple-value-bind (nbody qs names)

@@ -119,7 +119,6 @@
     id))
 
 (defun call-ask-manager (aname command data &key (session *session*))
-  (print data)
   (let ((askdata (gethash :askdata session)))
     (unless (hash-table-p askdata)
       (error "Askdata not found."))

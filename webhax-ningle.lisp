@@ -31,7 +31,7 @@
 ; Webhax, like clack, uses a subset of hunchentoot's *request* object api.
 
 (defun input-normalize (input)
-  (values (awhen (assoc :splat input) (split-sequence #\/ (cdr it)))
+  (values (awhen (assoc :splat input) (split-sequence #\/ (second it)))
 	   (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
 		      input)))
 
@@ -45,7 +45,7 @@
 	    (if (second v)
 		(second v)
 		(format nil "/~a/*" (string-downcase (mkstr k))))))
-       (setf (ningle:route host-object route) v)))
+       (setf (ningle:route host-object route) (car v))))
    routes))
 
 (defparameter *input-normalize* #'input-normalize)
