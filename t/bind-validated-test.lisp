@@ -33,3 +33,14 @@
 	 (reduce #'+ (remove-if-not #'integerp (testfunc1)))))
   (is (= 2 (length (fifth (testfunc1)))))
   (is (every #'stringp (fifth (testfunc1)))))
+
+(defun testfunc2 ()
+  (twrap
+    (bind-validated-input
+	((item1 (ratify-wrapper :overlength))
+	 (item2 (ratify-wrapper :integer) :rest t))
+      (values item1 (reduce #'+ item2)))))
+
+(test bind-validated-input2
+  (is (= 5 (nth-value 1 (testfunc2))))
+  (is (string-equal "one" (testfunc2))))

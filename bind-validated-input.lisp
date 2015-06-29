@@ -35,7 +35,8 @@
 	      (concatenate 'list (make-list l-in :initial-element t)
 			   (make-list (- ,vlength l-in))))
 	     (values 
-	      input
+	      (concatenate 'list (subseq input 0 (1- ,vlength))
+			   (list (nthcdr (1- ,vlength) input)))
 	      (make-list ,vlength :initial-element t)))))))
 
 (defun %spec-name (valspec)
@@ -63,7 +64,8 @@
   (let ((filledp? (and (listp (car valspec)) 
 		       (third (car valspec)) 
 		       (symbolp (third (car valspec)))))
-	(multiple (fetch-keyword :multiple valspec)))
+	(multiple (or (fetch-keyword :multiple valspec)
+		      (fetch-keyword :rest valspec))))
     (with-gensyms (item found vitem valid) 
       (collecting
 	(collect
@@ -104,6 +106,7 @@
     (with-gensyms (foundp regvals regfill reg-input key-input)
       `(let ((,reg-input *regular-web-input*)
 	     (,key-input *key-web-input*))
+	 (declare (ignorable ,reg-input ,key-input))
 	 (multiple-value-bind (,regvals ,regfill)
 	     (funcall ,(%%make-regular-params-fetcher regular) ,reg-input)
 	   (let ((,foundp nil))
