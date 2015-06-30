@@ -130,14 +130,3 @@
 				     (%%make-key-param-fetcher kspec key-input)
 				     foundp)))))
 	       ,@body)))))))
-
-(defmacro create-route ((name &key route-spec content-type) 
-			(&rest valspecs) 
-			&body body)
-  `(setf (gethash ,name *registered-routes*)
-	 (list
-	  (input-function-wrapper
-	   (lambda ()
-	     (bind-validated-input ,valspecs ,@body))
-	   :content-type ,content-type)
-	  ,route-spec)))

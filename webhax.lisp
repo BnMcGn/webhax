@@ -95,3 +95,16 @@
 	(list (input-function-wrapper function :content-type content-type)
 	      route-spec)))
 
+(defmacro create-route ((name &key route-spec content-type) 
+			(&rest valspecs) 
+			&body body)
+  `(setf (gethash ,name *registered-routes*)
+	 (list
+	  (input-function-wrapper
+	   (lambda ()
+	     (bind-validated-input ,valspecs ,@body))
+	   :content-type ,content-type)
+	  ,route-spec)))
+
+(defun output-string (string)
+  (princ string *webhax-output*))
