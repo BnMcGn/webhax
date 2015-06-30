@@ -86,7 +86,8 @@
 		    :???))
 	       ,@code
 	       (setf ,dispatch (list (cons :success 
-					   (all-answers ,stor :translate t))))
+					   (all-answers ,stor :translate t
+							:strip t))))
 	       (finish)))))
        (lambda (command data)
 	 (case command
@@ -188,18 +189,24 @@ applicable numbered key."))
 	  stor))))
 
 ;FIXME: should all-answers return cleaned up stuff?
-(defgeneric all-answers (stor &key translate))
-(defmethod all-answers ((astor ask-store) &key translate)
+(defgeneric all-answers (stor &key translate strip))
+(defmethod all-answers ((astor ask-store) &key translate strip)
   (with-slots (qs names stor) astor
-    (if translate
-	(let ((trans-table
-	       (pairlis names (mapcar #'second qs))))
-	  (collecting-hash-table (:mode :replace)
-	    (maphash 
-	     (lambda (k v)
-	       (collect (assoc-cdr k trans-table) v))
-	     stor)))
-	stor)))
+    (funcall 
+     (if strip
+	 (lambda (x)
+	   (collecting-hash-table (:mode :replace)
+	     (maphash (lambda (k v) (collect k (car v))) x)))
+	 #'identity)
+     (if translate
+	 (let ((trans-table
+		(pairlis names (mapcar #'second qs))))
+	   (collecting-hash-table (:mode :replace)
+	     (maphash 
+	      (lambda (k v)
+		(collect (assoc-cdr k trans-table) v))
+	      stor)))
+	 stor))))
 
 (defgeneric dispatch-for-names (stor namelist)
   (:documentation 
