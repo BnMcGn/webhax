@@ -83,7 +83,7 @@
 			    (collect ": ")
 			    (collect v)))))
 		       ((chain x (has-own-property :success))
-			(alert "arrived"))))))))))
+			(page-mod (chain x :success)))))))))))
 
 (defun ps-widget-lib ()
   (ps

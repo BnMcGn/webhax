@@ -54,7 +54,17 @@
 		   (collect name)))
 	  ,@code))))
 
-(defun create-ask-manager (code qs names &key (target *ask-target*))
+(defun %ask-proc-finish (askstore)
+  "*ask-finish* is assumed to be returning page-mod instructions for the FE. If
+it is set to nil, then *ask-target* is assumed to be returning page-mod."
+  (let ((res (funcall-in-macro 
+	      *ask-target* (all-answers askstore :translate t))))
+    (if *ask-finish*
+	(funcall-in-macro *ask-finish* (all-answers askstore :translate t))
+	res)))
+	
+
+(defun create-ask-manager (code qs names)
   (with-gensyms (continuations dispatch stor)
     `(let ((,continuations nil)
 	   (,dispatch nil)
@@ -64,12 +74,7 @@
        (flet ((answer (&rest params)
 		(apply #'answer ,stor params))
 	      (exists-answer (&rest params)
-		(apply #'exists-answer ,stor params))
-	      (finish () ;FIXME: Needs deregister?
-		,(if target
-		     `(funcall-in-macro 
-		       ,target (all-answers ,stor :translate t)) 
-		     nil)))
+		(apply #'exists-answer ,stor params)))
 	 (macrolet ((a (itm)
 		      `(answer ',itm :translate t))
 		    (form (&body body)
@@ -86,9 +91,10 @@
 		    :???))
 	       ,@code
 	       (setf ,dispatch (list (cons :success 
+					   (%ask-proc-finish ,stor)
 					   (all-answers ,stor :translate t
 							:strip t))))
-	       (finish)))))
+	       ))));FIXME: termination cleanup needed here;
        (lambda (command data)
 	 (case command
 	   (:update
@@ -124,7 +130,8 @@
     (unless (hash-table-p askdata)
       (error "Askdata not found."))
     (aif (gethash aname askdata)
-	 (funcall it command data)
+	 (let ((*ask-formname* aname))
+	   (funcall it command data))
 	 (error 
 	  (format nil "Form ~a not found in askdata." aname)))))
 

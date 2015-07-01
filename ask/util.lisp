@@ -9,6 +9,9 @@
 
 (defvar *ask-control-url*)
 
+(defvar *ask-formname*)
+(defvar *ask-finish*)
+
 (let ((counter 0))
   (defun create-numbered-name (name)
     (when (> counter (- most-positive-fixnum 2))

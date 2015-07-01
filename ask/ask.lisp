@@ -76,11 +76,26 @@
 (defvar *ask-target*)
 
 (defmacro ask (&body body)
-  (bind-extracted-keywords (body short-body :target)
-    (let ((*ask-target* (when (boundp 'target) target)))
+  (bind-extracted-keywords (body short-body :target :finish)
+    (let ((*ask-target* (when (boundp 'target) target))
+	  (*ask-finish* (when (boundp 'finish) finish)))
       (multiple-value-bind (nbody qs names)
 	  (process-ask-code short-body)
-	(ask-page-insert nbody qs names)))))	     
+	(ask-page-insert nbody qs names)))))
+
+(create-route (:ask-data :content-type "text/json")
+    ((askid (webhax-validate:ratify-wrapper :overlength)))
+  (print (output-string
+	  (json:encode-json-alist-to-string
+	   (webhax:call-ask-manager askid :update *key-web-input*)))))   
+
+(defun default-ask-finish (astore)
+  (declare (ignore astore))
+  (create-page-mod
+   (replace-with (format nil "form#~a > div" *ask-formname*)
+		 (html-out (:div (:span "Entry Submitted"))))))
+
+(setf *ask-finish* #'default-ask-finish)
 
 (defmacro t-ask (&body body)
   (multiple-value-bind (nbody qs names)
