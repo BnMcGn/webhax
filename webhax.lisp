@@ -72,6 +72,8 @@
 				(symbolize sym :package hostpack))))
     (funcall *activate-routes* *registered-routes* host)))
 
+;FIXME: Might be better to rely on clack - once it settles down - as an abstraction layer, rather than making yet another.
+
 (defun input-function-wrapper (handler &key content-type)
   (lambda (input)
     (when content-type

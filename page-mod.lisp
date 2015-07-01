@@ -28,7 +28,7 @@
 
 (defvar *page-mod-store* :toplevel)
 
-(defun assemble-page-mod (&rest things)
+(defun create-page-mod (&rest things)
   (let ((convert (if (eq *page-mod-store* :toplevel) 
 		     #'json:encode-json-to-string #'identity))
 	(*page-mod-store* (if (eq *page-mod-store* :toplevel) 
@@ -37,7 +37,7 @@
       (if (functionp itm)
 	  (funcall itm)
 	  (push itm *page-mod-store*)))
-    (print (funcall convert (nreverse *page-mod-store*)))))
+    (funcall convert (nreverse *page-mod-store*))))
 
 (defmacro set-value (locspec value)
   "Locspec is a parenscript variable expression ie. chain, getprop, @. Value is 
@@ -56,26 +56,36 @@ anything that can be converted to JSON by the json:encode-json function."
 	   (cons :target ,locspec)
 	   (cons :value (if htstring htstring other)))))
 
+(create-simple-route 
+ :page-mod
+ (lambda ()
+   (let ((*regular-web-input* (cdr *regular-web-input*))
+	 (funcname (aif (match-a-symbol 
+			 (car *regular-web-input*)
+			 (hash-table-keys *defined-pagemods*))
+			it
+			(error "Page mod not found"))))
+     (funcall (symbol-function funcname))))
+ :content-type "text/json")
+    
 (defun page-mod-url ()
   "/page-mod/")
 
-'(defmacro define-page-mod (name (&rest validation-list) &body body)
-  (with-gensyms (input)
-    `(progn
-       (setf (gethash ,name *defined-pagemods*)
-	     (ps 
-	       (defun ,name (&rest params)
-		 (let ((url (+ ,(concatenate 'string (page-mod-url) name)
-			       "/"
-			       (chain params 
-				      (slice 0 (- (getprop params length) 1))
-				      (join "/")))))
-		   (chain $ (get-j-s-o-n 
-			     url
-			     (chain params (- (getprop params length) 1))
-			     (lambda (x)
-			       (page-mod x))))))))
-       (defun ,name (,input)
-	 (bind-validated-input (,input ,@validation-list)
-	   ,@body)))))
-       
+(defmacro define-page-mod (name (&rest validation-list) &body body)
+  `(progn
+     (setf (gethash ,name *defined-pagemods*)
+	   (ps 
+	     (defun ,name (&rest params)
+	       (let ((url (+ ,(concatenate 'string (page-mod-url) name)
+			     "/"
+			     (chain params 
+				    (slice 0 (- (getprop params length) 1))
+				    (join "/")))))
+		 (chain $ (get-j-s-o-n 
+			   url
+			   (chain params (- (getprop params length) 1))
+			   (lambda (x)
+			     (page-mod x))))))))
+     (defun ,name ()
+       (bind-validated-input ,validation-list
+	 ,@body))))

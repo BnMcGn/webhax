@@ -22,4 +22,4 @@
 
 (test t-ask
   (is (hash-table-p result))
-  (is (= 5 (car (gethash 'enough? result)))))
+  (is (= 5 (gethash 'enough? result))))

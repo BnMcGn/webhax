@@ -46,7 +46,6 @@
    #:pbit-featurebox-content
    #:str
    #:ps-page-mod
-   #:assemble-page-mod
    #:set-value
    #:replace-with
    #:page-mod
@@ -57,7 +56,9 @@
    #:*regular-web-input*
    #:*key-web-input*
    #:input-function-wrapper
-   #:create-simple-route))
+   #:create-simple-route
+   #:output-string
+   #:create-page-mod))
 
 
 

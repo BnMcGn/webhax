@@ -33,7 +33,7 @@
 
 (defun mkparse-in-list (items)
   (lambda (item)
-    (aif2only (first-match items (lambda (x) (eq-symb x item)))
+    (aif2only (match-a-symbol item items)
 	      (values it t)
 	      (values "Value not in list of options" nil))))
 
