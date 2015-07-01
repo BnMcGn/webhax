@@ -73,7 +73,7 @@
    (q you :yesno)
    (q sure? :yesno)))
 
-(defvar *ask-target*)
+(defvar *ask-target* nil)
 
 (defmacro ask (&body body)
   (bind-extracted-keywords (body short-body :target :finish)

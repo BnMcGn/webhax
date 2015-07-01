@@ -26,18 +26,9 @@
 
    (hash-table-values *defined-pagemods*)))
 
-(defvar *page-mod-store* :toplevel)
 
 (defun create-page-mod (&rest things)
-  (let ((convert (if (eq *page-mod-store* :toplevel) 
-		     #'json:encode-json-to-string #'identity))
-	(*page-mod-store* (if (eq *page-mod-store* :toplevel) 
-			      nil *page-mod-store*)))
-    (dolist (itm (nreverse things))
-      (if (functionp itm)
-	  (funcall itm)
-	  (push itm *page-mod-store*)))
-    (funcall convert (nreverse *page-mod-store*))))
+  things)
 
 (defmacro set-value (locspec value)
   "Locspec is a parenscript variable expression ie. chain, getprop, @. Value is 
@@ -65,7 +56,8 @@ anything that can be converted to JSON by the json:encode-json function."
 			 (hash-table-keys *defined-pagemods*))
 			it
 			(error "Page mod not found"))))
-     (funcall (symbol-function funcname))))
+     (json:encode-json-to-string 
+      (funcall (symbol-function funcname)))))
  :content-type "text/json")
     
 (defun page-mod-url ()

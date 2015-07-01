@@ -58,7 +58,8 @@
   "*ask-finish* is assumed to be returning page-mod instructions for the FE. If
 it is set to nil, then *ask-target* is assumed to be returning page-mod."
   (let ((res (funcall-in-macro 
-	      *ask-target* (all-answers askstore :translate t))))
+	      (or *ask-target* #'identity) 
+	      (all-answers askstore :translate t))))
     (if *ask-finish*
 	(funcall-in-macro *ask-finish* (all-answers askstore :translate t))
 	res)))
@@ -91,9 +92,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 		    :???))
 	       ,@code
 	       (setf ,dispatch (list (cons :success 
-					   (%ask-proc-finish ,stor)
-					   (all-answers ,stor :translate t
-							:strip t))))
+					   (%ask-proc-finish ,stor))))
 	       ))));FIXME: termination cleanup needed here;
        (lambda (command data)
 	 (case command
