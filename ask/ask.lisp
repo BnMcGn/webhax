@@ -80,10 +80,10 @@
 (defvar *ask-target* nil)
 
 (defmacro ask (&body body)
-  (bind-extracted-keywords (body short-body :target :finish)
+  (bind-extracted-keywords (body short-body :target :finish :prefill)
     (let ((*ask-target* (when (boundp 'target) target))
 	  (*ask-finish* (when (boundp 'finish) finish))
-	  (*ask-prefills* (when (boundp 'prefill) prefill))
+	  (*ask-prefills* (when (boundp 'prefill) prefill)))
       (multiple-value-bind (nbody qs names)
 	  (process-ask-code short-body)
 	(ask-page-insert nbody qs names)))))
