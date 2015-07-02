@@ -64,8 +64,8 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	(funcall-in-macro *ask-finish* (all-answers askstore :translate t))
 	res)))
 
-(defun %insert-prefills (askstore)
-  (dolist (pr *ask-prefills*)
+(defun %insert-prefills (askstore prefills)
+  (dolist (pr prefills)
     (raw-input askstore pr)))
 
 (defun create-ask-manager (code qs names)
@@ -75,7 +75,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	   (,stor (make-instance 'ask-store  
 			 :q-clauses (list ,@(mapcar #'%unquote-q qs))
 			 :names ',names)))
-       (%insert-prefills ,stor)
+       (%insert-prefills ,stor (list ,@*ask-prefills*))
        (flet ((answer (&rest params)
 		(apply #'answer ,stor params))
 	      (exists-answer (&rest params)
