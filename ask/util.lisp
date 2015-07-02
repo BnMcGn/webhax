@@ -11,6 +11,7 @@
 
 (defvar *ask-formname*)
 (defvar *ask-finish*)
+(defvar *ask-prefills*)
 
 (let ((counter 0))
   (defun create-numbered-name (name)

@@ -38,6 +38,10 @@
 ;-Might also contain text additions.
 ;-Should it output a page-parts collection?
 
+;Prefill:
+;:prefill - uses eq-symb to match prefills to keys. Can be alist or hash.
+;:prefill in a q will override general prefill for that q.
+
 ;Termination:
 ;:target 
 
@@ -78,7 +82,8 @@
 (defmacro ask (&body body)
   (bind-extracted-keywords (body short-body :target :finish)
     (let ((*ask-target* (when (boundp 'target) target))
-	  (*ask-finish* (when (boundp 'finish) finish)))
+	  (*ask-finish* (when (boundp 'finish) finish))
+	  (*ask-prefills* (when (boundp 'prefill) prefill))
       (multiple-value-bind (nbody qs names)
 	  (process-ask-code short-body)
 	(ask-page-insert nbody qs names)))))

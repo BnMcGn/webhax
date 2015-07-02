@@ -63,7 +63,10 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
     (if *ask-finish*
 	(funcall-in-macro *ask-finish* (all-answers askstore :translate t))
 	res)))
-	
+
+(defun %insert-prefills (askstore)
+  (dolist (pr *ask-prefills*)
+    (raw-input askstore pr)))
 
 (defun create-ask-manager (code qs names)
   (with-gensyms (continuations dispatch stor)
@@ -72,6 +75,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	   (,stor (make-instance 'ask-store  
 			 :q-clauses (list ,@(mapcar #'%unquote-q qs))
 			 :names ',names)))
+       (%insert-prefills ,stor)
        (flet ((answer (&rest params)
 		(apply #'answer ,stor params))
 	      (exists-answer (&rest params)
@@ -172,13 +176,29 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	  (dolist (itm good)
 	    (setf (gethash (first itm) stor) (cons (cdr itm) t)))))))
 
+(defgeneric translation-table (stor &key reversed))
+(defmethod translation-table (stor &key reversed)
+  (with-slots (names qs) stor
+    (if reversed
+	(pairlis names (mapcar #'second qs))
+	(pairlis (mapcar #'second qs) names))))
+
+(defgeneric raw-input (stor dict &key test)
+  (:documentation "For loading alists or hash-tables into the store. No validation."))
+(defmethod raw-input (astor dict &key (test #'eq-symb))
+  (with-slots (qs names stor) astor
+    (let ((table (translation-table astor)))
+      (if (hash-table-p dict)
+	  (do-hash-table (k v dict)
+	    (setf (gethash (assoc-cdr k table :test test) stor) (cons v t)))
+	  (do-alist (k v dict)
+	    (setf (gethash (assoc-cdr k table :test test) stor) (cons v t)))))))
+
 (defgeneric translate-key (stor key)
   (:documentation "Given the original symbol supplied by the user, return the
 applicable numbered key."))
 (defmethod translate-key ((astor ask-store) key)
-  (with-slots (qs names) astor
-    (assoc-cdr key (pairlis (mapcar #'second qs)
-			    names))))
+  (assoc-cdr key (translation-table astor)))
       
 (defgeneric exists-answer (stor key &key translate))
 (defmethod exists-answer ((astor ask-store) key &key translate)
@@ -216,7 +236,7 @@ applicable numbered key."))
 
 (defgeneric dispatch-for-names (stor namelist)
   (:documentation 
-   "Create a dispatch for conversion to JSON for the names in namelist"))
+   "Create a dispatch for conversion to JSON for the fields in namelist"))
 (defmethod dispatch-for-names ((astor ask-store) namelist)
   (with-slots (qs stor names) astor
       (let ((name-qs (pairlis names qs)))
