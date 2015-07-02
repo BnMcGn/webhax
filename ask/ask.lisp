@@ -80,10 +80,11 @@
 (defvar *ask-target* nil)
 
 (defmacro ask (&body body)
-  (bind-extracted-keywords (body short-body :target :finish :prefill)
-    (let ((*ask-target* (when (boundp 'target) target))
-	  (*ask-finish* (when (boundp 'finish) finish))
-	  (*ask-prefills* (when (boundp 'prefill) prefill)))
+  (bind-extracted-keywords 
+      (body short-body :target :finish (:prefill :multiple))
+    (let ((*ask-target* target)
+	  (*ask-finish* (or finish *ask-finish*))
+	  (*ask-prefills* prefill))
       (multiple-value-bind (nbody qs names)
 	  (process-ask-code short-body)
 	(ask-page-insert nbody qs names)))))
@@ -92,7 +93,12 @@
     ((askid (webhax-validate:ratify-wrapper :overlength)))
   (print (output-string
 	  (json:encode-json-alist-to-string
-	   (webhax:call-ask-manager askid :update *key-web-input*)))))   
+	   (webhax:call-ask-manager askid :update *key-web-input*)))))
+
+(define-parts ask-parts
+  (add-part :@javascript "/static/jquery.js")
+  (add-part :@javascript #'webhax::ps-ask-lib)
+  (add-part :@javascript #'webhax:ps-page-mod))
 
 (defun default-ask-finish (astore)
   (declare (ignore astore))

@@ -21,8 +21,10 @@
 (defmacro define-parts (name &body parts)
   `(eval-always
      (defun ,name (previous)
-       (collecting-hash-table (:existing previous)
-	 ,@parts))))
+       (collecting-hash-table (:existing previous :mode :append)
+	 (labels ((add-part (section part)
+		    (collect section part)))
+	   ,@parts)))))
 
 (eval-always
   (defun %make-part-func (key keyclauses)
@@ -33,8 +35,10 @@
 			 (collect y)))))))
       (when lines
 	`(lambda (previous)
-	   (collecting-hash-table (:existing previous)
-	     ,@lines))))))
+	   (collecting-hash-table (:existing previous :mode :append)
+	     (labels ((add-part (section part)
+			(collect section part)))
+	       ,@lines)))))))
 
 (defmacro define-layout ((name &key wrapper) &body template)
   (multiple-value-bind (keyclauses template)
@@ -120,6 +124,12 @@ table"
 	  `(funcall-in-macro ,(car parts) ,(%collate-parts (cdr parts)))
 	  `(funcall ,(car parts) ,(%collate-parts (cdr parts))))))
 
+(defun add-part (section part)
+  "This add-part is for use in the parts section of define-page."
+  (lambda (previous)
+    (collecting-hash-table (:existing previous :mode :append)
+      (collect section part))))
+    
 (defmacro define-page (name parts templates)
   (let (prepend-parts append-parts)
     (labels ((proc-template (tmpl)
@@ -154,7 +164,7 @@ table"
 
 (define-layout (two-side-columns :wrapper #'page-base)
   (:prepend-parts 
-   (collect :@css "/static/css/style.css"))
+   (add-part :@css "/static/css/style.css"))
   (html-out
     ;Header
     (:div :id "header_wrapper"
