@@ -106,15 +106,19 @@
    (replace-with (format nil "form#~a > div" *ask-formname*)
 		 (html-out (:div (:span "Entry Submitted"))))))
 
-(setf *ask-finish* #'default-ask-finish)
+(setf *ask-finish* '#'default-ask-finish)
 
 (defmacro t-ask (&body body)
-  (multiple-value-bind (nbody qs names)
-      (process-ask-code body)
-    (let ((*ask-target* nil))
-      `(values
-	,(create-ask-manager nbody qs names)
-	',names))))
+  (bind-extracted-keywords 
+      (body short-body :target :finish (:prefill :multiple))
+    (let ((*ask-target* target)
+	  (*ask-finish* (or finish *ask-finish*))
+	  (*ask-prefills* prefill))
+      (multiple-value-bind (nbody qs names)
+	  (process-ask-code short-body)
+	`(values
+	  ,(create-ask-manager nbody qs names)
+	  ',names)))))
 
 (defun server-test ()
   (multiple-value-bind (askman names)

@@ -54,14 +54,15 @@
 		   (collect name)))
 	  ,@code))))
 
-(defun %ask-proc-finish (askstore)
+(defun %ask-proc-finish (askstore target finish)
   "*ask-finish* is assumed to be returning page-mod instructions for the FE. If
 it is set to nil, then *ask-target* is assumed to be returning page-mod."
   (let ((res (funcall-in-macro 
-	      (or *ask-target* #'identity) 
+	      (or target #'identity) 
 	      (all-answers askstore :translate t))))
-    (if *ask-finish*
-	(funcall-in-macro *ask-finish* (all-answers askstore :translate t))
+    (print target)
+    (if finish
+	(funcall-in-macro finish (all-answers askstore :translate t))
 	res)))
 
 (defun %insert-prefills (askstore prefills)
@@ -94,10 +95,11 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 		    (setf ,dispatch (dispatch-for-names ,stor namelist))
 		    (cl-cont:let/cc k (push k ,continuations))
 		    :???))
-	       (declare (ignorable display %form-display))
+	       (declare (ignorable (function display) (function %form-display)))
 	       ,@code
-	       (setf ,dispatch (list (cons :success 
-					   (%ask-proc-finish ,stor))))
+	       (setf ,dispatch 
+		     (list (cons :success (%ask-proc-finish 
+					   ,stor ,*ask-target* ,*ask-finish*))))
 	       ))));FIXME: termination cleanup needed here;
        (lambda (command data)
 	 (case command
