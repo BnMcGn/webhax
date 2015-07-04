@@ -58,7 +58,10 @@
    #:input-function-wrapper
    #:create-simple-route
    #:output-string
-   #:create-page-mod))
+   #:create-page-mod
+   #:form
+   #:ask-parts
+   #:add-part))
 
 
 

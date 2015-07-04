@@ -31,9 +31,13 @@
 ; Webhax, like clack, uses a subset of hunchentoot's *request* object api.
 
 (defun input-normalize (input)
-  (values (awhen (assoc :splat input) (split-sequence #\/ (second it)))
-	   (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
-		      input)))
+  (values (awhen (assoc :splat input)
+	    ;FIXME: Should probably only remove zero lengths in last pos.
+	    (remove-if (lambda (x) 
+			 (and (stringp x) (= 0 (length x))))
+		       (split-sequence #\/ (second it))))
+	  (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
+		     input)))
 
 (defun set-content-type (ctype)
   (setf (clack.response:headers *response* :content-type) ctype))

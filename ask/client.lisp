@@ -162,6 +162,7 @@ HTML form."
 		 (lisp-raw (json:encode-json-alist-to-string initial-display))))
 	    (unless (chain document (has-own-property "askdata"))
 	      (setf (chain document askdata) (create)))
+	    (update-form-data formdata initstate)
 	    (setf (getprop (chain document askdata) formname) formdata)
 	    (display-specified-controls 
 	     (chain document (get-element-by-id formname) first-element-child)

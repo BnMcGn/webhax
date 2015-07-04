@@ -7,11 +7,11 @@
   '(:yesno :string :pickone :picksome :integer :date :month :datetime 
     :datetime-local))
 
-(defvar *ask-control-url*)
+(defvar *ask-control-url* "/ask-data/")
 
-(defvar *ask-formname*)
-(defvar *ask-finish*)
-(defvar *ask-prefills*)
+(defvar *ask-formname* nil)
+(defvar *ask-finish* nil)
+(defvar *ask-prefills* nil)
 
 (let ((counter 0))
   (defun create-numbered-name (name)

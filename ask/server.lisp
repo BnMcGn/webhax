@@ -66,7 +66,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 
 (defun %insert-prefills (askstore prefills)
   (dolist (pr prefills)
-    (raw-input askstore pr)))
+    (load-prefills askstore pr)))
 
 (defun create-ask-manager (code qs names)
   (with-gensyms (continuations dispatch stor)
@@ -94,6 +94,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 		    (setf ,dispatch (dispatch-for-names ,stor namelist))
 		    (cl-cont:let/cc k (push k ,continuations))
 		    :???))
+	       (declare (ignorable display %form-display))
 	       ,@code
 	       (setf ,dispatch (list (cons :success 
 					   (%ask-proc-finish ,stor))))
@@ -115,7 +116,6 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	    (error "Not implemented"))
 	   (:back
 	    (error "Not implemented")))))))
-
 
 ;FIXME: Should have some way of cleaning old askstores from session/askdata
 (defun register-ask-manager (aman &key (session *session*))
@@ -146,7 +146,9 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
     :initarg :q-clauses)
    (names
     :initarg :names)
-   validators))
+   validators
+   (prefill-stor
+    :initform (make-hash-table))))
 
 (defmethod initialize-instance :after ((stor ask-store) &key)
   (with-slots (qs names validators) stor
@@ -183,16 +185,16 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	(pairlis names (mapcar #'second qs))
 	(pairlis (mapcar #'second qs) names))))
 
-(defgeneric raw-input (stor dict &key test)
-  (:documentation "For loading alists or hash-tables into the store. No validation."))
-(defmethod raw-input (astor dict &key (test #'eq-symb))
-  (with-slots (qs names stor) astor
+(defgeneric load-prefills (stor dict &key test)
+  (:documentation "For loading alists or hash-tables into the prefill store. No validation."))
+(defmethod load-prefills (astor dict &key (test #'eq-symb))
+  (with-slots (qs names prefill-stor) astor
     (let ((table (translation-table astor)))
       (if (hash-table-p dict)
 	  (do-hash-table (k v dict)
-	    (setf (gethash (assoc-cdr k table :test test) stor) (cons v t)))
+	    (setf (gethash (assoc-cdr k table :test test) prefill-stor) v))
 	  (do-alist (k v dict)
-	    (setf (gethash (assoc-cdr k table :test test) stor) (cons v t)))))))
+	    (setf (gethash (assoc-cdr k table :test test) prefill-stor) v))))))
 
 (defgeneric translate-key (stor key)
   (:documentation "Given the original symbol supplied by the user, return the
@@ -213,6 +215,19 @@ applicable numbered key."))
     (car (gethash 
 	  (if translate (translate-key astor key) key)
 	  stor))))
+
+(defgeneric calculate-prefill (astor key))
+(defmethod calculate-prefill (astor key)
+  (with-slots (names qs prefill-stor) astor
+    (if (exists-answer astor key)
+	(car (answer astor key))
+	(multiple-value-bind (val sig)
+	    (keyword-value :default (assoc-cdr key (pairlis names qs)))
+	  (if sig
+	      (values val t)
+	      (aif2only (gethash key prefill-stor)
+			(values it t)
+			(values nil nil)))))))
 
 ;FIXME: should all-answers return cleaned up stuff?
 (defgeneric all-answers (stor &key translate strip))
@@ -238,19 +253,14 @@ applicable numbered key."))
   (:documentation 
    "Create a dispatch for conversion to JSON for the fields in namelist"))
 (defmethod dispatch-for-names ((astor ask-store) namelist)
-  (with-slots (qs stor names) astor
-      (let ((name-qs (pairlis names qs)))
-	(list
-	 (cons :next 
-	       (collecting-hash-table (:mode :replace)
-		 (dolist (n namelist)
-		   (collect
-		     n
-		     (plist-hash-table 
-		      `(,@(if (exists-answer astor n) 
-			      (list :default
-				    (answer astor n))
-			      (multiple-value-bind (val sig)
-				  (keyword-value :default (assoc-cdr n name-qs))
-				(when sig
-				  (list :default val))))))))))))))
+   (with-slots (qs stor names) astor
+     (list
+      (cons :next 
+	    (collecting-hash-table (:mode :replace)
+	      (dolist (n namelist)
+		(collect n
+		  (plist-hash-table 
+		   `(,@(multiple-value-bind (val sig) 
+			    (calculate-prefill astor n)
+			  (when sig 
+			    (list :default val))))))))))))
