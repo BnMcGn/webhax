@@ -121,6 +121,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 
 ;FIXME: Should have some way of cleaning old askstores from session/askdata
 (defun register-ask-manager (aman &key (session *session*))
+  (print *session*)
   (unless (gethash :askdata session)
     (setf (gethash :askdata session) (make-hash-table :test #'equal)))
   (let* ((stor (gethash :askdata session))
@@ -160,6 +161,13 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	       for n in names
 	       do (collect n (%q-validator q)))))))
 
+(defgeneric nullok-p (stor name))
+(defmethod nullok-p (astor name)
+  (with-slots (names qs) astor
+      (member :nullok
+	      (assoc-cdr name
+	       (pairlis names qs)))))
+
 (defgeneric add-input (stor input)
   (:documentation
    "Add input from a web source (alist format) to a storage object. Returns
@@ -174,7 +182,9 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	      (aif2only
 	       (funcall (gethash n validators) (cdr it))
 	       (g< (cons n it))
-	       (e< (cons n it))))))
+	       (if (and (nullok-p astor n) (equal "" (cdr it)))
+		   (g< (cons n nil))
+		   (e< (cons n it)))))))
       (if errors
 	  errors
 	  (dolist (itm good)

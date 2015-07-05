@@ -57,3 +57,23 @@
 (defparameter *output-to-string?* t)
 (defparameter *activate-routes* #'activate-routes)
 
+
+
+;;Debugging
+
+
+
+'(ningle.app::mapper books::*app*) 
+'(ningle.app::call books::*app* nil)
+'(myway:dispatch (ningle.app::mapper books::*app*) "/tester/")
+'(ningle:route books::*app* "/tester/")
+'books::*session-store*
+' (clack.middleware.session::store books::*session-store*)
+'(clack.session.store::stash stor)
+
+(defun get-session-container (session-store)
+  (clack.session.store::stash 
+   (clack.middleware.session::store session-store)))
+
+(defun get-session1 (session-store)
+  (first (alexandria:hash-table-values (get-session-container session-store))))

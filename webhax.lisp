@@ -4,8 +4,6 @@
 
 ;;; "webhax" goes here. Hacks and glory await!
 
-(defvar *session*)
-
 (defparameter *webhax-output* *standard-output*)
 
 (defmacro html-out (&body body)

@@ -62,7 +62,10 @@
 		       (setf (@ v current-saved) (@ v current))
 		       (delete (@ v current)))
 		(if (chain v (has-own-property :default))
-		    (setf (getprop data k) (@ v default))))))
+		    (setf (getprop data k) (@ v default))))
+	    (if (equal (getprop data k) null)
+		(setf (getprop data k) ""))))
+	(say data)
 	(chain $ (get-j-s-o-n (+ url form) data
 		   (lambda (x)
 		     (cond 
