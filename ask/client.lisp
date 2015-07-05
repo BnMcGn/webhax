@@ -118,6 +118,12 @@
 	       :onchange (updatecode)
 	       (eq (getprop params :default) x) :checked "checked") x))))))
 
+    (defun client-textarea (name params)
+      (ps-html
+       ((:textarea :name name :rows 5 :cols 40
+		   :value (getprop params :default)
+		   :onchange (updatecode)))))
+
     (defmacro make-simple-client-control (name type)
       `(defun ,(lisp (symb 'client- name)) (name params)
 	 (ps-html
