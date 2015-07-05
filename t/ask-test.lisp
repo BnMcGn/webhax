@@ -28,3 +28,40 @@
   (is (hash-table-p result))
   (is (= 5 (gethash 'enough? result))))
 
+;FIXME: Has a problematic amount of internal knowledge embedded.
+(defmacro ask-test-fixture (form &body body)
+  (with-gensyms (formname aman store)
+  `(let* ((webhax::*session* (make-hash-table))
+	  (form-html (with-output-to-string (webhax:*webhax-output*) ,form))
+	  (,formname (car (hash-table-keys 
+			   (gethash :askdata webhax::*session*))))
+	  (,aman (gethash ,formname (gethash :askdata webhax::*session*)))
+	  (,store (funcall ,aman :get-store nil)))
+     (declare (ignorable form-html))
+     (labels ((send (command data)
+		(call-ask-manager ,formname command
+				  (mapcar
+				   (lambda (x)
+				     (cons
+				      (webhax::translate-key ,store (car x))
+				      (cdr x)))
+				   data))))
+       ,@body))))
+
+(defvar *date-test-result*)
+(defun date-test-form ()
+  (ask
+    (form
+     (q item :date :nullok))
+    :target (lambda (data)
+	      (setf *date-test-result* (gethash 'item data)))))
+
+(test ask-date
+  (is (null 
+       (progn
+	 (ask-test-fixture (date-test-form)
+	   (send :update '((item . ""))))
+	 (car *date-test-result*))))
+  (is (eq :error 
+	  (caar (ask-test-fixture (date-test-form)
+		  (send :update '((item . "today"))))))))
