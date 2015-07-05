@@ -114,9 +114,13 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 			     (all (exists-answer ,stor keyname))) t)
 		     (funcall (car ,continuations)))
 		   ,dispatch)))
+	   (:get-store
+	    ,stor)
 	   (:done
 	    (error "Not implemented"))
 	   (:back
+	    (error "Not implemented"))
+	   (otherwise
 	    (error "Not implemented")))))))
 
 ;FIXME: Should have some way of cleaning old askstores from session/askdata
@@ -178,13 +182,14 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
     (multiple-value-bind (good errors)
 	(with-collectors (g< e<)
 	  (dolist (n names)
-	    (awhen (assoc n input :test #'equal)
-	      (aif2only
-	       (funcall (gethash n validators) (cdr it))
-	       (g< (cons n it))
-	       (if (and (nullok-p astor n) (equal "" (cdr it)))
-		   (g< (cons n nil))
-		   (e< (cons n it)))))))
+	    (let ((item (assoc n input :test #'equal)))
+	      (when item
+		(aif2only
+		 (funcall (gethash n validators) (cdr item))
+		 (g< (cons n it))
+		 (if (and (nullok-p astor n) (equal "" (cdr item)))
+		     (g< (cons n nil))
+		     (e< (cons n it))))))))
       (if errors
 	  errors
 	  (dolist (itm good)
