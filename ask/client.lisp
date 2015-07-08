@@ -15,14 +15,10 @@
 
 (defun generate-options-list (options)
   (if (null options)
-      'null
-      (mapcar 
-       #'alist->ps-object-code 
-       (cond 
-	 ((listp (car options)) options)
-	 ((hash-table-p (car options)) (hash->alist options))
-	 (t
-	  (mapcar (lambda (x) `((:id . ,x) ((:label . ,x)))) options))))))
+      options
+      (if (listp (car options)) 
+	  options
+	  (mapcar (lambda (x) (list x x)) options))))
   
 (defun generate-q-data (q)
   `(create
@@ -154,9 +150,9 @@
 	(if (chain params (has-own-property :options))
 	    (dolist (opt (getprop params :options))
 	      (ps-html
-	       ((:option :value (getprop opt :id) 
-			 (getprop opt :selected) :selected "selected")
-		(getprop opt :label)))))))))
+	       ((:option :value (getprop opt 0) 
+			 (getprop opt 2) :selected "selected")
+		(getprop opt 1)))))))))
 
     (defun postrender-picksome-long (name params)
       (chain ($ (+ "select['" name "']")) (select2))) 
