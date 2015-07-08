@@ -26,7 +26,7 @@
 ;(q <symbol-or-string> :helpful-hint?
 ;   (or :picksome :pickone :string :yesno :integer -other validation specs
 ;       :subform? :date :time etc, etc)
-;   (or :source :source-url(discouraged - not portable to other interfaces)))
+;   (or :prefill :prefill-url(discouraged - not portable to other interfaces)))
 ;   (or :validator :and-validator :or-validator) 
 ;   :nullok
 ;  
@@ -42,6 +42,17 @@
 ;Prefill:
 ;:prefill - uses eq-symb to match prefills to keys. Can be alist or hash.
 ;:prefill in a q will override general prefill for that q.
+
+;Options: bad choice of name. Could be configuration options. But: matches html
+;usage. Use "params" for config?
+;Source? Ambiguous. 
+
+;When both prefill and options are provided: 
+;-options can contain prefill info with the selected field
+;-if multiple, prefill and options selected info will be used
+;-if single, last prefill will override.
+;-if updating from JSON source is implemented, all prefill and option info
+;-will be ignored as out of date once JSON is called.
 
 ;Termination:
 ;:target 
@@ -99,7 +110,12 @@
 (define-parts ask-parts
   (add-part :@javascript "/static/jquery.js")
   (add-part :@javascript #'webhax::ps-ask-lib)
-  (add-part :@javascript #'webhax:ps-page-mod))
+  (add-part :@javascript #'webhax:ps-page-mod)
+  ;FIXME: select2 stuff should only be loaded when needed
+  (add-part :@javascript 
+    "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js")
+  (add-part :@css
+    "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css"))
 
 (defun default-ask-finish (astore)
   (declare (ignore astore))

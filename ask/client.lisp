@@ -7,16 +7,36 @@
 (defun get-q-functype-symbol (q)
   (symb 'client- (get-q-type q)))
 
+(defun get-q-postrender-symbol (q)
+  (let ((sym (symb 'postrender- (get-q-type q))))
+    ;FIXME: Admittedly demented way of doing things.
+    (when (search (string-right-trim ";" (ps* sym)) (ps-widget-lib))
+      sym)))
+
+(defun generate-options-list (options)
+  (if (null options)
+      'null
+      (mapcar 
+       #'alist->ps-object-code 
+       (cond 
+	 ((listp (car options)) options)
+	 ((hash-table-p (car options)) (hash->alist options))
+	 (t
+	  (mapcar (lambda (x) `((:id . ,x) ((:label . ,x)))) options))))))
+  
 (defun generate-q-data (q)
   `(create
     :function ,(get-q-functype-symbol q)
     :label ,(make-q-label q)
-    ,@(awhen2 (fetch-keyword :source q)
-	      (list :source it))
-    ,@(awhen2 (fetch-keyword :source-url q)
-	      (list :source-url it))
-    ,@(aif2 (fetch-keyword :default q)
-	      (list :default it) (list :default nil))))
+    ,@(awhen (get-q-postrender-symbol q)
+	     (list :postrender it))
+    ;FIXME: prefill will be overwritten by gen. prefill
+    ,@(aif2 (fetch-keyword :prefill q)
+	      (list :prefill it) (list :prefill nil))
+    ,@(awhen2 (fetch-keyword :options-url q)
+	      (list :options-url it))
+    ,@(awhen2 (fetch-keyword :options q)
+	      (list :options (generate-options-list it)))))
 
 (defun generate-client-data (symbols qs)
   `(create
@@ -34,7 +54,10 @@
       (setf (chain target inner-h-t-m-l)
 	    (collecting-string
 	     (dolist (k (chain -object (keys (chain commands :next))))
-	       (collect (make-control k (getprop data k)))))))
+	       (collect (make-control k (getprop data k))))))
+      (do-keyvalue (k v (chain -object (keys (chain commands :next))))
+	(if (chain v (has-own-property :postrender))
+	    (funcall (getprop v :postrender) k v))))
 
     (defun update-form-data (stor data)
       (do-keyvalue (k v (chain data :next))
@@ -118,11 +141,25 @@
 	       :onchange (updatecode)
 	       (eq (getprop params :default) x) :checked "checked") x))))))
 
-    (defun client-textarea (name params)
+    (defun client-textentry (name params)
       (ps-html
        ((:textarea :name name :rows 5 :cols 40
 		   :value (getprop params :default)
 		   :onchange (updatecode)))))
+
+    (defun client-picksome-long (name params)
+      (ps-html
+       ((:select :name name :multiple "multiple"
+		 :onchange (ps-inline (say this))
+	(if (chain params (has-own-property :options))
+	    (dolist (opt (getprop params :options))
+	      (ps-html
+	       ((:option :value (getprop opt :id) 
+			 (getprop opt :selected) :selected "selected")
+		(getprop opt :label)))))))))
+
+    (defun postrender-picksome-long (name params)
+      (chain ($ (+ "select['" name "']")) (select2))) 
 
     (defmacro make-simple-client-control (name type)
       `(defun ,(lisp (symb 'client- name)) (name params)

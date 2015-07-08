@@ -108,3 +108,11 @@
 
 (defun output-string (string)
   (princ string *webhax-output*))
+
+(defun alist->ps-object-code (alist &key (wrap t))
+  (let ((res
+	 (collecting
+	     (dolist (item alist)
+	       (collect (car item))
+	       (collect (cdr item))))))
+    (if wrap (cons 'ps:create res) res)))

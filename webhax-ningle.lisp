@@ -68,7 +68,7 @@
 '(myway:dispatch (ningle.app::mapper books::*app*) "/tester/")
 '(ningle:route books::*app* "/tester/")
 'books::*session-store*
-' (clack.middleware.session::store books::*session-store*)
+'(clack.middleware.session::store books::*session-store*)
 '(clack.session.store::stash stor)
 
 (defun get-session-container (session-store)

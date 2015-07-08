@@ -4,8 +4,8 @@
 
 
 (defparameter *ask-control-types*
-  '(:yesno :string :pickone :picksome :integer :date :month :datetime 
-    :datetime-local :textarea))
+  '(:yesno :string :pickone :picksome :picksome-long :integer :date :month 
+    :datetime :datetime-local :textentry))
 
 (defvar *ask-control-url* "/ask-data/")
 
