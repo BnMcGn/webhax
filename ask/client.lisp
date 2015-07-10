@@ -32,7 +32,9 @@
     ,@(awhen2 (fetch-keyword :options-url q)
 	      (list :options-url it))
     ,@(awhen2 (fetch-keyword :options q)
-	      (list :options (generate-options-list it)))))
+	      (list :options `(lisp-raw
+			       (json:encode-json-to-string
+				(webhax::generate-options-list ,it)))))))
 
 (defun generate-client-data (symbols qs)
   `(create
@@ -51,7 +53,7 @@
 	    (collecting-string
 	     (dolist (k (chain -object (keys (chain commands :next))))
 	       (collect (make-control k (getprop data k))))))
-      (do-keyvalue (k v (chain -object (keys (chain commands :next))))
+      (do-keyvalue (k v data)
 	(if (chain v (has-own-property :postrender))
 	    (funcall (getprop v :postrender) k v))))
 
@@ -143,19 +145,37 @@
 		   :value (getprop params :default)
 		   :onchange (updatecode)))))
 
+    (defun pick-get-selected (select)
+      (chain ($ select) 
+	     (children "[selected='selected']")
+	     (map (lambda (x y) (chain y value)))
+	     (get)))
+
     (defun client-picksome-long (name params)
-      (ps-html
-       ((:select :name name :multiple "multiple"
-		 :onchange (ps-inline (say this))
-	(if (chain params (has-own-property :options))
-	    (dolist (opt (getprop params :options))
-	      (ps-html
-	       ((:option :value (getprop opt 0) 
-			 (getprop opt 2) :selected "selected")
-		(getprop opt 1)))))))))
+      (let ((options
+	     (if (chain params (has-own-property :options))
+		 (collecting-string
+		  (dolist (opt (getprop params :options))
+		    (collect (ps-html
+			      ((:option :value (getprop opt 0) 
+					(or (getprop opt 2)
+					    (member 
+					     (getprop opt 0)
+					     (or (getprop params :default)
+						 (list))))
+					:selected "selected")
+			       (getprop opt 1))))))
+		 "")))
+	(ps-html
+	 ((:select :name name :multiple "multiple"
+		   :onchange (ps-inline
+			      (control-updated name this 
+					       (pick-get-selected this))))
+	  
+	  options))))
 
     (defun postrender-picksome-long (name params)
-      (chain ($ (+ "select['" name "']")) (select2))) 
+      (chain ($ (+ "select[name='" name "']")) (select2))) 
 
     (defmacro make-simple-client-control (name type)
       `(defun ,(lisp (symb 'client- name)) (name params)
