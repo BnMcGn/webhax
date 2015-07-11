@@ -184,12 +184,19 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
    "Add input from a web source (alist format) to a storage object. Returns
    error messages if any input items don't validate."))
 
-(defun %proc-single-input (name input validator)
+(defun %proc-single-input (name input validator astor)
   (let ((item (assoc name input :test #'equal)))
     (when item
-      (apply #'values t (multiple-value-list (funcall validator (cdr item)))))))
+      (multiple-value-bind (val sig)
+	  (funcall validator (cdr item))
+	(if sig
+	    (values t val sig)
+	    (if (and (nullok-p astor name) (equal "" (cdr item)))
+		(values t nil t)
+		(values t val sig)))))))
 
-(defun %proc-multi-input (name input validator)
+(defun %proc-multi-input (name input validator astor)
+  (declare (ignore astor))
   (let ((items (assoc-all name input :test #'eq-symb-multiple)))
     (when items
       (apply #'values t 
@@ -204,13 +211,11 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	    (multiple-value-bind (present val sig)
 		(funcall (if (multiple-p astor n) 
 			     #'%proc-multi-input #'%proc-single-input)
-			 n input (gethash n validators))
+			 n input (gethash n validators) astor)
 	      (when present
-		(if sig
+		(if sig 
 		    (g< (cons n val))
-		    (if (and (nullok-p astor n) (or (equal "" val) (null val)))
-			(g< (cons n nil))
-			(e< (cons n val))))))))
+		    (e< (cons n val)))))))
       (if errors
 	  errors
 	  (dolist (itm good)

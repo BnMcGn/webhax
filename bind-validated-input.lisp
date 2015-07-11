@@ -48,8 +48,8 @@
   (bind-extracted-keywords (keyspec other :multiple :required)
     (with-gensyms (value)
       `(let ((,value ,(if multiple 
-			 `(assoc-all-web ',(%spec-name other) 
-					 ,input :test #'eq-symb)
+			 `(assoc-all ',(%spec-name other) 
+				     ,input :test #'eq-symb-multiple)
 			 `(assoc ',(%spec-name other)
 				 ,input :test #'eq-symb))))
 	 ,@(when required
