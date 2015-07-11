@@ -172,24 +172,45 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 	      (assoc-cdr name
 	       (pairlis names qs)))))
 
+(defgeneric multiple-p (stor name))
+(defmethod multiple-p (astor name)
+  (with-slots (names qs) astor
+    (member 
+     (get-q-type (assoc-cdr name (pairlis names qs)))
+     *ask-multiple-controls*)))
+
 (defgeneric add-input (stor input)
   (:documentation
    "Add input from a web source (alist format) to a storage object. Returns
    error messages if any input items don't validate."))
+
+(defun %proc-single-input (name input validator)
+  (let ((item (assoc name input :test #'equal)))
+    (when item
+      (apply #'values t (multiple-value-list (funcall validator (cdr item)))))))
+
+(defun %proc-multi-input (name input validator)
+  (let ((items (assoc-all name input :test #'eq-symb-multiple)))
+    (when items
+      (apply #'values t 
+	     (multiple-value-list 
+	      (funcall (mkparse-all-members validator) items))))))
 
 (defmethod add-input ((astor ask-store) input)
   (with-slots (validators names stor) astor
     (multiple-value-bind (good errors)
 	(with-collectors (g< e<)
 	  (dolist (n names)
-	    (let ((item (assoc n input :test #'equal)))
-	      (when item
-		(aif2only
-		 (funcall (gethash n validators) (cdr item))
-		 (g< (cons n it))
-		 (if (and (nullok-p astor n) (equal "" (cdr item)))
-		     (g< (cons n nil))
-		     (e< (cons n it))))))))
+	    (multiple-value-bind (present val sig)
+		(funcall (if (multiple-p astor n) 
+			     #'%proc-multi-input #'%proc-single-input)
+			 n input (gethash n validators))
+	      (when present
+		(if sig
+		    (g< (cons n val))
+		    (if (and (nullok-p astor n) (or (equal "" val) (null val)))
+			(g< (cons n nil))
+			(e< (cons n val))))))))
       (if errors
 	  errors
 	  (dolist (itm good)

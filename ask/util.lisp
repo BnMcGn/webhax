@@ -7,6 +7,9 @@
   '(:yesno :string :pickone :picksome :picksome-long :integer :date :month 
     :datetime :datetime-local :textentry))
 
+(defparameter *ask-multiple-controls*
+    '(:picksome :picksome-long))
+
 (defvar *ask-control-url* "/ask-data/")
 
 (defvar *ask-formname* nil)
