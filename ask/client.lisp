@@ -71,43 +71,46 @@
       (let ((form (get-control-parent-form control)))
 	(setf (getprop (chain document askdata) form name :current) value)))
 
-    (defun post-ask-update (form &optional (url (lisp *ask-control-url*)))
+    (defun current-key-values (form &key (modify t))
       (let ((data (-object))
 	    (currkeys
-	     (chain -object (keys 
-	       (getprop document 'askdata form :_curr-disp)))))
+	     (chain -object 
+		    (keys (getprop document 'askdata form :_curr-disp)))))
 	(dolist (k currkeys)
 	  (let ((v (getprop document 'askdata form k)))
 	    (if (chain v (has-own-property :current))
 		(progn (setf (getprop data k) (@ v current))
-		       (setf (@ v current-saved) (@ v current))
-		       (delete (@ v current)))
+		       (if modify
+			   (progn (setf (@ v current-saved) (@ v current))
+				  (delete (@ v current)))))
 		(if (chain v (has-own-property :default))
 		    (setf (getprop data k) (@ v default))))
 	    (if (equal (getprop data k) null)
 		(setf (getprop data k) ""))))
-	(say data)
-	(chain $ (get-j-s-o-n (+ url form) data
-		   (lambda (x)
-		     (cond 
-		       ((chain x (has-own-property :next))
-			(update-form-data 
-			 (getprop (chain document askdata) form) x)
-			(display-specified-controls
-			 (chain document (get-element-by-id form) 
-				first-element-child)
-			 x
-			 (getprop (chain document askdata) form)))
-		       ((chain x (has-own-property :error))
-			(alert
-			 (collecting-string
-			  (do-keyvalue (k v (getprop x :error))
-			    (collect 
+	data))
+
+    (defun post-ask-update (form &optional (url (lisp *ask-control-url*)))
+      (chain $ (get-j-s-o-n (+ url form) (current-key-values form)
+		 (lambda (x)
+		   (cond 
+		     ((chain x (has-own-property :next))
+		      (update-form-data 
+		       (getprop (chain document askdata) form) x)
+		      (display-specified-controls
+		       (chain document (get-element-by-id form) 
+			      first-element-child)
+		       x
+		       (getprop (chain document askdata) form)))
+		     ((chain x (has-own-property :error))
+		      (alert
+		       (collecting-string
+			(do-keyvalue (k v (getprop x :error))
+			  (collect 
 			      (getprop (chain document askdata) form k 'label))
-			    (collect ": ")
-			    (collect v)))))
-		       ((chain x (has-own-property :success))
-			(page-mod (chain x :success)))))))))))
+			  (collect ": ")
+			  (collect v)))))
+		     ((chain x (has-own-property :success))
+		      (page-mod (chain x :success))))))))))
 
 (defun ps-widget-lib ()
   (ps
