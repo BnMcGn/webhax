@@ -47,6 +47,9 @@ anything that can be converted to JSON by the json:encode-json function."
 	   (cons :target ,locspec)
 	   (cons :value (if htstring htstring other)))))
 
+(defun set-href (location)
+  (set-value (@ window location href) location))
+
 (create-simple-route 
  :page-mod
  (lambda ()

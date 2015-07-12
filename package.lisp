@@ -61,7 +61,9 @@
    #:create-page-mod
    #:form
    #:ask-parts
-   #:add-part))
+   #:add-part
+   #:alist->ps-object-code
+   #:set-href))
 
 
 
