@@ -152,6 +152,14 @@ table"
 	     (,@(if name `(defun ,name) '(lambda)) (&rest ,params-sym)
 		,@template)))))))
 
+(defun render-menu ()
+  (dolist (item *menu-items*)
+    ;FIXME: handle subitems
+    (when (= (length item) 2)
+      (html-out
+	(:li :class (when (equal (butlast item) *menu-active*) "active")
+	     (:a :href (car (last item)) (thing-label (car item))))))))
+
 (define-layout (page-base) 
     (html-out
      (:html
@@ -164,7 +172,8 @@ table"
 
 (define-layout (two-side-columns :wrapper #'page-base)
   (:prepend-parts 
-   (add-part :@css "/static/css/style.css"))
+   (add-part :@css "/static/css/style.css")
+   (add-part :@menu #'render-menu))
   (html-out
     ;Header
     (:div :id "header_wrapper"

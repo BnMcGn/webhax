@@ -124,3 +124,13 @@
 	   (eq-symb a (symb b '[])))
       (and (= (+ 2 (length (mkstr a))) (length (mkstr b)))
 	   (eq-symb (symb a '[]) b))))
+
+
+;;;;;
+; Menu stuff
+;;;;;
+
+;items format: (('mainitem <'subitems...> urlstring), more items...)
+;active format: match itemspec above, omitting urlstring
+(defparameter *menu-items* nil)
+(defvar *menu-active* nil)
