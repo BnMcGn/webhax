@@ -63,7 +63,8 @@
    #:ask-parts
    #:add-part
    #:alist->ps-object-code
-   #:set-href))
+   #:set-href
+   #:*menu-items*))
 
 
 

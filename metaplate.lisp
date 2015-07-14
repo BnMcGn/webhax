@@ -14,7 +14,7 @@
 (def-page-bit pbit-featurebox-content :class "featurebox-center")
 
 (defparameter *metaplate-part-names*
-  '(:@css :@javascript :@site-index :@title :@main-content 
+  '(:@css :@javascript :@site-index :@title :@menu :@main-content 
     :@side-content :@site-search :@notifications :@external-links :@logo 
     :@account-info :@footnotes :@copyright :@messages))
 
@@ -152,13 +152,14 @@ table"
 	     (,@(if name `(defun ,name) '(lambda)) (&rest ,params-sym)
 		,@template)))))))
 
-(defun render-menu ()
+(defun render-menu (&rest _)
+  (declare (ignore _))
   (dolist (item *menu-items*)
     ;FIXME: handle subitems
     (when (= (length item) 2)
       (html-out
 	(:li :class (when (equal (butlast item) *menu-active*) "active")
-	     (:a :href (car (last item)) (thing-label (car item))))))))
+	     (:a :href (car (last item)) (str (thing-label (car item)))))))))
 
 (define-layout (page-base) 
     (html-out
