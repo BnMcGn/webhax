@@ -63,7 +63,7 @@
       (error (format nil "Package ~a not found" (symb 'webhax- host-type))))
     (setf *host-package* hostpack)
     (let ((*package* (find-package :webhax)))
-      (use-package hostpack))
+      (use-package-with-shadowing hostpack))
     (dolist (sym '(*input-normalize* *set-content-type* *output-to-string?*
 		   *activate-routes*))
       (setf (symbol-value sym) (symbol-value 
