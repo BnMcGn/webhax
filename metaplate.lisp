@@ -18,6 +18,9 @@
     :@side-content :@site-search :@notifications :@external-links :@logo 
     :@account-info :@footnotes :@copyright :@messages))
 
+(defvar *metaplate-default-layout*)
+(defvar *metaplate-default-parts*)
+
 (defmacro define-parts (name &body parts)
   `(eval-always
      (defun ,name (previous)
@@ -25,6 +28,11 @@
 	 (labels ((add-part (section part)
 		    (collect section part)))
 	   ,@parts)))))
+
+(defmacro define-default-parts (name &body parts)
+  `(progn
+     (define-parts ,name ,@parts)
+     (setf *metaplate-default-parts* (function ,name))))
 
 (eval-always
   (defun %make-part-func (key keyclauses)
@@ -47,11 +55,16 @@
        (defun ,name ()
 	 (values
 	  (quote ,(if wrapper 
-		      (tree-search-replace (funcall-in-macro wrapper)
+		      (leaves-search-replace (funcall-in-macro wrapper)
 					   :match :@inner :value (car template))
 		      template))
 	  (quote ,(%make-part-func :prepend-parts keyclauses))
 	  (quote ,(%make-part-func :append-parts keyclauses)))))))
+
+(defmacro define-default-layout ((name &key wrapper) &body template)
+  `(progn
+     (define-layout (,name :wrapper ,wrapper) ,@template)
+     (setf *metaplate-default-layout* (function ,name))))
 
 (defun %render-part (key data params)
   (html-out
@@ -74,8 +87,8 @@
 (defun %render-javascript (key data params)
   (declare (ignore params))
   (assert (eq key :@javascript))
-  ;FIXME: hack: assumes itm is js URL if it is a string. If func, will be 
-  ;source code. 
+  ;;FIXME: hack: assumes itm is js URL if it is a string. If func, will be 
+  ;;source code. 
   (html-out
     (dolist (itm (gethash :@javascript data))
       (if (functionp itm)
