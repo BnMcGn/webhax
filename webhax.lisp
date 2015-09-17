@@ -14,24 +14,24 @@
   (let ((obj-v (gensym)))
     `(let ((,obj-v ,obj))
        (for-in (,key ,obj-v)
-	       (if (chain ,obj-v (has-own-property ,key))
-		   (let ((,val (getprop ,obj-v ,key)))
-		     ,@body))))))
+         (if (chain ,obj-v (has-own-property ,key))
+       (let ((,val (getprop ,obj-v ,key)))
+         ,@body))))))
 
 (defpsmacro collecting-string (&body body)
   (let ((res (gensym)))
     `(let ((,res ""))
        (labels ((collect (itm)
-		  (setf ,res (+ ,res itm))))
-	 ,@body)
+      (setf ,res (+ ,res itm))))
+   ,@body)
        ,res)))
 
 (defpsmacro collecting (&body body)
   (let ((res (gensym)))
     `(let ((,res (array)))
        (labels ((collect (itm)
-		  (chain ,res (push itm))))
-	 ,@body)
+      (chain ,res (push itm))))
+   ,@body)
        ,res)))
 
 
@@ -65,9 +65,9 @@
     (let ((*package* (find-package :webhax)))
       (use-package-with-shadowing hostpack))
     (dolist (sym '(*input-normalize* *set-content-type* *output-to-string?*
-		   *activate-routes*))
-      (setf (symbol-value sym) (symbol-value 
-				(symbolize sym :package hostpack))))
+       *activate-routes*))
+      (setf (symbol-value sym) (symbol-value
+        (symbolize sym :package hostpack))))
     (funcall *activate-routes* *registered-routes* host)))
 
 ;FIXME: Might be better to rely on clack - once it settles down - as an abstraction layer, rather than making yet another.
@@ -76,54 +76,54 @@
   (lambda (input)
     (when content-type
       (funcall *set-content-type* content-type))
-    (let ((*request* (symbol-value 
-		      (symbolize '*request* :package *host-package*)))
-	  (*session* (symbol-value 
-		      (symbolize '*session* :package *host-package*))))
+    (let ((*request* (symbol-value
+                      (symbolize '*request* :package *host-package*)))
+          (*session* (symbol-value
+                      (symbolize '*session* :package *host-package*))))
       (multiple-value-bind (*regular-web-input* *key-web-input*)
-	  (funcall *input-normalize* input)
-	(bind-webspecials (nth-value 1 (funcall *input-normalize* input))
-	  (if *output-to-string?*
-	      (with-output-to-string (*webhax-output*)
-		(funcall handler))
-	      (funcall handler)))))))
+          (funcall *input-normalize* input)
+        (bind-webspecials (nth-value 1 (funcall *input-normalize* input))
+          (if *output-to-string?*
+              (with-output-to-string (*webhax-output*)
+                (funcall handler))
+              (funcall handler)))))))
 
 (defvar *registered-routes* (make-hash-table))
 
 (defun create-simple-route (name function &key route-spec content-type)
-  (setf (gethash name *registered-routes*) 
-	(list (input-function-wrapper function :content-type content-type)
-	      route-spec)))
+  (setf (gethash name *registered-routes*)
+  (list (input-function-wrapper function :content-type content-type)
+        route-spec)))
 
-(defmacro create-route ((name &key route-spec content-type) 
-			(&rest valspecs) 
-			&body body)
+(defmacro create-route ((name &key route-spec content-type)
+      (&rest valspecs)
+      &body body)
   `(setf (gethash ,name *registered-routes*)
-	 (list
-	  (input-function-wrapper
-	   (lambda ()
-	     (bind-validated-input ,valspecs ,@body))
-	   :content-type ,content-type)
-	  ,route-spec)))
+   (list
+    (input-function-wrapper
+     (lambda ()
+       (bind-validated-input ,valspecs ,@body))
+     :content-type ,content-type)
+    ,route-spec)))
 
 (defun output-string (string)
   (princ string *webhax-output*))
 
 (defun alist->ps-object-code (alist &key (wrap t))
   (let ((res
-	 (collecting
-	     (dolist (item alist)
-	       (collect (car item))
-	       (collect (cdr item))))))
+   (collecting
+       (dolist (item alist)
+         (collect (car item))
+         (collect (cdr item))))))
     (if wrap (cons 'ps:create res) res)))
 
 ;;For things that send multiple items with "[]" appended to the var name.
 (defun eq-symb-multiple (a b)
   (or (eq-symb a b)
       (and (= (length (mkstr a)) (+ 2 (length (mkstr b))))
-	   (eq-symb a (symb b '[])))
+     (eq-symb a (symb b '[])))
       (and (= (+ 2 (length (mkstr a))) (length (mkstr b)))
-	   (eq-symb (symb a '[]) b))))
+     (eq-symb (symb a '[]) b))))
 
 
 ;;;;;
