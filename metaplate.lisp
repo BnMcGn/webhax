@@ -1,21 +1,19 @@
-
-
 (in-package :webhax)
 
-;FIXME: finish deprecation of page-bit
+                                        ;FIXME: finish deprecation of page-bit
 (defmacro def-page-bit (name cat label &optional (tag :div))
   `(defmacro ,name (params &body body)
      (declare (ignore params))
      `(html-out
-	(,,tag ,,cat ,,label
-	       (htm ,@body)))))
+        (,,tag ,,cat ,,label
+               (htm ,@body)))))
 
 (def-page-bit pbit-featurebox-side :class "featurebox-side")
 (def-page-bit pbit-featurebox-content :class "featurebox-center")
 
 (defparameter *metaplate-part-names*
-  '(:@css :@javascript :@site-index :@title :@menu :@main-content 
-    :@side-content :@site-search :@notifications :@external-links :@logo 
+  '(:@css :@javascript :@site-index :@title :@menu :@main-content
+    :@side-content :@site-search :@notifications :@external-links :@logo
     :@account-info :@footnotes :@copyright :@messages))
 
 (defvar *metaplate-default-layout*)
@@ -25,44 +23,44 @@
   `(eval-always
      (defun ,name (previous)
        (collecting-hash-table (:existing previous :mode :append)
-	 (labels ((add-part (section part)
-		    (collect section part)))
-	   ,@parts)))))
+         (labels ((add-part (section part)
+                    (collect section part)))
+           ,@parts)))))
 
 (defmacro define-default-parts (name &body parts)
-  `(progn
+  `(eval-always
      (define-parts ,name ,@parts)
      (setf *metaplate-default-parts* (function ,name))))
 
 (eval-always
   (defun %make-part-func (key keyclauses)
     (let ((lines (collecting
-		   (dolist (x keyclauses)
-		     (when (eq (car x) key)
-		       (dolist (y x)
-			 (collect y)))))))
+                   (dolist (x keyclauses)
+                     (when (eq (car x) key)
+                       (dolist (y x)
+                         (collect y)))))))
       (when lines
-	`(lambda (previous)
-	   (collecting-hash-table (:existing previous :mode :append)
-	     (labels ((add-part (section part)
-			(collect section part)))
-	       ,@lines)))))))
+        `(lambda (previous)
+           (collecting-hash-table (:existing previous :mode :append)
+             (labels ((add-part (section part)
+                        (collect section part)))
+               ,@lines)))))))
 
 (defmacro define-layout ((name &key wrapper) &body template)
   (multiple-value-bind (keyclauses template)
       (extract-keywords '(:prepend-parts :append-parts) template :in-list t)
     `(eval-always
        (defun ,name ()
-	 (values
-	  (quote ,(if wrapper 
-		      (leaves-search-replace (funcall-in-macro wrapper)
-					   :match :@inner :value (car template))
-		      template))
-	  (quote ,(%make-part-func :prepend-parts keyclauses))
-	  (quote ,(%make-part-func :append-parts keyclauses)))))))
+         (values
+          (quote ,(if wrapper
+                      (leaves-search-replace (funcall-in-macro wrapper)
+                                             :match :@inner :value (car template))
+                      template))
+          (quote ,(%make-part-func :prepend-parts keyclauses))
+          (quote ,(%make-part-func :append-parts keyclauses)))))))
 
 (defmacro define-default-layout ((name &key wrapper) &body template)
-  `(progn
+  `(eval-always
      (define-layout (,name :wrapper ,wrapper) ,@template)
      (setf *metaplate-default-layout* (function ,name))))
 
@@ -70,30 +68,30 @@
   (html-out
     (dolist (x (gethash key data))
       (if (stringp x)
-	  (str x)
-	  (apply #'funcall-in-macro x params)))))
+          (str x)
+          (apply #'funcall-in-macro x params)))))
 
 (defun %render-title (key data params)
   (assert (eq key :@title))
   (html-out
     (:title (str
-     (apply #'concatenate 'string
-       (collecting 
-	 (dolist (x (gethash :@title data))
-	   (if (stringp x)
-	       (collect x)
-	       (collect (apply-in-macro x params))))))))))
+             (apply #'concatenate 'string
+                    (collecting
+                      (dolist (x (gethash :@title data))
+                        (if (stringp x)
+                            (collect x)
+                            (collect (apply-in-macro x params))))))))))
 
 (defun %render-javascript (key data params)
   (declare (ignore params))
   (assert (eq key :@javascript))
-  ;;FIXME: hack: assumes itm is js URL if it is a string. If func, will be 
-  ;;source code. 
+  ;;FIXME: hack: assumes itm is js URL if it is a string. If func, will be
+  ;;source code.
   (html-out
     (dolist (itm (gethash :@javascript data))
       (if (functionp itm)
-	  (htm (:script :type "text/javascript" (str (funcall itm))))
-	  (htm (:script :src itm))))))
+          (htm (:script :type "text/javascript" (str (funcall itm))))
+          (htm (:script :src itm))))))
 
 (defun %render-css (key data params)
   (declare (ignore params))
@@ -112,18 +110,18 @@
 
 (defun %expand-templates (templates parts-sym params-sym)
   (labels ((walk-tree (tree)
-	     (if (atom tree)
-		 (cond 
-		   ((eq tree :@inner)
-		    (unless (cdr templates)
-		      (error "Last template should not contain :@inner"))
-		    (%expand-templates (cdr templates) parts-sym params-sym))
-		   ((member tree *metaplate-part-names*)
-		    `(,(%get-render-func tree) ,tree 
-		       ,parts-sym ,params-sym))
-		   (t tree))
-		 (cons (walk-tree (car tree))
-		       (walk-tree (cdr tree))))))
+             (if (atom tree)
+                 (cond
+                   ((eq tree :@inner)
+                    (unless (cdr templates)
+                      (error "Last template should not contain :@inner"))
+                    (%expand-templates (cdr templates) parts-sym params-sym))
+                   ((member tree *metaplate-part-names*)
+                    `(,(%get-render-func tree) ,tree
+                      ,parts-sym ,params-sym))
+                   (t tree))
+                 (cons (walk-tree (car tree))
+                       (walk-tree (cdr tree))))))
     (walk-tree (car templates))))
 
 (defun %collate-parts (parts)
@@ -134,72 +132,72 @@ table"
   (if (null parts)
       '(make-hash-table)
       (if (functionp-in-macro (car parts))
-	  `(funcall-in-macro ,(car parts) ,(%collate-parts (cdr parts)))
-	  `(funcall ,(car parts) ,(%collate-parts (cdr parts))))))
+          `(funcall-in-macro ,(car parts) ,(%collate-parts (cdr parts)))
+          `(funcall ,(car parts) ,(%collate-parts (cdr parts))))))
 
 (defun add-part (section part)
   "This add-part is for use in the parts section of define-page."
   (lambda (previous)
     (collecting-hash-table (:existing previous :mode :append)
       (collect section part))))
-    
+
 (defmacro define-page (name parts templates)
   (let (prepend-parts append-parts)
     (labels ((proc-template (tmpl)
-	       (multiple-value-bind (tmp pre app)
-		   (funcall-in-macro tmpl)
-		 (and pre (push pre prepend-parts))
-		 (and app (push app append-parts))
-		 tmp)))
+               (multiple-value-bind (tmp pre app)
+                   (funcall-in-macro tmpl)
+                 (and pre (push pre prepend-parts))
+                 (and app (push app append-parts))
+                 tmp)))
       (with-gensyms (parts-sym params-sym)
-	(let ((template (%expand-templates 
-			 (collecting
-			   (dolist (tm templates)
-			     (collect (if (functionp-in-macro tm)
-					  (proc-template tm)
-					  tm))))
-			 parts-sym params-sym)))
-	  `(let ((,parts-sym 
-		  ,(%collate-parts (concatenate 'list
-				     prepend-parts parts append-parts))))
-	     (,@(if name `(defun ,name) '(lambda)) (&rest ,params-sym)
-		,@template)))))))
+        (let ((template (%expand-templates
+                         (collecting
+                           (dolist (tm templates)
+                             (collect (if (functionp-in-macro tm)
+                                          (proc-template tm)
+                                          tm))))
+                         parts-sym params-sym)))
+          `(let ((,parts-sym
+                   ,(%collate-parts (concatenate 'list
+                                                 prepend-parts parts append-parts))))
+             (,@(if name `(defun ,name) '(lambda)) (&rest ,params-sym)
+              ,@template)))))))
 
 (defun render-menu (&rest _)
   (declare (ignore _))
   (dolist (item *menu-items*)
-    ;FIXME: handle subitems
+                                        ;FIXME: handle subitems
     (when (= (length item) 2)
       (html-out
-	(:li :class (when (equal (butlast item) *menu-active*) "active")
-	     (:a :href (car (last item)) (str (thing-label (car item)))))))))
+        (:li :class (when (equal (butlast item) *menu-active*) "active")
+             (:a :href (car (last item)) (str (thing-label (car item)))))))))
 
-(define-layout (page-base) 
-    (html-out
-     (:html
-      (:head
-       :@title
-       :@javascript
-       :@css)
-      (:body
-       :@inner))))
+(define-layout (page-base)
+  (html-out
+    (:html
+     (:head
+      :@title
+      :@javascript
+      :@css)
+     (:body
+      :@inner))))
 
 (define-layout (two-side-columns :wrapper #'page-base)
-  (:prepend-parts 
+  (:prepend-parts
    (add-part :@css "/static/css/style.css")
    (add-part :@menu #'render-menu))
   (html-out
-    ;Header
+                                        ;Header
     (:div :id "header_wrapper"
-      (:div :id "header" :@logo)
-      (:div :id "navcontainer"
-	    (:ul :id "navlist" :@menu)))
-    ;Main content
+          (:div :id "header" :@logo)
+          (:div :id "navcontainer"
+                (:ul :id "navlist" :@menu)))
+                                        ;Main content
     (:div :id "left_side"
-	  :@site-index :@side-content)
+          :@site-index :@side-content)
     (:div :id "right_side"
-	  :@site-search :@account-info :@external-links)
+          :@site-search :@account-info :@external-links)
     (:div :id "content"
-	  :@messages :@main-content :@footnotes)
-    ;Footer
+          :@messages :@main-content :@footnotes)
+                                        ;Footer
     (:div :id "footer" :@copyright)))

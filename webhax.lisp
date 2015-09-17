@@ -88,6 +88,16 @@
                 (funcall handler))
               (funcall handler)))))))
 
+(defmacro quick-page (&rest parts-and-main)
+  (let ((parts (butlast parts-and-main))
+        (main (last-car parts-and-main)))
+    `(input-function-wrapper
+      (define-page nil
+          (,*metaplate-default-parts*
+           ,@parts
+           ,@(when main `((add-part :@main-content ,main))))
+        (,*metaplate-default-layout*)))))
+
 (defvar *registered-routes* (make-hash-table))
 
 (defun create-simple-route (name function &key route-spec content-type)

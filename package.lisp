@@ -64,7 +64,10 @@
    #:add-part
    #:alist->ps-object-code
    #:set-href
-   #:*menu-items*))
+   #:*menu-items*
+   #:define-default-layout
+   #:define-default-parts
+   #:quick-page))
 
 
 
