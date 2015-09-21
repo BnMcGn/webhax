@@ -70,7 +70,20 @@
         (symbolize sym :package hostpack))))
     (funcall *activate-routes* *registered-routes* host)))
 
-;FIXME: Might be better to rely on clack - once it settles down - as an abstraction layer, rather than making yet another.
+(defun set-route (app route func)
+  "Thin wrapper around setf ningle:route in case we stop using ningle."
+  (setf (ningle:route app route) func))
+
+(defun input-normalize (input)
+  (values (awhen (assoc :splat input)
+                 ;;FIXME: Should probably only remove zero lengths in last pos.
+                 (remove-if (lambda (x)
+                              (and (stringp x) (= 0 (length x))))
+                            (split-sequence #\/ (second it))))
+          (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
+                     input)))
+(defun set-content-type (ctype)
+  (setf (clack.response:headers *response* :content-type) ctype))
 
 (defun input-function-wrapper (handler &key content-type)
   (lambda (input)
@@ -81,8 +94,8 @@
           (*session* (symbol-value
                       (symbolize '*session* :package *host-package*))))
       (multiple-value-bind (*regular-web-input* *key-web-input*)
-          (funcall *input-normalize* input)
-        (bind-webspecials (nth-value 1 (funcall *input-normalize* input))
+          (input-normalize input)
+        (bind-webspecials (nth-value 1 (input-normalize input))
           (if *output-to-string?*
               (with-output-to-string (*webhax-output*)
                 (funcall handler))
