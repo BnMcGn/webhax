@@ -113,6 +113,10 @@
   (list (input-function-wrapper function :content-type content-type)
         route-spec)))
 
+(defun create-simple-route (app route-spec function &key content-type)
+  (set-route app route-spec
+             (input-function-wrapper function :content-type content-type)))
+
 (defmacro create-route ((name &key route-spec content-type)
       (&rest valspecs)
       &body body)
@@ -123,6 +127,15 @@
        (bind-validated-input ,valspecs ,@body))
      :content-type ,content-type)
     ,route-spec)))
+
+(defmacro create-route ((app route-spec &key content-type)
+                        (&rest valspecs)
+                        &body body)
+  `(set-route ,app ,route-spec
+              (input-function-wrapper
+               (lambda ()
+                 (bind-validated-input ,valspecs ,@body))
+               :content-type ,content-type)))
 
 (defun output-string (string)
   (princ string *webhax-output*))
