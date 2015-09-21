@@ -13,7 +13,9 @@
                #:cl-cont
                #:ratify
                #:cl-json
-               #:thing-labels)
+               #:thing-labels
+               #:clack
+               #:ningle)
   :serial t
   :components ((:file "package")
                (:file "web-input")
