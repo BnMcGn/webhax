@@ -47,8 +47,6 @@
 (defparameter *set-content-type* nil)
 (defvar *regular-web-input*)
 (defvar *key-web-input*)
-(defvar *request*)
-(defvar *session*)
 
 (defun set-route (app route func)
   "Thin wrapper around setf ningle:route in case we stop using ningle."
