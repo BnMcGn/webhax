@@ -9,7 +9,9 @@
 
 (defpackage #:webhax
   (:use #:cl #:gadgets #:parenscript #:anaphora 
-	#:alexandria #:webhax-validate #:cl-who #:thing-labels #:clack)
+        #:alexandria #:webhax-validate #:cl-who #:thing-labels #:clack
+        #:clack.request)
+  (:import-from #:ningle.context #:make-request)
   (:shadowing-import-from #:parenscript #:switch)
   (:export
    #:define-ask

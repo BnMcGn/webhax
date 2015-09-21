@@ -45,26 +45,10 @@
     )); End ps-gadgets
 
 (defparameter *set-content-type* nil)
-(defparameter *host-object* nil)
-(defparameter *host-package* nil)
 (defvar *regular-web-input*)
 (defvar *key-web-input*)
 (defvar *request*)
 (defvar *session*)
-
-(defun initialize (host-type &key host)
-  (setf *host-object* host)
-  (let ((hostpack (find-package (symb 'webhax- host-type))))
-    (unless hostpack
-      (error (format nil "Package ~a not found" (symb 'webhax- host-type))))
-    (setf *host-package* hostpack)
-    (let ((*package* (find-package :webhax)))
-      (use-package-with-shadowing hostpack))
-    (dolist (sym '(*input-normalize* *set-content-type* *output-to-string?*
-       *activate-routes*))
-      (setf (symbol-value sym) (symbol-value
-        (symbolize sym :package hostpack))))
-    (funcall *activate-routes* *registered-routes* host)))
 
 (defun set-route (app route func)
   "Thin wrapper around setf ningle:route in case we stop using ningle."
@@ -85,15 +69,11 @@
   (lambda (input)
     (when content-type
       (funcall *set-content-type* content-type))
-    (let ((*request* (symbol-value
-                      (symbolize '*request* :package *host-package*)))
-          (*session* (symbol-value
-                      (symbolize '*session* :package *host-package*))))
-      (multiple-value-bind (*regular-web-input* *key-web-input*)
-          (input-normalize input)
-        (bind-webspecials (nth-value 1 (input-normalize input))
-          (with-output-to-string (*webhax-output*)
-            (funcall handler)))))))
+    (multiple-value-bind (*regular-web-input* *key-web-input*)
+        (input-normalize input)
+      (bind-webspecials (nth-value 1 (input-normalize input))
+        (with-output-to-string (*webhax-output*)
+          (funcall handler)))))))
 
 (defmacro quick-page (&rest parts-and-main)
   (let ((parts (butlast parts-and-main))
