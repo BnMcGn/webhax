@@ -34,7 +34,6 @@
    ,@body)
        ,res)))
 
-
 (defun ps-gadgets ()
   (ps
     (defun say (thing)
@@ -45,8 +44,6 @@
 
     )); End ps-gadgets
 
-(defparameter *input-normalize* nil)
-(defparameter *output-to-string?* nil)
 (defparameter *set-content-type* nil)
 (defparameter *activate-routes* nil)
 (defparameter *host-object* nil)
@@ -96,10 +93,8 @@
       (multiple-value-bind (*regular-web-input* *key-web-input*)
           (input-normalize input)
         (bind-webspecials (nth-value 1 (input-normalize input))
-          (if *output-to-string?*
-              (with-output-to-string (*webhax-output*)
-                (funcall handler))
-              (funcall handler)))))))
+          (with-output-to-string (*webhax-output*)
+            (funcall handler)))))))
 
 (defmacro quick-page (&rest parts-and-main)
   (let ((parts (butlast parts-and-main))
