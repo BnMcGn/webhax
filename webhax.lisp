@@ -45,7 +45,6 @@
     )); End ps-gadgets
 
 (defparameter *set-content-type* nil)
-(defparameter *activate-routes* nil)
 (defparameter *host-object* nil)
 (defparameter *host-package* nil)
 (defvar *regular-web-input*)
@@ -106,27 +105,9 @@
            ,@(when main `((add-part :@main-content ,main))))
         (,*metaplate-default-layout*)))))
 
-(defvar *registered-routes* (make-hash-table))
-
-(defun create-simple-route (name function &key route-spec content-type)
-  (setf (gethash name *registered-routes*)
-  (list (input-function-wrapper function :content-type content-type)
-        route-spec)))
-
 (defun create-simple-route (app route-spec function &key content-type)
   (set-route app route-spec
              (input-function-wrapper function :content-type content-type)))
-
-(defmacro create-route ((name &key route-spec content-type)
-      (&rest valspecs)
-      &body body)
-  `(setf (gethash ,name *registered-routes*)
-   (list
-    (input-function-wrapper
-     (lambda ()
-       (bind-validated-input ,valspecs ,@body))
-     :content-type ,content-type)
-    ,route-spec)))
 
 (defmacro create-route ((app route-spec &key content-type)
                         (&rest valspecs)
