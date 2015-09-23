@@ -11,8 +11,7 @@
   (:use #:cl #:gadgets #:parenscript #:anaphora 
         #:alexandria #:webhax-validate #:cl-who #:thing-labels #:clack
         #:clack.request)
-  (:import-from #:ningle.context #:make-request)
-  (:shadowing-import-from #:parenscript #:switch)
+  (:shadowing-import-from #:parenscript #:switch #:call)
   (:export
    #:define-ask
    #:ask
@@ -52,7 +51,6 @@
    #:replace-with
    #:page-mod
    #:bind-validated-input
-   #:initialize
    #:create-route
    #:*request*
    #:*regular-web-input*

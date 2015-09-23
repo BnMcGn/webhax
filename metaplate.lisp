@@ -30,7 +30,7 @@
 (defmacro define-default-parts (name &body parts)
   `(eval-always
      (define-parts ,name ,@parts)
-     (setf *metaplate-default-parts* (function ,name))))
+     (setf *metaplate-default-parts* '(function ,name))))
 
 (eval-always
   (defun %make-part-func (key keyclauses)
@@ -62,7 +62,7 @@
 (defmacro define-default-layout ((name &key wrapper) &body template)
   `(eval-always
      (define-layout (,name :wrapper ,wrapper) ,@template)
-     (setf *metaplate-default-layout* (function ,name))))
+     (setf *metaplate-default-layout* '(function ,name))))
 
 (defun %render-part (key data params)
   (html-out

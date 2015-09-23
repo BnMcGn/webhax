@@ -66,12 +66,12 @@
 (defun input-function-wrapper (handler &key content-type)
   (lambda (input)
     (when content-type
-      (funcall *set-content-type* content-type))
+      (set-content-type content-type))
     (multiple-value-bind (*regular-web-input* *key-web-input*)
         (input-normalize input)
       (bind-webspecials (nth-value 1 (input-normalize input))
         (with-output-to-string (*webhax-output*)
-          (funcall handler)))))))
+          (funcall handler))))))
 
 (defmacro quick-page (&rest parts-and-main)
   (let ((parts (butlast parts-and-main))
