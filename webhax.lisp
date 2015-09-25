@@ -60,6 +60,7 @@
                             (split-sequence #\/ (second it))))
           (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
                      input)))
+
 (defun set-content-type (ctype)
   (setf (clack.response:headers *response* :content-type) ctype))
 
