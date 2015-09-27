@@ -45,7 +45,7 @@
   (twrap
     (bind-validated-input
         ((item1 (ratify-wrapper :overlength) :rest t)
-         (a (ratify-wrapper :overlength) :key t))
+         (a (ratify-wrapper :overlength) :key t :required t))
       (declare (ignore item1))
       a)))
 
