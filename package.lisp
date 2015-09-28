@@ -10,7 +10,7 @@
 (defpackage #:webhax
   (:use #:cl #:gadgets #:parenscript #:anaphora 
         #:alexandria #:webhax-validate #:cl-who #:thing-labels #:clack
-        #:clack.request)
+        #:clack.request #:clack.response)
   (:shadowing-import-from #:parenscript #:switch #:call)
   (:export
    #:define-ask
@@ -67,7 +67,9 @@
    #:*menu-items*
    #:define-default-layout
    #:define-default-parts
-   #:quick-page))
+   #:quick-page
+   #:*metaplate-default-layout*
+   #:*metaplate-default-parts*))
 
 
 
