@@ -62,7 +62,7 @@
                      input)))
 
 (defun set-content-type (ctype)
-  (setf (clack.response:headers *response* :content-type) ctype))
+  (setf (clack.response:headers ningle:*response* :content-type) ctype))
 
 (defun input-function-wrapper (handler &key content-type)
   (lambda (input)
