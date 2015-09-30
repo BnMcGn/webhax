@@ -8,8 +8,7 @@
   (getf env :remote-user))
 
 (defun url-splitter (url base)
-  (remove-if (lambda (x) (and (stringp x) (= 0 (length x))))
-             (subseq url (length base))))
+  (split-sequence #\/ (subseq url (length base)) :remove-empty-subseqs t))
 
 (defclass clack-tool (clack.middleware:<middleware>)
   ((base-url :type string
