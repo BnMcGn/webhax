@@ -20,6 +20,7 @@
   :components ((:file "package")
                (:file "web-input")
                (:file "webhax" :depends-on ("web-input"))
+               (:file "clack-tool")
                (:file "validate")
                (:file "metaplate")
                (:file "html-s-exp")
