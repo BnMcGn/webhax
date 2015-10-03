@@ -11,7 +11,8 @@
   (:use #:cl #:gadgets #:parenscript #:anaphora 
         #:alexandria #:webhax-validate #:cl-who #:thing-labels #:clack
         #:clack.request #:clack.response)
-  (:shadowing-import-from #:parenscript #:switch #:call)
+  (:shadowing-import-from #:parenscript #:switch)
+  (:shadowing-import-from #:clack.component #:call)
   (:export
    #:define-ask
    #:ask
@@ -69,7 +70,12 @@
    #:define-default-parts
    #:quick-page
    #:*metaplate-default-layout*
-   #:*metaplate-default-parts*))
+   #:*metaplate-default-parts*
+   #:register-json-call
+   #:register-json-symbols
+   #:json-call
+   #:clack-tool
+   #:call))
 
 
 

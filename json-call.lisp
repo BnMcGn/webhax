@@ -58,7 +58,7 @@
                                (curry #'eq-symb (car params))))
         (reg-params
           (collecting
-            (dolist (param params)
+            (dolist (param (cdr params))
               (collect (string-unless-symbol-unless-number param symbols)))))
         (key-params
           (prep-keywords-ignorant keys symbols)))

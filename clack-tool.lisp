@@ -13,7 +13,7 @@
 (defclass clack-tool (clack.middleware:<middleware>)
   ((base-url :type string
              :initarg :base-url
-             :initform nil)
+             :initform "")
    (login-p :initarg :login-p
             :initform t)
    (default-content-type :type string
@@ -21,11 +21,11 @@
                          :initform "text/json")
    (function :type function
                      :initarg :function
-                     :initform nil)))
+                     :initform (lambda () ""))))
 
 (defmethod call ((this clack-tool) env)
   (with-slots (base-url login-p) this
-    (if (starts-with base-url (getf env :request-uri))
+    (if (starts-with-subseq base-url (getf env :request-uri))
         (if (and login-p (not (logged-in-p env)))
             '(403 nil ("This service not available without login."))
             (function-wrapper this env))
@@ -50,3 +50,5 @@
     (with-slots (function) this
       (when function
         (funcall function)))))
+
+;;;FIXME: Implement url producer?
