@@ -75,7 +75,8 @@
    #:register-json-symbols
    #:json-call
    #:clack-tool
-   #:call))
+   #:call
+   #:execute))
 
 
 

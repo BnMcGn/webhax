@@ -62,7 +62,7 @@
               (collect (string-unless-symbol-unless-number param symbols)))))
         (key-params
           (prep-keywords-ignorant keys symbols)))
-    (values function (list* reg-params key-params))))
+    (values function (concatenate 'list reg-params key-params))))
 
 (defclass json-call (clack-tool)
   ((base-url :initform "/json/")))
