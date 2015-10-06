@@ -1,5 +1,5 @@
 
-(in-package #:webhax)
+(in-package #:webhax-json-call)
 
 ;;;Json-call: a quick-n-dirty way to call any lisp function from a web client.
 
@@ -26,9 +26,6 @@
          (dolist (sym symlist)
            (when (eq-symb sym value)
              (return sym))))))))
-
-(defun multiple-key-p (stritem)
-  (ends-with-subseq "[]" stritem))
 
 (defun match-keyword (item symbol-coll)
   (dolist (symlist symbol-coll)

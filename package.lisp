@@ -19,11 +19,20 @@
    #:logged-in-p
    #:clack-tool
    #:function-wrapper
-   #:execute))
+   #:execute
+   #:multiple-key-p))
+
+(defpackage #:webhax-json-call
+  (:use #:cl #:webhax-core #:gadgets)
+  (:export
+   #:register-json-call
+   #:register-json-symbols
+   #:json-call))
 
 (defpackage #:webhax
   (:use #:cl #:gadgets #:parenscript #:anaphora 
         #:alexandria #:webhax-validate #:webhax-core
+        #:webhax-json-call
         #:cl-who #:thing-labels #:clack
         #:clack.request #:clack.response)
   (:shadowing-import-from #:parenscript #:switch)

@@ -24,3 +24,6 @@
       (and (= (+ 2 (length (mkstr a))) (length (mkstr b)))
      (eq-symb (symb a '[]) b))))
 
+(defun multiple-key-p (stritem)
+  (ends-with-subseq "[]" stritem))
+
