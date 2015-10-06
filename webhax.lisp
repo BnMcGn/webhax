@@ -4,11 +4,6 @@
 
 ;;; "webhax" goes here. Hacks and glory await!
 
-(defparameter *webhax-output* *standard-output*)
-
-(defmacro html-out (&body body)
-  "Outputs HTML to standard out."
-  `(with-html-output (*webhax-output* nil :indent t) ,@body))
 
 (defpsmacro do-keyvalue ((key val obj) &body body)
   (let ((obj-v (gensym)))
@@ -45,8 +40,6 @@
     )); End ps-gadgets
 
 (defparameter *set-content-type* nil)
-(defvar *regular-web-input*)
-(defvar *key-web-input*)
 
 (defun set-route (app route func)
   "Thin wrapper around setf ningle:route in case we stop using ningle."
@@ -97,9 +90,6 @@
                  (bind-validated-input ,valspecs ,@body))
                :content-type ,content-type)))
 
-(defun output-string (string)
-  (princ string *webhax-output*))
-
 (defun alist->ps-object-code (alist &key (wrap t))
   (let ((res
    (collecting
@@ -107,15 +97,6 @@
          (collect (car item))
          (collect (cdr item))))))
     (if wrap (cons 'ps:create res) res)))
-
-;;For things that send multiple items with "[]" appended to the var name.
-(defun eq-symb-multiple (a b)
-  (or (eq-symb a b)
-      (and (= (length (mkstr a)) (+ 2 (length (mkstr b))))
-     (eq-symb a (symb b '[])))
-      (and (= (+ 2 (length (mkstr a))) (length (mkstr b)))
-     (eq-symb (symb a '[]) b))))
-
 
 ;;;;;
 ; Menu stuff

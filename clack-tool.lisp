@@ -1,4 +1,4 @@
-(in-package #:webhax)
+(in-package #:webhax-core)
 
 ;;;
 ;;; Base class for making webhax services as clack middleware components.

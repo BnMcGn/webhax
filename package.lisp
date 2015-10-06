@@ -7,9 +7,24 @@
    #:ratify-wrapper
    #:mkparse-all-members))
 
+(defpackage #:webhax-core
+  (:use #:cl #:gadgets #:alexandria #:clack #:clack.request #:clack.response)
+  (:export
+   #:*webhax-output*
+   #:html-out
+   #:*regular-web-input*
+   #:*key-web-input*
+   #:output-string
+   #:eq-symb-multiple
+   #:logged-in-p
+   #:clack-tool
+   #:function-wrapper
+   #:execute))
+
 (defpackage #:webhax
   (:use #:cl #:gadgets #:parenscript #:anaphora 
-        #:alexandria #:webhax-validate #:cl-who #:thing-labels #:clack
+        #:alexandria #:webhax-validate #:webhax-core
+        #:cl-who #:thing-labels #:clack
         #:clack.request #:clack.response)
   (:shadowing-import-from #:parenscript #:switch)
   (:shadowing-import-from #:clack.component #:call)
