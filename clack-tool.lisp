@@ -38,7 +38,8 @@
              (*response* (clack.response:make-response 200))
              (*key-web-input* (clack.request:parameter *request*))
              (*regular-web-input*
-               (url-splitter (clack.request:path-info *request*) base-url)))
+               (cdr
+                (url-splitter (clack.request:path-info *request*) base-url))))
         (setf (clack.response:headers *response* :content-type)
               default-content-type)
         (setf (clack.response:body *response*)
