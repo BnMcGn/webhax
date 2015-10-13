@@ -23,7 +23,7 @@
    #:multiple-key-p))
 
 (defpackage #:webhax-json-call
-  (:use #:cl #:webhax-core #:gadgets)
+  (:use #:cl #:webhax-core #:gadgets #:alexandria)
   (:export
    #:register-json-call
    #:register-json-symbols

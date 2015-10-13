@@ -21,6 +21,7 @@
                (:file "web-input")
                (:file "webhax" :depends-on ("web-input"))
                (:file "clack-tool")
+               (:file "json-call")
                (:file "validate")
                (:file "metaplate")
                (:file "html-s-exp")
