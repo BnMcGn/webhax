@@ -18,6 +18,7 @@
                #:ningle)
   :serial t
   :components ((:file "package")
+               (:file "webhax-core")
                (:file "web-input")
                (:file "webhax" :depends-on ("web-input"))
                (:file "clack-tool")
