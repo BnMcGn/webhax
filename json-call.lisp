@@ -67,7 +67,8 @@
 (defmethod execute ((this json-call))
   (multiple-value-bind (func params)
       (prep-call-ignorant *regular-web-input* *key-web-input*)
-    (apply (symbol-function func) params)))
+    (cl-json:encode-json-to-string
+     (apply (symbol-function func) params))))
 
 ;;;FIXME: is the concept of call-to-link useful here? Some way to express
 ;;;a function call as a link or as a javascript function prototype.
