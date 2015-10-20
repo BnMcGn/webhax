@@ -49,6 +49,14 @@
       (declare (ignore item1))
       a)))
 
+(defun testfunc5 ()
+  (twrap
+    (bind-validated-input
+        ((item1 (ratify-wrapper :overlength) :rest t)
+         (d (ratify-wrapper :overlength) :key t :required t))
+      (declare (ignore item1))
+      d)))
+
 (test bind-validated-input
   (is (= 10
    (reduce #'+ (remove-if-not #'integerp (testfunc1)))))
@@ -57,4 +65,6 @@
   (is (= 5 (nth-value 1 (testfunc2))))
   (is (string-equal "one" (testfunc2)))
   (is (= 5 (testfunc3)))
-  (is (string-equal "thing" (testfunc4))))
+  (is (string-equal "thing" (testfunc4)))
+  (signals simple-error
+    (testfunc5)))
