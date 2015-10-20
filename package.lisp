@@ -8,7 +8,8 @@
    #:mkparse-all-members))
 
 (defpackage #:webhax-core
-  (:use #:cl #:gadgets #:alexandria #:clack #:clack.request #:clack.response)
+  (:use #:cl #:gadgets #:alexandria #:clack #:clack.request #:clack.response
+        #:cl-who)
   (:export
    #:*webhax-output*
    #:html-out
@@ -20,7 +21,8 @@
    #:clack-tool
    #:function-wrapper
    #:execute
-   #:multiple-key-p))
+   #:multiple-key-p
+   #:start-test-app))
 
 (defpackage #:webhax-json-call
   (:use #:cl #:webhax-core #:gadgets #:alexandria)

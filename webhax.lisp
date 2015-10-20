@@ -40,6 +40,7 @@
     )); End ps-gadgets
 
 (defparameter *set-content-type* nil)
+(defparameter *session* ningle:*session*)
 
 (defun set-route (app route func)
   "Thin wrapper around setf ningle:route in case we stop using ningle."

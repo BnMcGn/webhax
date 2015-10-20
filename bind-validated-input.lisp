@@ -48,19 +48,19 @@
   (bind-extracted-keywords (keyspec other :multiple :required)
     (with-gensyms (value)
       `(let ((,value ,(if multiple
-       `(assoc-all ',(%spec-name other)
-             ,input :test #'eq-symb-multiple)
-       `(assoc ',(%spec-name other)
-         ,input :test #'eq-symb))))
-   ,@(when required
-       `((unless ,value
-           (error
-            (format nil
-                    "No value found for required keyword parameter ~a"
-                    ',(%spec-name other))))))
-   (if ,value
-       (values ,(if multiple value `(cdr ,value)) t)
-       (values nil nil))))))
+                          `(assoc-all ',(%spec-name other)
+                                      ,input :test #'eq-symb-multiple)
+                          `(assoc ',(%spec-name other)
+                                  ,input :test #'eq-symb))))
+         ,@(when required
+             `((unless ,value
+                 (error
+                  (format nil
+                          "No value found for required keyword parameter ~a"
+                          ',(%spec-name other))))))
+         (if ,value
+             (values ,(if multiple value `(cdr ,value)) t)
+             (values nil nil))))))
 
 (defun %%default-decider (valspec inputform foundvar)
   (let ((filledp? (and (listp (car valspec))
@@ -103,30 +103,30 @@
 (defmacro bind-validated-input ((&rest valspecs) &body body)
   (multiple-value-bind (keys regular)
       (splitfilter valspecs
-       (lambda (x)
-         (fetch-keyword :key x)))
+                   (lambda (x)
+                     (fetch-keyword :key x)))
     (with-gensyms (foundp regvals regfill reg-input key-input)
       `(let ((,reg-input *regular-web-input*)
-       (,key-input *key-web-input*))
-   (declare (ignorable ,reg-input ,key-input))
-   (multiple-value-bind (,regvals ,regfill)
-       (funcall ,(%%make-regular-params-fetcher regular) ,reg-input)
-     (let ((,foundp nil))
-       ,foundp ;whine-stopper
-       (let ,(apply #'concatenate
-        'list
-        (loop for i from 0
-           for regspec in regular
-           append
-             (%%default-decider regspec `(values
-                  (elt ,regvals ,i)
-                  (elt ,regfill ,i))
-              foundp))
-        (collecting
-            (dolist (kspec keys)
-        (collect
-            (%%default-decider
-             kspec
-             (%%make-key-param-fetcher kspec key-input)
-             foundp)))))
-         ,@body)))))))
+             (,key-input *key-web-input*))
+         (declare (ignorable ,reg-input ,key-input))
+         (multiple-value-bind (,regvals ,regfill)
+             (funcall ,(%%make-regular-params-fetcher regular) ,reg-input)
+           (let ((,foundp nil))
+             (declare (ignorable ,foundp))
+             (let ,(apply #'concatenate
+                          'list
+                          (loop for i from 0
+                                for regspec in regular
+                                append
+                                (%%default-decider regspec `(values
+                                                             (elt ,regvals ,i)
+                                                             (elt ,regfill ,i))
+                                                   foundp))
+                          (collecting
+                            (dolist (kspec keys)
+                              (collect
+                                  (%%default-decider
+                                   kspec
+                                   (%%make-key-param-fetcher kspec key-input)
+                                   foundp)))))
+               ,@body)))))))
