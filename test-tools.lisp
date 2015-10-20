@@ -1,4 +1,3 @@
-
 ;;;  This file contains code borrowed from:
 ;;;  URL: http://github.com/fukamachi/clack
 
@@ -15,7 +14,9 @@
    #:file-size
    #:get-header
    #:test-app
-   #:with-clack-app))
+   #:with-clack-app
+   #:start-test-app
+   #:stop-test-app))
 (in-package :webhax-test-tools)
 
 (defvar *clack-test-handler* :hunchentoot
@@ -28,7 +29,7 @@
   (let (socket)
     (unwind-protect
          (handler-case (setq socket (usocket:socket-listen
-                                      host port :reuse-address t))
+                                     host port :reuse-address t))
            (usocket:address-in-use-error () nil))
       (when socket
         (usocket:socket-close socket)
@@ -38,7 +39,7 @@
   (let ((val (assoc key headers)))
     (values (cdr val) (not (null val)))))
 
-(defun file-size (file)
+(defun file-size (file) 
   (with-open-file (in file :direction :input)
     (file-length in)))
 
@@ -48,14 +49,50 @@
           *clack-test-access-port*
           path))
 
+(defvar *test-app-acceptor* nil)
+
+(defun start-test-app (app)
+  (stop-test-app)
+  (loop repeat 5
+        until (port-available-p *clack-test-port*)
+        do (sleep 0.1)
+        finally
+           (unless (port-available-p *clack-test-port*)
+             (error "Port ~D is already in use." *clack-test-port*)))
+  (let ((handler (find-handler *clack-test-handler*))
+        (debug *enable-debug-p*))
+    (setf *test-app-acceptor*
+          (bt:make-thread
+           (lambda ()
+             (funcall (intern (string '#:run) handler)
+                      app
+                      :port *clack-test-port*
+                      :debug debug))
+           :initial-bindings
+           `((*clack-test-port* . ,*clack-test-port*))))
+    (sleep 0.5)))
+
+(defun stop-test-app ()
+  (when (and *test-app-acceptor* (bt:thread-alive-p *test-app-acceptor*))
+    (bt:destroy-thread *test-app-acceptor*)
+    (loop until (port-available-p *clack-test-port*) do
+      (sleep 0.1))))
+
+(defun test-app (app client)
+  "Test Clack Application."
+  (start-test-app app)
+  (unwind-protect
+       (funcall client)
+    (stop-test-app)))
+
 (defun test-app (app client); &optional desc)
   "Test Clack Application."
   (loop repeat 5
         until (port-available-p *clack-test-port*)
         do (sleep 0.1)
         finally
-        (unless (port-available-p *clack-test-port*)
-          (error "Port ~D is already in use." *clack-test-port*)))
+           (unless (port-available-p *clack-test-port*)
+             (error "Port ~D is already in use." *clack-test-port*)))
   (let* ((handler (find-handler *clack-test-handler*))
          (debug *enable-debug-p*)
          (acceptor (bt:make-thread
@@ -69,7 +106,7 @@
     ;;(when desc (diag desc))
     (sleep 0.5)
     (unwind-protect
-        (funcall client)
+         (funcall client)
       (when (bt:thread-alive-p acceptor)
         (bt:destroy-thread acceptor)
         (loop until (port-available-p *clack-test-port*) do
