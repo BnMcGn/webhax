@@ -57,6 +57,12 @@
       (declare (ignore item1))
       d)))
 
+(defun testfunc6()
+  (twrap
+    (bind-validated-input
+        ((item1 (lambda (x) (values x t)) :rest t))
+      item1)))
+
 (test bind-validated-input
   (is (= 10
    (reduce #'+ (remove-if-not #'integerp (testfunc1)))))
@@ -66,5 +72,5 @@
   (is (string-equal "one" (testfunc2)))
   (is (= 5 (testfunc3)))
   (is (string-equal "thing" (testfunc4)))
-  (signals simple-error
-    (testfunc5)))
+  (signals simple-error (testfunc5))
+  (is (equal '("one" "2" "3") (testfunc6))))
