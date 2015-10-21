@@ -6,7 +6,7 @@
 (defun %%make-regular-params-fetcher (valspecs)
   (let ((min-vals 0)
         (max-vals 0)
-        (found-optional nil)
+        ;(found-optional nil) ;FIXME:Don't seem to be using: will ever need?
         (found-rest nil)
         (vlength (length valspecs)))
     (dolist (itm valspecs)
@@ -15,8 +15,8 @@
           (progn
             (when (fetch-keyword :rest itm)
               (error ":rest and :optional not allowed in same spec."))
-            (incf max-vals)
-            (setf found-optional t))
+            (incf max-vals))
+            ;;(setf found-optional t))
           (if (fetch-keyword :rest itm)
               (setf found-rest t)
               (progn (incf min-vals) (incf max-vals)))))
@@ -35,7 +35,7 @@
               (concatenate 'list (make-list l-in :initial-element t)
                            (make-list (- ,vlength l-in))))
              (values
-              (if (> l-in ,vlength)
+              (if ,found-rest
                   (concatenate 'list (subseq input 0 (1- ,vlength))
                                (list (nthcdr (1- ,vlength) input)))
                   input)
@@ -64,35 +64,38 @@
 
 (defun %%default-decider (valspec inputform foundvar)
   (let ((filledp? (and (listp (car valspec))
-           (third (car valspec))
-           (symbolp (third (car valspec)))))
-  (multiple (or (fetch-keyword :multiple valspec)
-          (fetch-keyword :rest valspec))))
+                       (third (car valspec))
+                       (symbolp (third (car valspec)))))
+        (multiple (or (fetch-keyword :multiple valspec)
+                      (fetch-keyword :rest valspec))))
     (with-gensyms (item found vitem valid)
       (collecting
-  (collect
-      (list (%spec-name valspec)
-      `(multiple-value-bind (,item ,found) ,inputform
-         ,@(when filledp?
-          `((setf ,foundvar ,found)))
-         (if ,found
-       (multiple-value-bind
-             (,vitem ,valid)
-           ,(if multiple
-          `(funcall
-            (mkparse-all-members ,(second valspec))
-            ,item)
-          `(funcall-in-macro
-            ,(second valspec) ,item))
-         (if ,valid
-             ,vitem
-             (error ,vitem)))
-       ,(if (listp (car valspec))
-            (second (car valspec))
-            nil)))))
-  (when filledp?
-    (collect
-        (list (third (car valspec)) foundvar)))))))
+        (collect
+            (list (%spec-name valspec)
+                  `(multiple-value-bind (,item ,found) ,inputform
+                     ,@(when filledp?
+                         `((setf ,foundvar ,found)))
+                     (if ,found
+                         (multiple-value-bind
+                               (,vitem ,valid)
+                             ,(if multiple
+                                  `(funcall
+                                    (mkparse-all-members ,(second valspec))
+                                    ,item)
+                                  `(funcall-in-macro
+                                    ,(second valspec) ,item))
+                           (if ,valid
+                               ,vitem
+                               (error
+                                (format nil "~a: ~a"
+                                        ,(mkstr
+                                          (%spec-name valspec)) ,vitem))))
+                         ,(if (listp (car valspec))
+                              (second (car valspec))
+                              nil)))))
+        (when filledp?
+          (collect
+              (list (third (car valspec)) foundvar)))))))
 
 ;valspec:
 ;(name -or- (name default filled-p)

@@ -7,9 +7,6 @@
     ((:a . "thing") ("B" . "an@email.addr") (:b . "snk@ack.r")
      (c . "2001-02-30"))))
 
-(defun test-input-normalize (input)
-  (values (first input) (second input)))
-
 (defmacro twrap (&body body)
   `(destructuring-bind (webhax::*regular-web-input* webhax::*key-web-input*)
        input
@@ -63,6 +60,13 @@
         ((item1 (lambda (x) (values x t)) :rest t))
       item1)))
 
+(defun testfunc7()
+  (twrap
+    (let ((webhax::*regular-web-input* '("one")))
+      (bind-validated-input
+         ((item1 (lambda (x) (values x t)) :rest t))
+       item1))))
+
 (test bind-validated-input
   (is (= 10
    (reduce #'+ (remove-if-not #'integerp (testfunc1)))))
@@ -73,4 +77,5 @@
   (is (= 5 (testfunc3)))
   (is (string-equal "thing" (testfunc4)))
   (signals simple-error (testfunc5))
-  (is (equal '("one" "2" "3") (testfunc6))))
+  (is (equal '("one" "2" "3") (testfunc6)))
+  (is (equal '("one") (testfunc7))))
