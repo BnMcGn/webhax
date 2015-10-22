@@ -31,7 +31,7 @@
   (dolist (symlist symbol-coll)
     (dolist (sym symlist)
       (when (and (keywordp sym) (eq-symb-multiple sym item))
-        (return sym)))))
+        (return-from match-keyword sym)))))
 
 (defun prep-keywords-ignorant (params symbol-coll)
   (hash->plist
@@ -40,6 +40,8 @@
        (destructuring-bind (k . v)
            p
          (let ((key (match-keyword k symbol-coll)))
+           (unless key
+             (error "Attempted use of unregistered keyword"))
            (if (multiple-key-p k)
                (collect key
                  (string-unless-symbol-unless-number v symbol-coll)
