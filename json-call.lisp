@@ -4,6 +4,7 @@
 ;;;Json-call: a quick-n-dirty way to call any lisp function from a web client.
 
 (defvar *json-call-symbols* nil)
+(defvar *json-call-symbol-funcs* nil)
 (defvar *json-call-callables* nil)
 
 ;;;FIXME: Should be able to specify custom validators for individual parameters.
@@ -17,6 +18,17 @@
   (declare (type list symbol-list))
   (push symbol-list *json-call-symbols*))
 
+(defun register-json-symbol-func (func)
+  (declare (type function func))
+  (push func *json-call-symbol-funcs*))
+
+(defun json-symbols ()
+  (let ((slist *json-call-symbols*))
+    (dolist (func *json-call-symbol-funcs*)
+      (awhen (funcall func)
+             (push it slist)))
+    slist))
+
 (defun string-unless-symbol-unless-number (in-string symbol-coll)
   (let ((value (string-unless-number in-string)))
     (typecase value
@@ -25,7 +37,7 @@
        (dolist (symlist symbol-coll value)
          (dolist (sym symlist)
            (when (eq-symb sym value)
-             (return sym))))))))
+             (return-from string-unless-symbol-unless-number sym))))))))
 
 (defun match-keyword (item symbol-coll)
   (dolist (symlist symbol-coll)
@@ -51,7 +63,7 @@
 
 ;;;FIXME: Implement non-ignorant: call recording and type guessing, etc.
 (defun prep-call-ignorant (params keys
-                  &key (symbols *json-call-symbols*)
+                  &key (symbols (json-symbols))
                     (callables *json-call-callables*))
   (let ((function (first-match callables
                                (curry #'eq-symb (car params))))

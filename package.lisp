@@ -29,7 +29,8 @@
   (:export
    #:register-json-call
    #:register-json-symbols
-   #:json-call))
+   #:json-call
+   #:register-json-symbol-func))
 
 (defpackage #:webhax
   (:use #:cl #:gadgets #:parenscript #:anaphora 
