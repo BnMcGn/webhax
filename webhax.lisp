@@ -107,3 +107,17 @@
 ;active format: match itemspec above, omitting urlstring
 (defparameter *menu-items* nil)
 (defvar *menu-active* nil)
+
+
+;;;;;;;;
+;;; React
+;;;;;;;;
+
+(define-parts react
+  (add-part :@javascript
+            "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js")
+  (add-part :@javascript
+            "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js")
+  (add-part :@javascript cl-react:*ps-react-lib*))
+
+

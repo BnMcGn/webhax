@@ -15,7 +15,8 @@
                #:cl-json
                #:thing-labels
                #:clack
-               #:ningle)
+               #:ningle
+               #:cl-react)
   :serial t
   :components ((:file "package")
                (:file "webhax-core")
