@@ -76,7 +76,7 @@
     (values function (concatenate 'list reg-params key-params))))
 
 (defclass json-call (clack-tool)
-  ((base-url :initform "/json/")))
+  ((webhax-core::base-url :initform "/json/")))
 
 (defmethod execute ((this json-call))
   (multiple-value-bind (func params)

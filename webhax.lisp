@@ -68,6 +68,7 @@
         (with-output-to-string (*webhax-output*)
           (funcall handler))))))
 
+;;;FIXME: *webhax-output* rebind to string is not taking effect.
 (defmacro quick-page (&rest parts-and-main)
   (let ((parts (butlast parts-and-main))
         (main (last-car parts-and-main)))
@@ -118,6 +119,7 @@
             "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js")
   (add-part :@javascript
             "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js")
-  (add-part :@javascript cl-react:*ps-react-lib*))
+  (add-part :@javascript (lambda () cl-react:*cl-react-lib*)))
+
 
 
