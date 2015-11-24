@@ -158,8 +158,9 @@ table"
                                           tm))))
                          parts-sym params-sym)))
           `(let ((,parts-sym
-                   ,(%collate-parts (concatenate 'list
-                                                 prepend-parts parts append-parts))))
+                   ,(%collate-parts (concatenate
+                                     'list prepend-parts
+                                     (nreverse parts) append-parts))))
              (,@(if name `(defun ,name) '(lambda)) (&rest ,params-sym)
               ,@template)))))))
 
