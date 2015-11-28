@@ -17,17 +17,25 @@
   (let ((res (gensym)))
     `(let ((,res ""))
        (labels ((collect (itm)
-      (setf ,res (+ ,res itm))))
-   ,@body)
+                  (setf ,res (+ ,res itm))))
+         ,@body)
        ,res)))
 
 (defpsmacro collecting (&body body)
   (let ((res (gensym)))
     `(let ((,res (array)))
        (labels ((collect (itm)
-      (chain ,res (push itm))))
-   ,@body)
+                  (chain ,res (push itm))))
+         ,@body)
        ,res)))
+
+(defpsmacro collecting-set (&body body)
+  (let ((res (gensym)))
+    `(let ((,res (create)))
+       (labels ((collect (itm)
+                  (setf (prop itm) t)))
+         ,@body)
+       (@ -object (keys ,res)))))
 
 (defun ps-gadgets ()
   (ps
@@ -119,7 +127,24 @@
             "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js")
   (add-part :@javascript
             "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js")
-  (add-part :@javascript (lambda () cl-react:*cl-react-lib*)))
+  (add-part :@javascript #'react:build))
 
+(ps:defpsmacro define-react-class (name render &rest other)
+  "A convenience wrapper macro for create-class. The created class will be
+assigned to the name specified by the first variable. The second value is
+code to be placed in the render method. It will be automatically wrapped in
+an anonymous function. The remainder of the parameters are key/value pairs
+That will become attributes of the object.
 
+If name is set to nil, the macro will return the class without attempting to
+assign it to a variable.
 
+If render is set to nil, the macro will not fill the render attribute. It can
+then be manually filled in the rest section."
+  (let ((classcode
+          `(react:create-class
+            (ps:create ,@(when render `(:render (lambda () ,render)))
+                    ,@other))))
+    (if name
+        `(ps:var ,name ,classcode)
+        classcode)))
