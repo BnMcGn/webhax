@@ -33,19 +33,62 @@
   (let ((res (gensym)))
     `(let ((,res (create)))
        (labels ((collect (itm)
-                  (setf (prop itm) t)))
+                  (setf (getprop ,res itm) itm)))
          ,@body)
-       (@ -object (keys ,res)))))
+       (collecting (dolist (x (chain -object (keys ,res)))
+                     (collect (getprop ,res x)))))))
+
+(defpsmacro do-window ((var/s source
+                              &key (size 2) (step 1)
+                              (start-padding '(array))) &body body)
+  (let ((size (if (listp var/s) (length var/s) size))
+        (data (gensym))
+        (i (gensym)))
+    `(let ((,data (chain ,start-padding (concat ,source))))
+       (dolist (,i (range 0 (1+ (- (length ,data) ,size)) ,step))
+         ,(if (listp var/s)
+              `(destructuring-bind ,var/s (chain ,data (slice ,i (+ ,i ,size)))
+                 ,@body)
+              `(let ((,var/s (chain ,data (slice ,i (+ ,i ,size)))))
+                 ,@body))))))
 
 (defun ps-gadgets ()
-  (ps
-    (defun say (thing)
-      (chain console (log thing)))
+  (strcat
+   (compile-script *ps-lisp-library*)
+   (ps
+     (defun say (thing)
+       (chain console (log thing)))
 
-    (defun member (item list)
-      (>= (chain list (index-of item)) 0))
+     (defun ensure-array (arr)
+       (cond
+         ((or (equal (typeof arr) "undefined")
+               (null arr))
+          ([]))
+         ((chain arr (has-own-property 'length))
+          arr)
+         (t ([] arr))))
 
-    )); End ps-gadgets
+     (defun remove-if-not (test arr)
+       (collecting
+         (dolist (itm (ensure-array arr))
+           (when (funcall test itm)
+             (collect itm)))))
+
+     (defun range (start &optional stop (step 1))
+       (let ((start (if stop start 0))
+             (stop (if stop stop start)))
+         (let ((stop-p (if (> step 0) (lambda (x) (< x stop)) (lambda (x) (> x stop)))))
+           (if (or (and (> step 0) (>= start stop) (and (< step 0) (<= start stop))))
+             ([])
+             (collecting
+               (while (funcall stop-p start)
+                 (collect start)
+                 (incf start step)))))))
+
+
+         ))); End ps-gadgets
+
+
 
 (defparameter *set-content-type* nil)
 (defparameter *session* ningle:*session*)
