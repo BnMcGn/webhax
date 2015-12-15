@@ -103,7 +103,11 @@
    #:json-call
    #:clack-tool
    #:call
-   #:execute))
+   #:execute
+   #:define-react-class
+   #:prop
+   #:state
+   #:set-state))
 
 
 

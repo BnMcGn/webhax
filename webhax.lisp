@@ -57,7 +57,8 @@
    (compile-script *ps-lisp-library*)
    (ps
      (defun say (thing)
-       (chain console (log thing)))
+       (chain console (log thing))
+       thing)
 
      (defun ensure-array (arr)
        (cond
@@ -191,3 +192,12 @@ then be manually filled in the rest section."
     (if name
         `(ps:var ,name ,classcode)
         classcode)))
+
+(ps:defpsmacro prop (&rest params)
+  `(@ this props ,@params))
+
+(ps:defpsmacro state (&rest params)
+  `(@ this state ,@params))
+
+(ps:defpsmacro set-state (&rest params)
+  `(chain this (set-state (create ,@params))))
