@@ -52,6 +52,9 @@
               `(let ((,var/s (chain ,data (slice ,i (+ ,i ,size)))))
                  ,@body))))))
 
+(defpsmacro strcat (first &rest rest)
+  `(chain ,first (concat ,@rest)))
+
 (defun ps-gadgets ()
   (strcat
    (compile-script *ps-lisp-library*)
@@ -86,7 +89,21 @@
                  (collect start)
                  (incf start step)))))))
 
+     (defun position-difference (element1 element2)
+       (let ((pos1 (chain element1 (get-bounding-client-rect)))
+             (pos2 (chain element2 (get-bounding-client-rect))))
+         (create top (- (@ pos1 top) (@ pos2 top))
+                 left (- (@ pos1 left) (@ pos2 left)))))
 
+     (defun mapleaves (fn tree)
+  "Map a one-argument function FN over each leaf node of the TREE
+   in depth-first order, returning a new tree with the same structure."
+  (labels ((rec (node)
+             (if (atom node)
+                 (funcall fn node)
+     (mapcar #'rec node))))
+    (when tree
+      (rec tree))))
          ))); End ps-gadgets
 
 
@@ -193,11 +210,3 @@ then be manually filled in the rest section."
         `(ps:var ,name ,classcode)
         classcode)))
 
-(ps:defpsmacro prop (&rest params)
-  `(@ this props ,@params))
-
-(ps:defpsmacro state (&rest params)
-  `(@ this state ,@params))
-
-(ps:defpsmacro set-state (&rest params)
-  `(chain this (set-state (create ,@params))))

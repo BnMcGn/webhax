@@ -105,9 +105,7 @@
    #:call
    #:execute
    #:define-react-class
-   #:prop
-   #:state
-   #:set-state))
+))
 
 
 
