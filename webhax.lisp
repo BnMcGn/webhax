@@ -55,6 +55,14 @@
 (defpsmacro strcat (first &rest rest)
   `(chain ,first (concat ,@rest)))
 
+(defparameter *js-second* 1000)
+(defparameter *js-minute* (* 60 *js-second*))
+(defparameter *js-hour* (* 60 *js-minute*))
+(defparameter *js-day* (* 24 *js-hour*))
+(defparameter *js-week* (* 7 *js-day*))
+(defparameter *js-month* (* 30 *js-day*)) ;Ok, things start to get wierd.
+(defparameter *js-year* (* 365 *js-day*))
+
 (defun ps-gadgets ()
   (strcat
    (compile-script *ps-lisp-library*)
@@ -96,14 +104,26 @@
                  left (- (@ pos1 left) (@ pos2 left)))))
 
      (defun mapleaves (fn tree)
-  "Map a one-argument function FN over each leaf node of the TREE
+       "Map a one-argument function FN over each leaf node of the TREE
    in depth-first order, returning a new tree with the same structure."
-  (labels ((rec (node)
-             (if (atom node)
-                 (funcall fn node)
-     (mapcar #'rec node))))
-    (when tree
-      (rec tree))))
+       (labels ((rec (node)
+                  (if (atom node)
+                      (funcall fn node)
+                      (mapcar #'rec node))))
+         (when tree
+           (rec tree))))
+
+     (defun ago (date-obj)
+       (let ((diff (- (chain -date (now)) date-obj)))
+         (create
+          get-years (lambda () (parse-int (/ diff (lisp *js-year*))))
+          get-months (lambda () (parse-int (/ diff (lisp *js-month*))))
+          get-weeks (lambda () (parse-int (/ diff (lisp *js-week*))))
+          get-days (lambda () (parse-int (/ diff (lisp *js-day*))))
+          get-hours (lambda () (parse-int (/ diff (lisp *js-hour*))))
+          get-minutes (lambda () (parse-int (/ diff (lisp *js-minute*))))
+          get-seconds (lambda () (parse-int (/ diff (lisp *js-second*)))))))
+
          ))); End ps-gadgets
 
 
@@ -209,4 +229,3 @@ then be manually filled in the rest section."
     (if name
         `(ps:var ,name ,classcode)
         classcode)))
-
