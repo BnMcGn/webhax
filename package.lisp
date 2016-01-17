@@ -105,7 +105,13 @@
    #:call
    #:execute
    #:define-react-class
-))
+   #:*js-second*
+   #:*js-minute*
+   #:*js-hour*
+   #:*js-day*
+   #:*js-week*
+   #:*js-month*
+   #:*js-year*))
 
 
 

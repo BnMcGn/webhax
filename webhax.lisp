@@ -55,6 +55,13 @@
 (defpsmacro strcat (first &rest rest)
   `(chain ,first (concat ,@rest)))
 
+(defpsmacro threeway (test minus-clause zero-clause plus-clause)
+  (let ((val (gensym)))
+    `(let ((,val ,test))
+       (cond ((> 0 ,val) ,minus-clause)
+             ((equal 0 ,val) ,zero-clause)
+             (t ,plus-clause)))))
+
 (defparameter *js-second* 1000)
 (defparameter *js-minute* (* 60 *js-second*))
 (defparameter *js-hour* (* 60 *js-minute*))
@@ -71,10 +78,12 @@
        (chain console (log thing))
        thing)
 
+     (defun atom (itm)
+       (chain -array (is-array itm)))
+
      (defun ensure-array (arr)
        (cond
-         ((or (equal (typeof arr) "undefined")
-               (null arr))
+         ((or (equal (typeof arr) "undefined") (null arr))
           ([]))
          ((chain arr (has-own-property 'length))
           arr)
@@ -103,11 +112,11 @@
          (create top (- (@ pos1 top) (@ pos2 top))
                  left (- (@ pos1 left) (@ pos2 left)))))
 
-     (defun mapleaves (fn tree)
+     (defun mapleaves (fn tree &key test)
        "Map a one-argument function FN over each leaf node of the TREE
    in depth-first order, returning a new tree with the same structure."
        (labels ((rec (node)
-                  (if (atom node)
+                  (if (and (atom node) (or (not test) (funcall test node)))
                       (funcall fn node)
                       (mapcar #'rec node))))
          (when tree
@@ -123,6 +132,9 @@
           get-hours (lambda () (parse-int (/ diff (lisp *js-hour*))))
           get-minutes (lambda () (parse-int (/ diff (lisp *js-minute*))))
           get-seconds (lambda () (parse-int (/ diff (lisp *js-second*)))))))
+
+     (defun not-empty (itm)
+       (and itm (< 0 (@ itm length))))
 
          ))); End ps-gadgets
 
