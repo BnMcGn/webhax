@@ -8,7 +8,7 @@
    #:mkparse-all-members))
 
 (defpackage #:webhax-core
-  (:use #:cl #:gadgets #:alexandria #:clack #:clack.request #:clack.response
+  (:use #:cl #:gadgets #:alexandria #:clack #:lack.request #:lack.response
         #:cl-who)
   (:export
    #:*webhax-output*
@@ -37,9 +37,9 @@
         #:alexandria #:webhax-validate #:webhax-core
         #:webhax-json-call
         #:cl-who #:thing-labels #:clack
-        #:clack.request #:clack.response)
+        #:lack.request #:lack.response)
   (:shadowing-import-from #:parenscript #:switch)
-  (:shadowing-import-from #:clack.component #:call)
+  (:shadowing-import-from #:lack.component #:call)
   (:export
    #:define-ask
    #:ask
@@ -111,7 +111,8 @@
    #:*js-day*
    #:*js-week*
    #:*js-month*
-   #:*js-year*))
+   #:*js-year*
+   #:threeway))
 
 
 

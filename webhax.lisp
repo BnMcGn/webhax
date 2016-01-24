@@ -8,10 +8,11 @@
 (defpsmacro do-keyvalue ((key val obj) &body body)
   (let ((obj-v (gensym)))
     `(let ((,obj-v ,obj))
-       (for-in (,key ,obj-v)
-         (if (chain ,obj-v (has-own-property ,key))
-       (let ((,val (getprop ,obj-v ,key)))
-         ,@body))))))
+       (funcall (lambda ()
+          (for-in (,key ,obj-v)
+                  (if (chain ,obj-v (has-own-property ,key))
+                      (let ((,val (getprop ,obj-v ,key)))
+                        ,@body))))))))
 
 (defpsmacro collecting-string (&body body)
   (let ((res (gensym)))
@@ -157,7 +158,7 @@
                      input)))
 
 (defun set-content-type (ctype)
-  (setf (clack.response:headers ningle:*response* :content-type) ctype))
+  (setf (lack.response:response-headers ningle:*response* :content-type) ctype))
 
 (defun input-function-wrapper (handler &key content-type)
   (lambda (input)

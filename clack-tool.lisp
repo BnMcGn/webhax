@@ -10,7 +10,7 @@
 (defun url-splitter (url base)
   (split-sequence #\/ (subseq url (length base)) :remove-empty-subseqs t))
 
-(defclass clack-tool (clack.middleware:<middleware>)
+(defclass clack-tool (lack.component:lack-component)
   ((base-url :type string
              :initarg :base-url
              :initform "")
@@ -34,17 +34,18 @@
 (defgeneric function-wrapper (obj env)
   (:method ((this clack-tool) env)
     (with-slots (default-content-type function base-url) this
-      (let* ((*request* (clack.request:make-request env))
-             (*response* (clack.response:make-response 200))
-             (*key-web-input* (clack.request:parameter *request*))
+      (let* ((*request* (lack.request:make-request env))
+             (*response* (lack.response:make-response 200))
+             (*key-web-input* (lack.request:request-parameters *request*))
              (*regular-web-input*
                (cdr
-                (url-splitter (clack.request:path-info *request*) base-url))))
-        (setf (clack.response:headers *response* :content-type)
+                (url-splitter
+                 (lack.request:request-path-info *request*) base-url))))
+        (setf (lack.response:response-headers *response* :content-type)
               default-content-type)
-        (setf (clack.response:body *response*)
+        (setf (lack.response:response-body *response*)
               (list (execute this)))
-        (clack.response:finalize *response*)))))
+        (lack.response:finalize-response *response*)))))
 
 (defgeneric execute (obj)
   (:method ((this clack-tool))
