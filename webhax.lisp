@@ -4,7 +4,7 @@
 
 ;;; "webhax" goes here. Hacks and glory await!
 
-
+(eval-always
 (defpsmacro do-keyvalue ((key val obj) &body body)
   (let ((obj-v (gensym)))
     `(let ((,obj-v ,obj))
@@ -62,6 +62,7 @@
        (cond ((> 0 ,val) ,minus-clause)
              ((equal 0 ,val) ,zero-clause)
              (t ,plus-clause)))))
+);end eval-always
 
 (defparameter *js-second* 1000)
 (defparameter *js-minute* (* 60 *js-second*))
@@ -136,6 +137,12 @@
 
      (defun not-empty (itm)
        (and itm (< 0 (@ itm length))))
+
+     (defun shallow-copy (obj)
+       (let ((res (create)))
+         (do-keyvalue (k v obj)
+           (setf (aref res k) v))
+         res))
 
          ))); End ps-gadgets
 
