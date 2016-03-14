@@ -49,10 +49,6 @@
    #:*webhax-output*
    #:html-out
    #:call-ask-manager
-   #:ps-gadgets
-   #:do-keyvalue
-   #:collecting-string
-   #:collecting
    #:->html
    #:*->html-list-handler*
    #:*->html-hash-handler*
@@ -90,7 +86,6 @@
    #:form
    #:ask-parts
    #:add-part
-   #:alist->ps-object-code
    #:set-href
    #:*menu-items*
    #:define-default-layout
@@ -104,15 +99,7 @@
    #:clack-tool
    #:call
    #:execute
-   #:define-react-class
-   #:*js-second*
-   #:*js-minute*
-   #:*js-hour*
-   #:*js-day*
-   #:*js-week*
-   #:*js-month*
-   #:*js-year*
-   #:threeway))
+   #:define-react-class))
 
 
 

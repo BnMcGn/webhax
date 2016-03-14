@@ -16,7 +16,8 @@
                #:thing-labels
                #:clack
                #:ningle
-               #:cl-react)
+               #:cl-react
+               #:ps-gadgets)
   :serial t
   :components ((:file "package")
                (:file "webhax-core")
