@@ -23,6 +23,8 @@
                      :initarg :function
                      :initform (lambda () ""))))
 
+;FIXME: Needs updating to new version of clack
+#|
 (defmethod call ((this clack-tool) env)
   (with-slots (base-url login-p) this
     (if (starts-with-subseq base-url (getf env :request-uri))
@@ -30,7 +32,7 @@
             '(403 nil ("This service not available without login."))
             (function-wrapper this env))
         (call-next this env))))
-
+|#
 (defgeneric function-wrapper (obj env)
   (:method ((this clack-tool) env)
     (with-slots (default-content-type function base-url) this
