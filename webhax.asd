@@ -14,6 +14,7 @@
                #:ratify
                #:cl-json
                #:thing-labels
+               #:clack-v1-compat
                #:clack
                #:ningle
                #:cl-react
