@@ -99,7 +99,8 @@
    #:clack-tool
    #:call
    #:execute
-   #:define-react-class))
+   #:define-react-class
+   #:clack-server-manager))
 
 
 

@@ -88,3 +88,15 @@
             "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js")
   (add-part :@javascript #'react:build))
 
+;;;;;;;;
+
+
+(defmacro clack-server-manager (handler-var app &rest clackup-params)
+  `(progn
+     (if (boundp ',handler-var)
+         (clack:stop ,handler-var)
+         (defvar ',handler-var nil))
+     (setf ,handler-var
+           (clack:clackup
+            ,app
+            ,@clackup-params))))
