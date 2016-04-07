@@ -93,7 +93,7 @@
 
 (defmacro clack-server-manager (handler-var app &rest clackup-params)
   `(progn
-     (if (boundp ',handler-var)
+     (if (boundp ,handler-var)
          (clack:stop ,handler-var)
          (defvar ',handler-var nil))
      (setf ,handler-var
