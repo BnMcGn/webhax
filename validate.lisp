@@ -4,7 +4,8 @@
   (:use #:cl #:gadgets #:ratify)
   (:export
    #:mkparse-in-list
-   #:mkparse-all-members))
+   #:mkparse-all-members
+   #:compile-validator))
 
 (in-package :webhax-validate)
 
@@ -53,21 +54,20 @@
                      (return-from exit (values it nil)))))
        t))))
 
-(defun testspec->function (testspec)
+(defun compile-validator (valspec)
   (cond
-    ((functionp testspec)
-     testspec)
-    ((member testspec *ratify-tests*)
-     (ratify-wrapper testspec))
-    ((and (listp testspec) (symbolp (car testspec)))
-     (case (car testspec)
+    ((functionp valspec)
+     valspec)
+    ((member valspec *ratify-tests*)
+     (ratify-wrapper valspec))
+    ((and (listp valspec) (symbolp (car valspec)))
+     (case (car valspec)
        (:pickone
-        (mkparse-in-list (cdr testspec)))
+        (mkparse-in-list (cdr valspec)))
        (:picksome
-        (mkparse-all-members (mkparse-in-list (cdr testspec))))))
-    ((and (listp testspec) (functionp (car testspec)))
-     (apply (car testspec) (cdr testspec)))))
+        (mkparse-all-members (mkparse-in-list (cdr valspec))))))
+    ((and (listp valspec) (functionp (car valspec)))
+     (apply (car valspec) (cdr valspec)))))
 
 (defparameter *ratify-tests*
   '(:bit :day :date :hour :real :time :year :float :month :ratio :minute :number :offset :second :string :boolean :complex :integer :datetime :rational :character :unsigned-integer :ip :tel :uri :url :file :host :ipv4 :ipv6 :name :port :text :user :week :color :email :query :radio :range :domain :failed :object :scheme :search :numeric :checkbox :fragment :hostname :password :property :protocol :textarea :authority :alphabetic :alphanumeric :absolute-path :rootless-path :datetime-local :hierarchical-part))
-
