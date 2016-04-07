@@ -4,7 +4,6 @@
   (:use #:cl #:gadgets #:ratify)
   (:export
    #:mkparse-in-list
-   #:ratify-wrapper
    #:mkparse-all-members))
 
 (in-package :webhax-validate)

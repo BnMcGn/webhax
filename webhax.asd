@@ -11,14 +11,14 @@
                #:anaphora
                #:cl-utilities
                #:cl-cont
-               #:ratify
                #:cl-json
                #:thing-labels
                #:clack-v1-compat
                #:clack
                #:ningle
                #:cl-react
-               #:ps-gadgets)
+               #:ps-gadgets
+               #:webhax-validate)
   :serial t
   :components ((:file "package")
                (:file "webhax-core")
@@ -27,7 +27,6 @@
                (:file "webhax" :depends-on ("web-input" "metaplate"))
                (:file "clack-tool")
                (:file "json-call")
-               (:file "validate")
                (:file "html-s-exp")
                (:file "page-mod")
                (:file "bind-validated-input")
