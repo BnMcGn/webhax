@@ -1,12 +1,5 @@
 ;;;; package.lisp
 
-(defpackage #:webhax-validate
-  (:use #:cl #:gadgets #:ratify)
-  (:export
-   #:mkparse-in-list
-   #:ratify-wrapper
-   #:mkparse-all-members))
-
 (defpackage #:webhax-core
   (:use #:cl #:gadgets #:alexandria #:clack #:lack.request #:lack.response
         #:cl-who)

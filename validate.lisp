@@ -1,3 +1,12 @@
+(in-package :cl-user)
+
+(defpackage #:webhax-validate
+  (:use #:cl #:gadgets #:ratify)
+  (:export
+   #:mkparse-in-list
+   #:ratify-wrapper
+   #:mkparse-all-members))
+
 (in-package :webhax-validate)
 
 
@@ -44,3 +53,22 @@
                      (collect it)
                      (return-from exit (values it nil)))))
        t))))
+
+(defun testspec->function (testspec)
+  (cond
+    ((functionp testspec)
+     testspec)
+    ((member testspec *ratify-tests*)
+     (ratify-wrapper testspec))
+    ((and (listp testspec) (symbolp (car testspec)))
+     (case (car testspec)
+       (:pickone
+        (mkparse-in-list (cdr testspec)))
+       (:picksome
+        (mkparse-all-members (mkparse-in-list (cdr testspec))))))
+    ((and (listp testspec) (functionp (car testspec)))
+     (apply (car testspec) (cdr testspec)))))
+
+(defparameter *ratify-tests*
+  '(:bit :day :date :hour :real :time :year :float :month :ratio :minute :number :offset :second :string :boolean :complex :integer :datetime :rational :character :unsigned-integer :ip :tel :uri :url :file :host :ipv4 :ipv6 :name :port :text :user :week :color :email :query :radio :range :domain :failed :object :scheme :search :numeric :checkbox :fragment :hostname :password :property :protocol :textarea :authority :alphabetic :alphanumeric :absolute-path :rootless-path :datetime-local :hierarchical-part))
+
