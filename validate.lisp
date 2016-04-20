@@ -5,7 +5,8 @@
   (:export
    #:mkparse-in-list
    #:mkparse-all-members
-   #:compile-validator))
+   #:compile-validator
+   #:ratify-wrapper)) ;;FIXME: un-export ratify-wrapper
 
 (in-package :webhax-validate)
 
@@ -71,3 +72,25 @@
 
 (defparameter *ratify-tests*
   '(:bit :day :date :hour :real :time :year :float :month :ratio :minute :number :offset :second :string :boolean :complex :integer :datetime :rational :character :unsigned-integer :ip :tel :uri :url :file :host :ipv4 :ipv6 :name :port :text :user :week :color :email :query :radio :range :domain :failed :object :scheme :search :numeric :checkbox :fragment :hostname :password :property :protocol :textarea :authority :alphabetic :alphanumeric :absolute-path :rootless-path :datetime-local :hierarchical-part))
+
+(defun nullok? (valspec)
+  "Null is ok unless explicitly set otherwise."
+  (if (listp valspec)
+      (getf valspec :nullok t)
+      t))
+
+;;;FIXME: Mostly just a placeholder for now. Will fill out with time.
+(defun recommend-widget (valspec)
+  (let ((valsym (or (and (listp valspec) (car valspec)) valspec)))
+    (if (member valsym '(:integer :string :boolean :pickone :picksome))
+        valsym
+        :string)))
+
+;;;FIXME: Long term this will need rethinking.
+(defun options-list (valspec)
+  (and (listp valspec)
+       (or (eq (car valspec) :pickone) (eq (car valspec :picksome)))
+       (nth-value 1 (gadgets:extract-keywords '(:nullok) (cdr valspec)))))
+
+
+
