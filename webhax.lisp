@@ -23,6 +23,7 @@
 (defun set-content-type (ctype)
   ;;FIXME: Don't know why this broke
   ;;(setf (lack.response:response-headers ningle:*response* :content-type) ctype))
+  (declare (ignore ctype))
   (error "Needs reimplementation"))
  
 (defun input-function-wrapper (handler &key content-type)
@@ -93,9 +94,9 @@
 
 (defmacro clack-server-manager (handler-var app &rest clackup-params)
   `(progn
-     (if (boundp ,handler-var)
-         (clack:stop ,handler-var)
-         (defvar ',handler-var nil))
+     (defvar ,handler-var nil)
+     (when ,handler-var
+         (clack:stop ,handler-var))
      (setf ,handler-var
            (clack:clackup
             ,app
