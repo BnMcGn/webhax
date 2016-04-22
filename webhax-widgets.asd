@@ -1,7 +1,7 @@
-;;;; webhax-validate.asd
+;;;; webhax-widgets.asd
 
-(asdf:defsystem #:webhax-validate
-  :description "Describe webhax here"
+(asdf:defsystem #:webhax-widgets
+  :description "Describe webhax-widgets here"
   :author "Your Name <your.name@example.com>"
   :license "Specify license here"
   :depends-on (#:gadgets

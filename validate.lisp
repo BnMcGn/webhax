@@ -6,7 +6,10 @@
    #:mkparse-in-list
    #:mkparse-all-members
    #:compile-validator
-   #:ratify-wrapper)) ;;FIXME: un-export ratify-wrapper
+   #:ratify-wrapper ;;FIXME: un-export ratify-wrapper
+   #:nullok?
+   #:recommend-widget
+   #:options-list))
 
 (in-package :webhax-validate)
 
