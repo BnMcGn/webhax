@@ -105,23 +105,32 @@
         (if state
             (case (@ action type)
               (:submit
-               (funcall callback (@ state data)))
+               (progn
+                 (funcall callback (@ state data))
+                 state))
               (:edit
                ;;FIXME: Client-side validation not implemented.
                (let ((value (@ action value))
                      (errmsg nil)) ;temporary)
                  (if errmsg
                      (deep-set-copy
-                      state `(errors ,(@ action name)) errmsg)
+                      state (list 'errors (@ action name)) errmsg)
                      (deep-set-copy
                       (deep-set-copy
-                       state `(data ,(@ action name) value) value)
-                      `(errors ,(@ action name)) nil)))))
+                       state (list 'data (@ action name)) value)
+                      (list 'errors (@ action name)) nil)))))
             (create
-             :data data
+             :data
+             (let ((res (create)))
+               (do-keyvalue (k v fieldspecs)
+                 (setf (getprop res k)
+                       (if (not (eq (getprop data k) undefined))
+                           (getprop data k)
+                           null)))
+               res)
              :fieldspecs fieldspecs ;; FIXME: When should validators be created?
              :errors (let ((res (create)))
-                       (do-keyvalue (k v data) ;; borrow keys from data.
+                       (do-keyvalue (k v fieldspecs) ;; borrow keys from data.
                          (setf (getprop res k) nil))
                        res)))))
 
@@ -146,7 +155,8 @@
                          :dispatch dispatch
                          :... (@ fspec config)))))))
             (:input :type "button" :value "Submit"
-                    :on-click (lambda () (funcall callback :type :submit)))))))
+                    :on-click (lambda () (funcall dispatch
+                                                  (create :type :submit))))))))
 
     (defun webhax-form-element (fieldspecs data callback)
       (let ((store (chain -redux
