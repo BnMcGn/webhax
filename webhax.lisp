@@ -101,3 +101,21 @@
            (clack:clackup
             ,app
             ,@clackup-params))))
+
+(defun under-path-p (path testpath)
+  (let ((len (length path)))
+    (cond
+      ((string= path testpath) "/")
+      ((and (< len (length testpath))
+            (string= testpath path :end1 len)
+            (char= (aref testpath len) #\/))
+       (subseq testpath len))
+      (t nil))))
+
+(defun repath-clack-env (env newpath)
+  (mapcan-by-2
+   (lambda (k v)
+     (if (eq :path-info k)
+         (list :path-info newpath)
+         (list k v)))
+   env))

@@ -93,7 +93,9 @@
    #:call
    #:execute
    #:define-react-class
-   #:clack-server-manager))
+   #:clack-server-manager
+   #:under-path-p
+   #:repath-clack-env))
 
 
 
