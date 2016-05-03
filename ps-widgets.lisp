@@ -152,6 +152,7 @@
                         (:widgi-select
                          :widget (@ fspec widget) :options (@ fspec options)
                          :value (getprop data name) :name name
+                         :formdata data
                          :dispatch dispatch
                          :... (@ fspec config)))))))
             (:input :type "button" :value "Submit"
