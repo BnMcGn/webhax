@@ -95,7 +95,9 @@
    #:define-react-class
    #:clack-server-manager
    #:under-path-p
-   #:repath-clack-env))
+   #:repath-clack-env
+   #:url-from-env
+   #:session-from-env))
 
 
 

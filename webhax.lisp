@@ -119,3 +119,18 @@
          (list :path-info newpath)
          (list k v)))
    env))
+
+(defun url-from-env (env)
+  "Extract the current request url from a clack environment."
+  (strcat
+   (format nil "~a://" (string-downcase (mkstr (or (getf env :url-scheme)
+                                                   (getf env :uri-scheme)))))
+   (getf env :server-name)
+   (awhen (getf env :server-port)
+     (unless (= 80 it)
+       (format nil ":~d" it)))
+   (getf env :request-uri)))
+
+(defun session-from-env (env)
+  (getf env :lack.session))
+
