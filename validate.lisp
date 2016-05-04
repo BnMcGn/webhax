@@ -78,9 +78,7 @@
 
 (defun nullok? (valspec)
   "Null is ok unless explicitly set otherwise."
-  (if (listp valspec)
-      (getf valspec :nullok t)
-      t))
+  (not (and (listp valspec) (member :notnull valspec))))
 
 ;;;FIXME: Mostly just a placeholder for now. Will fill out with time.
 (defun recommend-widget (valspec)

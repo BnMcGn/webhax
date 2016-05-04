@@ -81,7 +81,7 @@
                                         (create :selected "selected"))
                                  (@ option value)))))))))
 
-    (def-component widgi-wrap
+    (def-component widgi-wrap-simple
         (psx
          (:div
           (:span :class "webhax-label" (or (prop description) (prop name))
@@ -134,30 +134,58 @@
                          (setf (getprop res k) nil))
                        res)))))
 
+    (def-component webhax-simple-form
+        (let ((dispatch (prop dispatch)))
+          (psx
+          (:form
+           (prop children)
+           (:input :type "button" :value "Submit"
+                   :on-click (lambda ()
+                               (funcall dispatch
+                                        (create :type :submit))))))))
+
     (def-component webhax-form-toplevel
         (let ((fspecs (prop fieldspecs))
               (data (prop data))
               (dispatch (prop dispatch))
-              (errors (prop errors)))
-          (psx
-           (:form
-            (collecting
-                (do-keyvalue (name fspec fspecs)
-                  (collect
-                      (psx
-                       (:widgi-wrap
-                        :id name :description (@ fspec description) :name name
-                        :error (getprop errors name)
-                        :nullok (@ fspec nullok)
-                        (:widgi-select
-                         :widget (@ fspec widget) :options (@ fspec options)
-                         :value (getprop data name) :name name
-                         :formdata data
-                         :dispatch dispatch
-                         :... (@ fspec config)))))))
-            (:input :type "button" :value "Submit"
-                    :on-click (lambda () (funcall dispatch
-                                                  (create :type :submit))))))))
+              (errors (prop errors))
+              (subform (or (prop layout) webhax-simple-form))
+              (wrapwidget (if (prop wrap-widget)
+                               (prop wrap-widget)
+                               (if (eql false (prop wrap-widget))
+                                   nil
+                                   widgi-wrap-simple))))
+          (psx (:subform
+                :formdata data :dispatch dispatch :fieldspecs fspecs
+                :errors errors
+                (collecting
+                    (if wrapwidget
+                        (do-keyvalue (name fspec fspecs)
+                          (collect
+                              (psx
+                               (:wrapwidget
+                                :id name :description (@ fspec description)
+                                :name name
+                                :error (getprop errors name)
+                                :nullok (@ fspec nullok)
+                                (:widgi-select
+                                 :widget (@ fspec widget)
+                                 :options (@ fspec options)
+                                 :value (getprop data name) :name name
+                                 :formdata data
+                                 :dispatch dispatch
+                                 :... (@ fspec config))))))
+                        (do-keyvalue (name fspec fspecs)
+                          (collect
+                              (psx
+                               (:widgi-select
+                                :id (strcat "inner-" name)
+                                :widget (@ fspec widget)
+                                :options (@ fspec options)
+                                :value (getprop data name) :name name
+                                :formdata data
+                                :dispatch dispatch
+                                :... (@ fspec config)))))))))))
 
     (defun webhax-form-element (fieldspecs data callback)
       (let ((store (chain -redux
