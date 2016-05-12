@@ -187,17 +187,24 @@
                                 :dispatch dispatch
                                 :... (@ fspec config)))))))))))
 
+    (def-component webhax-form
+        (let ((provider (@ -react-redux -provider)))
+          (psx
+           (:provider
+            (funcall
+             (chain -react-redux
+                    (connect (lambda (stuff own-props)
+                               (copy-merge-all stuff own-props))
+                             (lambda (dispatch)
+                               (create :dispatch dispatch))))))))
+      initial-state
+      (create :store
+              (chain -redux (create-store (webhax-form-dispatcher
+                                           (prop fieldspecs) (prop data)
+                                           (prop callback))))))
+
     (defun webhax-form-element (fieldspecs data callback)
-      (let ((store (chain -redux
-                          (create-store (webhax-form-dispatcher
-                                         fieldspecs data callback))))
-            (provider (@ -react-redux -provider))
-            (app
-             (funcall
-              (chain -react-redux
-                     (connect (lambda (stuff) (shallow-copy stuff))
-                              (lambda (dispatch) (create :dispatch dispatch))))
-              webhax-form-toplevel)))
-        (create-element provider (create :store store) (create-element app))))
+      (psx
+       (:webhax-form :fieldspecs fieldspecs :data data :callback callback)))
 
   ))
