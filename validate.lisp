@@ -9,7 +9,9 @@
    #:ratify-wrapper ;;FIXME: un-export ratify-wrapper
    #:nullok?
    #:recommend-widget
-   #:options-list))
+   #:options-list
+   #:normalize-fieldspec-body
+   #:prep-fieldspec-body-for-json))
 
 (in-package :webhax-validate)
 
@@ -87,11 +89,31 @@
         valsym
         :string)))
 
-;;;FIXME: Long term this will need rethinking.
 (defun options-list (valspec)
   (and (listp valspec)
-       (or (eq (car valspec) :pickone) (eq (car valspec :picksome)))
-       (nth-value 1 (gadgets:extract-keywords '(:nullok) (cdr valspec)))))
+       (gadgets:fetch-keyword :options valspec)))
+
+(defun normalize-fieldspec-body (fieldspec
+                            &aux (fspec (alexandria:ensure-list fieldspec)))
+  ;;Doesn't handle name
+  (let ((vspec (getf fspec :type :string)))
+    (list
+     :initial (getf fspec :initial)
+     :compiled-validator (compile-validator vspec)
+     :widget (getf fspec :widget
+                   (recommend-widget vspec))
+     :nullok (nullok? vspec)
+     :options (options-list vspec)
+     :type vspec
+     :config (getf fspec :config)
+     :description (getf fspec :description "")
+     :documentation (getf fspec :documentation ""))))
+
+(defun prep-fieldspec-body-for-json (fspec)
+  ;;Doesn't handle name
+  (cl-hash-util:plist->alist
+   (nth-value
+    1 (gadgets:extract-keywords '(:compiled-validator) fspec))))
 
 
 
