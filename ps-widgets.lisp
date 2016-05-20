@@ -35,23 +35,26 @@
                   :... (unless (prop value) (create :checked "checked"))))))
 
     (def-component ww-pickone
-        (let (props (@ this props))
+        (let ((props (@ this props)))
           (psx
            (:span
             (mapcar (lambda (option)
-                      (psx
-                       (:label :for (@ option value)
-                               (:input :type "radio" :name (@ props name)
-                                       :id (@ option value)
-                                       :on-change 
-                                       (event-dispatcher
-                                        (@ props name) (@ props dispatch))
-                                       :value (@ option value)
-                                       :... (when (eq (@ props value)
-                                                      (@ option value))
-                                              (create :checked "checked"))
-                                       (@ option label))))
-                      (prop options)))))))
+
+                      (let ((label (elt option 1))
+                            (value (elt option 0)))
+                        (psx
+                         (:label :for value
+                                 (:input :type "radio" :name (@ props name)
+                                         :id value
+                                         :on-change 
+                                         (event-dispatcher
+                                          (@ props name) (@ props dispatch))
+                                         :value value
+                                         :... (when (eq (@ props value)
+                                                        value)
+                                                (create :checked "checked")))
+                                 label))))
+                      (prop options))))))
 
     (def-component ww-textentry
         (psx
@@ -86,7 +89,7 @@
          (:div
           (:span :class "webhax-label" (or (prop description) (prop name))
                  (unless (prop nullok)
-                   (psx (:span :style (create "font-color" "red") " *"))))
+                   (psx (:span :style (create "fontColor" "red") " *"))))
           (prop children)
           (when (prop error)
             (:span (prop error))))))
@@ -98,7 +101,10 @@
                   :pickone ww-pickone :picksome ww-picksome)
           (prop widget))
          (@ this props)
-         nil))
+         nil)
+      prop-types
+      (create
+       widget (@ -react -prop-types string is-required)))
 
     (defun webhax-form-dispatcher (fieldspecs data callback)
       (lambda (state action)
@@ -150,9 +156,9 @@
               (dispatch (prop dispatch))
               (errors (prop errors))
               (subform (or (prop layout) webhax-simple-form))
-              (wrapwidget (if (prop wrap-widget)
-                               (prop wrap-widget)
-                               (if (eql false (prop wrap-widget))
+              (wrapwidget (if (prop wrapwidget)
+                               (prop wrapwidget)
+                               (if (eql false (prop wrapwidget))
                                    nil
                                    widgi-wrap-simple))))
           (psx (:subform
@@ -188,20 +194,23 @@
                                 :... (@ fspec config)))))))))))
 
     (def-component webhax-form
-        (let ((provider (@ -react-redux -provider)))
+        (let ((provider (@ -react-redux -provider))
+              (store
+               (chain -redux (create-store (webhax-form-dispatcher
+                                            (prop fieldspecs) (prop data)
+                                            (prop callback)))))
+              (app
+               (funcall
+                (chain -react-redux
+                       (connect (lambda (stuff own-props)
+                                  (copy-merge-all stuff own-props))
+                                (lambda (dispatch)
+                                  (create :dispatch dispatch))))
+                webhax-form-toplevel)))
           (psx
            (:provider
-            (funcall
-             (chain -react-redux
-                    (connect (lambda (stuff own-props)
-                               (copy-merge-all stuff own-props))
-                             (lambda (dispatch)
-                               (create :dispatch dispatch))))))))
-      initial-state
-      (create :store
-              (chain -redux (create-store (webhax-form-dispatcher
-                                           (prop fieldspecs) (prop data)
-                                           (prop callback))))))
+            :store store
+            (:app :... (@ this props))))))
 
     (defun webhax-form-element (fieldspecs data callback)
       (psx
