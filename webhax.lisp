@@ -89,6 +89,12 @@
             "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js")
   (add-part :@javascript #'react:build))
 
+(define-parts redux
+  (add-part :@javascript
+            "https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js")
+  (add-part :@javascript
+            "https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js"))
+
 ;;;;;;;;
 
 
