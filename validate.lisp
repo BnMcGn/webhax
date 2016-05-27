@@ -91,7 +91,18 @@
 
 (defun options-list (valspec)
   (and (listp valspec)
-       (gadgets:fetch-keyword :options valspec)))
+       (mapcar
+        (lambda (option)
+          (cond
+            ((and (consp option) (not (consp (cdr option))))
+             (list (car option) (cdr option)))
+            ((listp option)
+             (if (eq 2 (length option))
+                 option
+                 (error "Option must be a list of 2 elements")))
+            (t (error "Not a valid option"))))
+        (gadgets:fetch-keyword :options valspec))))
+
 
 (defun normalize-fieldspec-body (fieldspec
                             &aux (fspec (alexandria:ensure-list fieldspec)))
