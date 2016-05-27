@@ -39,11 +39,10 @@
           (psx
            (:span
             (mapcar (lambda (option)
-
                       (let ((label (elt option 1))
                             (value (elt option 0)))
                         (psx
-                         (:label :for value
+                         (:label ;;:for value
                                  (:input :type "radio" :name (@ props name)
                                          :id value
                                          :on-change 
@@ -54,7 +53,22 @@
                                                         value)
                                                 (create :checked "checked")))
                                  label))))
-                      (prop options))))))
+                    (prop options))))))
+
+    (def-component ww-pickone-long
+        (let ((props (@ this props)))
+          (psx
+           (:select
+            :name (prop name)
+            :value (prop value)
+            :on-change (event-dispatcher (prop name) (prop dispatch))
+            (mapcar
+             (lambda (option)
+               (let ((value (elt option 0))
+                     (label (elt option 1)))
+                 (psx
+                  (:option :value value :key (unique-id) label))))
+             (prop options))))))
 
     (def-component ww-textentry
         (psx
@@ -98,7 +112,7 @@
         (create-element
          (getprop
           (create :string ww-simple :integer ww-simple :boolean ww-yesno
-                  :pickone ww-pickone :picksome ww-picksome)
+                  :pickone ww-pickone :picksome ww-picksome "pickoneLong" ww-pickone-long)
           (prop widget))
          (@ this props)
          nil)
@@ -203,7 +217,7 @@
                (funcall
                 (chain -react-redux
                        (connect (lambda (stuff own-props)
-                                  (copy-merge-all stuff own-props))
+                                  (copy-merge-all own-props stuff))
                                 (lambda (dispatch)
                                   (create :dispatch dispatch))))
                 webhax-form-toplevel)))
