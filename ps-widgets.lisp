@@ -19,6 +19,7 @@
     (def-component ww-simple
         (psx
          (:input :type "text"
+                 :key 1
                  :default-value (prop value)
                  :on-change (event-dispatcher (prop name) (prop dispatch)))))
 
@@ -38,27 +39,31 @@
         (let ((props (@ this props)))
           (psx
            (:span
+            :key 1
             (mapcar (lambda (option)
                       (let ((label (elt option 1))
                             (value (elt option 0)))
                         (psx
                          (:label ;;:for value
-                                 (:input :type "radio" :name (@ props name)
-                                         :id value
-                                         :on-change 
-                                         (event-dispatcher
-                                          (@ props name) (@ props dispatch))
-                                         :value value
-                                         :... (when (eq (@ props value)
-                                                        value)
-                                                (create :checked "checked")))
-                                 label))))
+                          :key (unique-id)
+                          (:input :type "radio" :name (@ props name)
+                                  :key 1
+                                  :id value
+                                  :on-change 
+                                  (event-dispatcher
+                                   (@ props name) (@ props dispatch))
+                                  :value value
+                                  :... (when (eq (@ props value)
+                                                 value)
+                                         (create :checked "checked")))
+                          label))))
                     (prop options))))))
 
     (def-component ww-pickone-long
         (let ((props (@ this props)))
           (psx
            (:select
+            :key 1
             :name (prop name)
             :value (prop value)
             :on-change (event-dispatcher (prop name) (prop dispatch))
@@ -176,6 +181,7 @@
                                    nil
                                    widgi-wrap-simple))))
           (psx (:subform
+                :key 1
                 :formdata data :dispatch dispatch :fieldspecs fspecs
                 :errors errors
                 (collecting
@@ -186,6 +192,7 @@
                                (:wrapwidget
                                 :id name :description (@ fspec description)
                                 :name name
+                                :key name
                                 :error (getprop errors name)
                                 :nullok (@ fspec nullok)
                                 (:widgi-select
@@ -200,6 +207,7 @@
                               (psx
                                (:widgi-select
                                 :id (strcat "inner-" name)
+                                :key name
                                 :widget (@ fspec widget)
                                 :options (@ fspec options)
                                 :value (getprop data name) :name name
