@@ -36,11 +36,12 @@
 
 (defvar *webhax-input-limit* 200)
 
-(define-test overlength (item)
+;;;FIXME: How to handle start,end? Are they always defined?
+(define-test overlength (item start end)
   (if (< (length item) *webhax-input-limit*)
       item
-      (ratification-error item
-                          (format nil "Field is longer than system limit of ~a chars."
+      (ratification-error
+       item (format nil "Field is longer than system limit of ~a chars."
                                   *webhax-input-limit*))))
 
 (defun mkparse-in-list (items)

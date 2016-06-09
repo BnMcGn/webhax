@@ -117,7 +117,8 @@
         (create-element
          (getprop
           (create :string ww-simple :integer ww-simple :boolean ww-yesno
-                  :pickone ww-pickone :picksome ww-picksome "pickoneLong" ww-pickone-long)
+                  :pickone ww-pickone :picksome ww-picksome
+                  "pickoneLong" ww-pickone-long)
           (prop widget))
          (@ this props)
          nil)
