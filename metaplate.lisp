@@ -1,6 +1,6 @@
 (in-package :webhax)
 
-                                        ;FIXME: finish deprecation of page-bit
+;;;FIXME: finish deprecation of page-bit
 (defmacro def-page-bit (name cat label &optional (tag :div))
   `(defmacro ,name (params &body body)
      (declare (ignore params))
@@ -21,11 +21,12 @@
 
 (defmacro define-parts (name &body parts)
   `(eval-always
-     (defun ,name (previous)
-       (collecting-hash-table (:existing previous :mode :append)
-         (labels ((add-part (section part)
-                    (collect section part)))
-           ,@parts)))))
+     (watch-for-recompile/auto-watcher ,name
+       (defun ,name (previous)
+         (collecting-hash-table (:existing previous :mode :append)
+           (labels ((add-part (section part)
+                      (collect section part)))
+             ,@parts))))))
 
 (defmacro define-default-parts (name &body parts)
   `(eval-always
@@ -50,19 +51,25 @@
   (multiple-value-bind (keyclauses template)
       (extract-keywords '(:prepend-parts :append-parts) template :in-list t)
     `(eval-always
-       (defun ,name ()
-         (values
-          (quote ,(if wrapper
-                      (leaves-search-replace (funcall-in-macro wrapper)
-                                             :match :@inner :value (car template))
-                      template))
-          (quote ,(%make-part-func :prepend-parts keyclauses))
-          (quote ,(%make-part-func :append-parts keyclauses)))))))
+       (watch-for-recompile/auto-watcher ,name
+         (defun ,name ()
+           (values
+            (quote ,(if wrapper
+                        (leaves-search-replace (funcall-in-macro wrapper)
+                                               :match :@inner
+                                               :value (car template))
+                        template))
+            (quote ,(%make-part-func :prepend-parts keyclauses))
+            (quote ,(%make-part-func :append-parts keyclauses))))))))
 
 (defmacro define-default-layout ((name &key wrapper) &body template)
   `(eval-always
      (define-layout (,name :wrapper ,wrapper) ,@template)
      (setf *metaplate-default-layout* '(function ,name))))
+
+;;;;;;;;;;;;;;;;;;;;;
+;;; Define-page macro
+;;;;;;;;;;;;;;;;;;;;;
 
 (defun %render-part (key data params)
   (html-out
@@ -108,7 +115,7 @@
     (:@title '%render-title)
     (otherwise '%render-part)))
 
-(defun %expand-templates (templates parts-sym params-sym)
+(defun %%expand-templates (templates parts-sym params-sym)
   (labels ((walk-tree (tree)
              (if (atom tree)
                  (cond
@@ -124,7 +131,21 @@
                        (walk-tree (cdr tree))))))
     (walk-tree (car templates))))
 
-(defun %collate-parts (parts)
+(defun %%process-templates (templates parts-sym params-sym)
+  (%%expand-templates
+   (collecting
+       (dolist (template templates)
+         (if (functionp-in-macro template)
+             (progn
+               (push (get-function-name-in-macro template) *watch-names*)
+               (multiple-value-bind (tmpl pre app) (funcall-in-macro template)
+                 (and pre (push pre *prepend-parts*))
+                 (and app (push app *append-parts*))
+                 (collect tmpl)))
+             (collect template))))
+   parts-sym params-sym))
+
+(defun %%collate-parts (parts)
   "Each part will be a function specifier - #'function or a lambda expression,
 or an expression that otherwise evaluates to a function. This function will
 take a pre-existing hash table as its sole parameter, and will return a hash
@@ -132,8 +153,15 @@ table"
   (if (null parts)
       '(make-hash-table)
       (if (functionp-in-macro (car parts))
-          `(funcall-in-macro ,(car parts) ,(%collate-parts (cdr parts)))
+          (progn
+            (push (get-function-name-in-macro (car parts))
+                  *watch-names*)
+            `(funcall-in-macro ,(car parts) ,(%collate-parts (cdr parts))))
           `(funcall ,(car parts) ,(%collate-parts (cdr parts))))))
+
+(defun %%process-parts (parts)
+  (%%collate-parts
+   (concatenate 'list *prepend-parts* (nreverse parts) *append-parts*)))
 
 (defun add-part (section part)
   "This add-part is for use in the parts section of define-page."
@@ -141,28 +169,34 @@ table"
     (collecting-hash-table (:existing previous :mode :append)
       (collect section part))))
 
+(defvar *prepend-parts*)
+(defvar *append-parts*)
+(defvar *watch-names*)
+
 (defmacro define-page (name parts templates)
-  (let (prepend-parts append-parts)
-    (labels ((proc-template (tmpl)
-               (multiple-value-bind (tmp pre app)
-                   (funcall-in-macro tmpl)
-                 (and pre (push pre prepend-parts))
-                 (and app (push app append-parts))
-                 tmp)))
-      (with-gensyms (parts-sym params-sym)
-        (let ((template (%expand-templates
-                         (collecting
-                           (dolist (tm templates)
-                             (collect (if (functionp-in-macro tm)
-                                          (proc-template tm)
-                                          tm))))
-                         parts-sym params-sym)))
-          `(let ((,parts-sym
-                   ,(%collate-parts (concatenate
-                                     'list prepend-parts
-                                     (nreverse parts) append-parts))))
-             (,@(if name `(defun ,name) '(lambda)) (&rest ,params-sym)
-              ,@template)))))))
+  (with-gensyms (parts-sym params-sym)
+    ;;Templates will sometimes include parts. They will placed in the
+    ;;*pre/ap-end-parts* lists by the template processor, and picked up
+    ;; by the parts processor. Both processors may supply names to be
+    ;; watched for recompilation.
+    (let ((*prepend-parts* nil)
+          (*append-parts* nil)
+          (*watch-names* nil)
+          (template (%%process-templates templates parts-sym params-sym))
+          (parts (%%process-parts parts)))
+      (if name
+          `(watch-for-recompile
+             (recompile-watcher (,name ,@*watch-names*)
+               (defun ,name (&rest ,params-sym)
+                 (let ((,parts-sym ,parts))
+                   ,@template))))
+          `(let ((,parts-sym ,parts))
+             ,@template
+             (request-watch-on-names ,*watch-names*))))))
+
+
+;;;End define-page
+
 
 (defun render-menu (&rest _)
   (declare (ignore _))
