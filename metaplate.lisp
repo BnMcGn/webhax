@@ -122,7 +122,7 @@
                    ((eq tree :@inner)
                     (unless (cdr templates)
                       (error "Last template should not contain :@inner"))
-                    (%expand-templates (cdr templates) parts-sym params-sym))
+                    (%%expand-templates (cdr templates) parts-sym params-sym))
                    ((member tree *metaplate-part-names*)
                     `(,(%get-render-func tree) ,tree
                       ,parts-sym ,params-sym))
@@ -179,11 +179,11 @@ table"
     ;;*pre/ap-end-parts* lists by the template processor, and picked up
     ;; by the parts processor. Both processors may supply names to be
     ;; watched for recompilation.
-    (let ((*prepend-parts* nil)
-          (*append-parts* nil)
-          (*watch-names* nil)
-          (template (%%process-templates templates parts-sym params-sym))
-          (parts (%%process-parts parts)))
+    (let* ((*prepend-parts* nil)
+           (*append-parts* nil)
+           (*watch-names* nil)
+           (template (%%process-templates templates parts-sym params-sym))
+           (parts (%%process-parts parts)))
       (if name
           `(watch-for-recompile
              (recompile-watcher (,name ,@*watch-names*)
@@ -193,7 +193,6 @@ table"
           `(let ((,parts-sym ,parts))
              ,@template
              (request-watch-on-names ,*watch-names*))))))
-
 
 ;;;End define-page
 
