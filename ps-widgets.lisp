@@ -136,15 +136,17 @@
                  state))
               (:edit
                ;;FIXME: Client-side validation not implemented.
-               (let ((value (@ action value))
-                     (errmsg nil)) ;temporary)
+               (let ((data (if (@ action data)
+                               (@ action data)
+                               (let ((dat (create)))
+                                 (setf (getprop dat (@ action name))
+                                       (@ action value))
+                                 dat)))
+                     (errmsg nil)) ;temporary
                  (if errmsg
-                     (deep-set-copy
-                      state (list 'errors (@ action name)) errmsg)
-                     (deep-set-copy
-                      (deep-set-copy
-                       state (list 'data (@ action name)) value)
-                      (list 'errors (@ action name)) nil)))))
+                     (safe-set-copy state 'errors errmsg)
+                     (safe-set-copy state 'data
+                                    (copy-merge-objects (@ state data) data))))))
             (create
              :data
              (let ((res (create)))
