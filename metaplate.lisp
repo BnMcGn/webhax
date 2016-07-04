@@ -156,8 +156,8 @@ table"
           (progn
             (push (get-function-name-in-macro (car parts))
                   *watch-names*)
-            `(funcall-in-macro ,(car parts) ,(%collate-parts (cdr parts))))
-          `(funcall ,(car parts) ,(%collate-parts (cdr parts))))))
+            `(funcall-in-macro ,(car parts) ,(%%collate-parts (cdr parts))))
+          `(funcall ,(car parts) ,(%%collate-parts (cdr parts))))))
 
 (defun %%process-parts (parts)
   (%%collate-parts
@@ -190,9 +190,10 @@ table"
                (defun ,name (&rest ,params-sym)
                  (let ((,parts-sym ,parts))
                    ,@template))))
-          `(let ((,parts-sym ,parts))
-             ,@template
-             (request-watch-on-names ,*watch-names*))))))
+          `(lambda (&rest ,params-sym)
+             (let ((,parts-sym ,parts))
+               ,@template
+               (request-watch-on-names ',*watch-names*)))))))
 
 ;;;End define-page
 
