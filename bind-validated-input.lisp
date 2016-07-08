@@ -3,13 +3,13 @@
 (in-package #:webhax)
 
 
-(defun %%make-regular-params-fetcher (valspecs)
+(defun %%make-regular-params-fetcher (bindspecs)
   (let ((min-vals 0)
         (max-vals 0)
         ;(found-optional nil) ;FIXME:Don't seem to be using: will ever need?
         (found-rest nil)
-        (vlength (length valspecs)))
-    (dolist (itm valspecs)
+        (vlength (length bindspecs)))
+    (dolist (itm bindspecs)
       (when found-rest (error "No regular parameters allowed after :rest"))
       (if (fetch-keyword :optional itm)
           (progn
@@ -41,8 +41,8 @@
                   input)
               (make-list ,vlength :initial-element t)))))))
 
-(defun %spec-name (valspec)
-  (car (ensure-list (car valspec))))
+(defun %spec-name (bindspec)
+  (car (ensure-list (car bindspec))))
 
 (defun %%make-key-param-fetcher (keyspec input)
   (bind-extracted-keywords (keyspec other :multiple :required)
@@ -62,16 +62,16 @@
              (values ,(if multiple value `(cdr ,value)) t)
              (values nil nil))))))
 
-(defun %%default-decider (valspec inputform foundvar)
-  (let ((filledp? (and (listp (car valspec))
-                       (third (car valspec))
-                       (symbolp (third (car valspec)))))
-        (multiple (or (fetch-keyword :multiple valspec)
-                      (fetch-keyword :rest valspec))))
+(defun %%default-decider (bindspec inputform foundvar)
+  (let ((filledp? (and (listp (car bindspec))
+                       (third (car bindspec))
+                       (symbolp (third (car bindspec)))))
+        (multiple (or (fetch-keyword :multiple bindspec)
+                      (fetch-keyword :rest bindspec))))
     (with-gensyms (item found vitem valid)
       (collecting
         (collect
-            (list (%spec-name valspec)
+            (list (%spec-name bindspec)
                   `(multiple-value-bind (,item ,found) ,inputform
                      ,@(when filledp?
                          `((setf ,foundvar ,found)))
@@ -80,32 +80,32 @@
                                (,vitem ,valid)
                              ,(if multiple
                                   `(funcall
-                                    (mkparse-all-members ,(second valspec))
+                                    (mkparse-all-members ,(second bindspec))
                                     ,item)
                                   `(funcall-in-macro
-                                    ,(second valspec) ,item))
+                                    ,(second bindspec) ,item))
                            (if ,valid
                                ,vitem
                                (error
                                 (format nil "~a: ~a"
                                         ,(mkstr
-                                          (%spec-name valspec)) ,vitem))))
-                         ,(if (listp (car valspec))
-                              (second (car valspec))
+                                          (%spec-name bindspec)) ,vitem))))
+                         ,(if (listp (car bindspec))
+                              (second (car bindspec))
                               nil)))))
         (when filledp?
           (collect
-              (list (third (car valspec)) foundvar)))))))
+              (list (third (car bindspec)) foundvar)))))))
 
-;valspec:
+;bindspec:
 ;(name -or- (name default filled-p)
 ;   validator
 ;  &keys key (required multiple) -or- &keys (key nil) (rest optional))
 
 
-(defmacro bind-validated-input ((&rest valspecs) &body body)
+(defmacro bind-validated-input ((&rest bindspecs) &body body)
   (multiple-value-bind (keys regular)
-      (splitfilter valspecs
+      (splitfilter bindspecs
                    (lambda (x)
                      (fetch-keyword :key x)))
     (with-gensyms (foundp regvals regfill reg-input key-input)
