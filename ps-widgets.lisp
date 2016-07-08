@@ -20,7 +20,8 @@
         (psx
          (:input :type "text"
                  :key 1
-                 :default-value (prop value)
+                 ;:default-value (prop value)
+                 :value (prop value)
                  :on-change (event-dispatcher (prop name) (prop dispatch)))))
 
     (def-component ww-yesno
