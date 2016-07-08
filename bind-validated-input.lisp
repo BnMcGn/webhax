@@ -114,6 +114,7 @@
          (declare (ignorable ,reg-input ,key-input))
          (multiple-value-bind (,regvals ,regfill)
              (funcall ,(%%make-regular-params-fetcher regular) ,reg-input)
+           (declare (ignorable ,regvals ,regfill))
            (let ((,foundp nil))
              (declare (ignorable ,foundp))
              (let ,(apply #'concatenate

@@ -54,18 +54,25 @@
       (declare (ignore item1))
       d)))
 
-(defun testfunc6()
+(defun testfunc6 ()
   (twrap
     (bind-validated-input
         ((item1 (lambda (x) (values x t)) :rest t))
       item1)))
 
-(defun testfunc7()
+(defun testfunc7 ()
   (twrap
     (let ((webhax::*regular-web-input* '("one")))
       (bind-validated-input
          ((item1 (lambda (x) (values x t)) :rest t))
-       item1))))
+        item1))))
+
+(defun testfunc8 ()
+  (twrap
+    (let ((webhax::*regular-web-input* nil))
+      (bind-validated-input
+          ((a (ratify-wrapper :overlength) :key t))
+        a))))
 
 (test bind-validated-input
   (is (= 10
@@ -78,4 +85,5 @@
   (is (string-equal "thing" (testfunc4)))
   (signals simple-error (testfunc5))
   (is (equal '("one" "2" "3") (testfunc6)))
-  (is (equal '("one") (testfunc7))))
+  (is (equal '("one") (testfunc7)))
+  (is (string-equal "thing" (testfunc8))))
