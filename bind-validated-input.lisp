@@ -80,10 +80,12 @@
                                (,vitem ,valid)
                              ,(if multiple
                                   `(funcall
-                                    (mkparse-all-members ,(second bindspec))
+                                    (mkparse-all-members
+                                     (compile-validator ,(second bindspec)))
                                     ,item)
-                                  `(funcall-in-macro
-                                    ,(second bindspec) ,item))
+                                  `(funcall
+                                    (compile-validator ,(second bindspec))
+                                    ,item))
                            (if ,valid
                                ,vitem
                                (error
@@ -100,7 +102,7 @@
 ;bindspec:
 ;(name -or- (name default filled-p)
 ;   validator
-;  &keys key (required multiple) -or- &keys (key nil) (rest optional))
+;  &key key (required multiple) -or- &key (key nil) (rest optional))
 
 
 (defmacro bind-validated-input ((&rest bindspecs) &body body)

@@ -15,42 +15,42 @@
 (defun testfunc1 ()
   (twrap
     (bind-validated-input
-  ((item1 (ratify-wrapper :overlength))
-   (item2 (ratify-wrapper :integer))
-   (item3 (ratify-wrapper :integer) :optional t)
-   (a (ratify-wrapper :overlength) :key t)
-   (b (ratify-wrapper :email) :key t :multiple t)
-   ((d 5) (ratify-wrapper :integer) :key t))
+        ((item1 :overlength)
+         (item2 :integer)
+         (item3 :integer :optional t)
+         (a :overlength :key t)
+         (b :email :key t :multiple t)
+         ((d 5) :integer :key t))
       (list item2 item3 d item1 b a))))
 
 (defun testfunc2 ()
   (twrap
     (bind-validated-input
-  ((item1 (ratify-wrapper :overlength))
-   (item2 (ratify-wrapper :integer) :rest t))
+        ((item1 :overlength)
+         (item2 :integer :rest t))
       (values item1 (reduce #'+ item2)))))
 
 (defun testfunc3 ()
   (twrap
     (bind-validated-input
-  ((item1 (ratify-wrapper :overlength))
-   (item2 (ratify-wrapper :integer))
-   (item3 (ratify-wrapper :integer)))
+        ((item1 :overlength)
+         (item2 :integer)
+         (item3 :integer))
       (values (+ item2 item3) item1))))
 
 (defun testfunc4 ()
   (twrap
     (bind-validated-input
-        ((item1 (ratify-wrapper :overlength) :rest t)
-         (a (ratify-wrapper :overlength) :key t :required t))
+        ((item1 :overlength :rest t)
+         (a :overlength :key t :required t))
       (declare (ignore item1))
       a)))
 
 (defun testfunc5 ()
   (twrap
     (bind-validated-input
-        ((item1 (ratify-wrapper :overlength) :rest t)
-         (d (ratify-wrapper :overlength) :key t :required t))
+        ((item1 :overlength :rest t)
+         (d :overlength :key t :required t))
       (declare (ignore item1))
       d)))
 
@@ -71,7 +71,7 @@
   (twrap
     (let ((webhax::*regular-web-input* nil))
       (bind-validated-input
-          ((a (ratify-wrapper :overlength) :key t))
+          ((a :overlength :key t))
         a))))
 
 (test bind-validated-input

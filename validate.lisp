@@ -67,6 +67,8 @@
      valspec)
     ((member valspec *ratify-tests*)
      (ratify-wrapper valspec))
+    ((eq valspec :overlength)
+     (ratify-wrapper :overlength))
     ((and (listp valspec) (symbolp (car valspec)))
      (case (car valspec)
        (:pickone
