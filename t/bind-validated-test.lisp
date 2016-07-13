@@ -17,10 +17,12 @@
     (bind-validated-input
         ((item1 :overlength)
          (item2 :integer)
-         (item3 :integer :optional t)
-         (a :overlength :key t)
-         (b :email :key t :multiple t)
-         ((d 5) :integer :key t))
+         &optional
+         (item3 :integer)
+         &key
+         (a :overlength) 
+         (b :email :multiple t)
+         ((d 5) :integer))
       (list item2 item3 d item1 b a))))
 
 (defun testfunc2 ()

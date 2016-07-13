@@ -2,44 +2,50 @@
 
 (in-package #:webhax)
 
+(defun %%reg-params-splitter (bindspecs)
+  (with-collectors (reg< opt< rest<)
+    (let ((collect #'reg<))
+      (dolist (b bindspecs)
+        (case b
+          (&rest (setf collect #'rest<))
+          (&optional (setf collect #'opt<))
+          (otherwise
+           (funcall collect b)))))))
 
 (defun %%make-regular-params-fetcher (bindspecs)
-  (let ((min-vals 0)
-        (max-vals 0)
-        ;(found-optional nil) ;FIXME:Don't seem to be using: will ever need?
-        (found-rest nil)
-        (vlength (length bindspecs)))
-    (dolist (itm bindspecs)
-      (when found-rest (error "No regular parameters allowed after :rest"))
-      (if (fetch-keyword :optional itm)
-          (progn
-            (when (fetch-keyword :rest itm)
-              (error ":rest and :optional not allowed in same spec."))
-            (incf max-vals))
-            ;;(setf found-optional t))
-          (if (fetch-keyword :rest itm)
-              (setf found-rest t)
-              (progn (incf min-vals) (incf max-vals)))))
-    `(lambda (input)
-       (let ((l-in (length input)))
-         (when (< l-in ,min-vals)
-           (error
-            (format nil "~a parameters found, ~a required" l-in ,min-vals)))
-         (when (and (not ,found-rest) (> l-in ,max-vals))
-           (error
-            (format nil "Too many parameters: ~a found, ~a specified."
-                    l-in ,max-vals)))
-         (if (< l-in ,vlength)
-             (values
-              (concatenate 'list input (make-list (- ,vlength l-in)))
-              (concatenate 'list (make-list l-in :initial-element t)
-                           (make-list (- ,vlength l-in))))
-             (values
-              (if ,found-rest
-                  (concatenate 'list (subseq input 0 (1- ,vlength))
-                               (list (nthcdr (1- ,vlength) input)))
-                  input)
-              (make-list ,vlength :initial-element t)))))))
+  (multiple-value-bind (regular optional rest)
+      (%%reg-params-splitter bindspecs)
+    (when (and optional rest)
+      (error "&rest and &optional not allowed in same spec"))
+    (when (< 1 (length rest))
+      (error "Only one &rest parameter allowed"))
+    (let ((min-vals (length regular))
+          (max-vals (+ (length regular)
+                       (max (length optional) (length rest)))))
+      `(lambda (input)
+         (let ((l-in (length input)))
+          (when (< l-in ,(length regular))
+            (error
+             (format nil "~a web parameters found, ~a required"
+                     l-in ,min-vals)))
+          ,@(unless rest
+                    `((when (> l-in ,max-vals)
+                        (error
+                         (format
+                          nil
+                          "Too many web parameters: ~a found, ~a specified."
+                          l-in ,max-vals)))))
+          (if (< l-in ,max-vals)
+              (values
+               (concatenate 'list input (make-list (- ,max-vals l-in)))
+               (concatenate 'list (make-list l-in :initial-element t)
+                            (make-list (- ,max-vals l-in))))
+              (values
+               (if ,rest
+                   (concatenate 'list (subseq input 0 (1- ,max-vals))
+                                (list (nthcdr (1- ,max-vals) input)))
+                   input)
+               (make-list ,max-vals :initial-element t))))))))
 
 (defun %spec-name (bindspec)
   (car (ensure-list (car bindspec))))
@@ -61,6 +67,21 @@
          (if ,value
              (values ,(if multiple value `(cdr ,value)) t)
              (values nil nil))))))
+
+(defvar *rest-toggled* nil)
+(defun %%map-regspecs (func regspecs)
+  (labels ((proc (regspecs count)
+             (cond
+               ((null regspecs) nil)
+               ((eq '&optional (car regspecs))
+                (proc (cdr regspecs) count))
+               ((eq '&rest (car regspecs))
+                (let ((*rest-toggled* t))
+                  (proc (cdr regspecs) count)))
+               (t
+                (cons (funcall func (car regspecs) count)
+                      (proc (cdr regspecs) (1+ count)))))))
+    (apply #'concatenate 'list (proc regspecs 0))))
 
 (defun %%default-decider (bindspec inputform foundvar)
   (let ((filledp? (and (listp (car bindspec))
@@ -106,10 +127,8 @@
 
 
 (defmacro bind-validated-input ((&rest bindspecs) &body body)
-  (multiple-value-bind (keys regular)
-      (splitfilter bindspecs
-                   (lambda (x)
-                     (fetch-keyword :key x)))
+  (multiple-value-bind (regular keys)
+      (divide-list bindspecs (curry #'eq '&key))
     (with-gensyms (foundp regvals regfill reg-input key-input)
       `(let ((,reg-input *regular-web-input*)
              (,key-input *key-web-input*))
@@ -121,18 +140,18 @@
              (declare (ignorable ,foundp))
              (let ,(apply #'concatenate
                           'list
-                          (loop for i from 0
-                                for regspec in regular
-                                append
-                                (%%default-decider regspec `(values
-                                                             (elt ,regvals ,i)
-                                                             (elt ,regfill ,i))
-                                                   foundp))
+                          (%%map-regspecs
+                           (lambda (regspec i)
+                             (%%default-decider regspec `(values
+                                                          (elt ,regvals ,i)
+                                                          (elt ,regfill ,i))
+                                                foundp))
+                           regular)
                           (collecting
-                            (dolist (kspec keys)
-                              (collect
-                                  (%%default-decider
-                                   kspec
-                                   (%%make-key-param-fetcher kspec key-input)
-                                   foundp)))))
+                              (dolist (kspec (cdr keys))
+                                (collect
+                                    (%%default-decider
+                                     kspec
+                                     (%%make-key-param-fetcher kspec key-input)
+                                     foundp)))))
                ,@body)))))))
