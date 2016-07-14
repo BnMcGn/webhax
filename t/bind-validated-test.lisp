@@ -29,7 +29,8 @@
   (twrap
     (bind-validated-input
         ((item1 :overlength)
-         (item2 :integer :rest t))
+         &rest
+         (item2 :integer))
       (values item1 (reduce #'+ item2)))))
 
 (defun testfunc3 ()
@@ -43,8 +44,10 @@
 (defun testfunc4 ()
   (twrap
     (bind-validated-input
-        ((item1 :overlength :rest t)
-         (a :overlength :key t :required t))
+        (&rest
+         (item1 :overlength)
+         &key
+         (a :overlength :required t))
       (declare (ignore item1))
       a)))
 
@@ -59,21 +62,24 @@
 (defun testfunc6 ()
   (twrap
     (bind-validated-input
-        ((item1 (lambda (x) (values x t)) :rest t))
+        (&rest
+         (item1 (lambda (x) (values x t))))
       item1)))
 
 (defun testfunc7 ()
   (twrap
     (let ((webhax::*regular-web-input* '("one")))
       (bind-validated-input
-         ((item1 (lambda (x) (values x t)) :rest t))
+          (&rest
+           (item1 (lambda (x) (values x t))))
         item1))))
 
 (defun testfunc8 ()
   (twrap
     (let ((webhax::*regular-web-input* nil))
       (bind-validated-input
-          ((a :overlength :key t))
+          (&key
+           (a :overlength))
         a))))
 
 (test bind-validated-input

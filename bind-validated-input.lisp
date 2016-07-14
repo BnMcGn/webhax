@@ -41,10 +41,10 @@
                (concatenate 'list (make-list l-in :initial-element t)
                             (make-list (- ,max-vals l-in))))
               (values
-               (if ,rest
+               (if (zerop ,(length rest))
+                   input
                    (concatenate 'list (subseq input 0 (1- ,max-vals))
-                                (list (nthcdr (1- ,max-vals) input)))
-                   input)
+                                (list (nthcdr (1- ,max-vals) input))))
                (make-list ,max-vals :initial-element t))))))))
 
 (defun %spec-name (bindspec)
@@ -87,8 +87,7 @@
   (let ((filledp? (and (listp (car bindspec))
                        (third (car bindspec))
                        (symbolp (third (car bindspec)))))
-        (multiple (or (fetch-keyword :multiple bindspec)
-                      (fetch-keyword :rest bindspec))))
+        (multiple (or (fetch-keyword :multiple bindspec) *rest-toggled*)))
     (with-gensyms (item found vitem valid)
       (collecting
         (collect
