@@ -95,6 +95,21 @@
   (add-part :@javascript
             "https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js"))
 
+(defmacro mount-component ((component-name) &body parameters)
+  "Produces html output to mount a named react component in place, creating a named div element, then creating a script element that renders the component in the div. Parameters are alternating keys and values, sent to the component as initial props. Values, therefore, are parenscript. Lisp values must be wrapped in lisp or lisp-raw."
+  (let ((tagid (mkstr (gensym (mkstr "mount-" component-name #\-)))))
+    `(html-out
+       (:div :id ,tagid)
+       (:script
+        :type "text/javascript"
+        (str
+         (ps
+           (react:render
+            (react:create-element ,component-name
+                            (create ,@parameters))
+            (chain document
+                   (get-element-by-id ,tagid)))))))))
+
 ;;;;;;;;
 
 
