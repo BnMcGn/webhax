@@ -11,7 +11,8 @@
    #:recommend-widget
    #:options-list
    #:normalize-fieldspec-body
-   #:prep-fieldspec-body-for-json))
+   #:prep-fieldspec-body-for-json
+   #:convert-fieldspecs-to-json))
 
 (in-package :webhax-validate)
 
@@ -129,5 +130,13 @@
    (nth-value
     1 (gadgets:extract-keywords '(:compiled-validator) fspec))))
 
-
+(defun convert-fieldspecs-to-json (fspecs)
+  (json:encode-json-to-string
+   (cl-hash-util:collecting-hash-table (:mode :replace)
+     (gadgets:map-by-2
+      (lambda (k v)
+        (cl-hash-util:collect k
+          (prep-fieldspec-body-for-json v)))
+      fspecs))))
+ 
 
