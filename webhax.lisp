@@ -5,7 +5,6 @@
 ;;; "webhax" goes here. Hacks and glory await!
 
 (defparameter *set-content-type* nil)
-(defparameter *session* ningle:*session*)
 
 (defun set-route (app route func)
   "Thin wrapper around setf ningle:route in case we stop using ningle."
@@ -32,9 +31,10 @@
       (set-content-type content-type))
     (multiple-value-bind (*regular-web-input* *key-web-input*)
         (input-normalize input)
-      (bind-webspecials (nth-value 1 (input-normalize input))
-        (with-output-to-string (*webhax-output*)
-          (funcall handler))))))
+      (let ((*session* ningle:*session*))
+        (bind-webspecials (nth-value 1 (input-normalize input))
+          (with-output-to-string (*webhax-output*)
+            (funcall handler)))))))
 
 ;;;FIXME: *webhax-output* rebind to string is not taking effect.
 (defmacro quick-page (&rest parts-and-main)
