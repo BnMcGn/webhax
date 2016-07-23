@@ -15,7 +15,10 @@
    #:function-wrapper
    #:execute
    #:multiple-key-p
-   #:start-test-app))
+   #:start-test-app
+   #:*session*
+   #:get-user-name
+   #:get-display-name))
 
 (defpackage #:webhax-json-call
   (:use #:cl #:webhax-core #:gadgets #:alexandria)
@@ -97,7 +100,8 @@
    #:under-path-p
    #:repath-clack-env
    #:url-from-env
-   #:session-from-env))
+   #:session-from-env
+   #:mount-component))
 
 
 

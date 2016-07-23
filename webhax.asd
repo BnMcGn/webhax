@@ -22,6 +22,7 @@
   :serial t
   :components ((:file "package")
                (:file "webhax-core")
+               (:file "user")
                (:file "web-input")
                (:file "metaplate")
                (:file "webhax" :depends-on ("web-input" "metaplate"))

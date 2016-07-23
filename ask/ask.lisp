@@ -11,9 +11,9 @@
   "Create a named Ask for later use, either standalone or as a subform."
   `(eval-always
      (defun ,name ()
-  (values
-   (quote ,body)
-   :ask-form))))
+       (values
+        (quote ,body)
+        :ask-form))))
 
 
 
@@ -95,11 +95,11 @@
   (bind-extracted-keywords
       (body short-body :target :finish (:prefill :multiple))
     (let ((*ask-target* target)
-    (*ask-finish* (or finish *ask-finish*))
-    (*ask-prefills* prefill))
+          (*ask-finish* (or finish *ask-finish*))
+          (*ask-prefills* prefill))
       (multiple-value-bind (nbody qs names)
-    (process-ask-code short-body)
-  (ask-page-insert nbody qs names)))))
+          (process-ask-code short-body)
+        (ask-page-insert nbody qs names)))))
 
 ;;;FIXME: Review the service url, make sure it works everywhere.
 (defun create-ask-service (app-obj &key (url "/ask-data/"))
@@ -113,17 +113,17 @@
   (add-part :@javascript "/static/jquery.js")
   (add-part :@javascript #'webhax::ps-ask-lib)
   (add-part :@javascript #'webhax:ps-page-mod)
-  ;FIXME: select2 stuff should only be loaded when needed
+  ;;FIXME: select2 stuff should only be loaded when needed
   (add-part :@javascript
-    "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js")
+            "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js")
   (add-part :@css
-    "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css"))
+            "//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css"))
 
 (defun default-ask-finish (astore)
   (declare (ignore astore))
   (create-page-mod
    (replace-with (format nil "form#~a > div" *ask-formname*)
-     (html-out (:div (:span "Entry Submitted"))))))
+                 (html-out (:div (:span "Entry Submitted"))))))
 
 (setf *ask-finish* '#'default-ask-finish)
 
@@ -131,24 +131,24 @@
   (bind-extracted-keywords
       (body short-body :target :finish (:prefill :multiple))
     (let ((*ask-target* target)
-    (*ask-finish* (or finish *ask-finish*))
-    (*ask-prefills* prefill))
+          (*ask-finish* (or finish *ask-finish*))
+          (*ask-prefills* prefill))
       (multiple-value-bind (nbody qs names)
-    (process-ask-code short-body)
-  `(values
-    ,(create-ask-manager nbody qs names)
-    ',names)))))
+          (process-ask-code short-body)
+        `(values
+          ,(create-ask-manager nbody qs names)
+          ',names)))))
 
 (defun server-test ()
   (multiple-value-bind (askman names)
       (t-ask
-  (q some "Are there any?" :yesno)
-  (if (a some)
-      (q enough? "How many?" :pickone :source '(3 5 6 18))
-      (q want "Why not?" :string))
-  (and (q are :yesno)
-       (q you :yesno)
-       (q sure? :yesno)))
+        (q some "Are there any?" :yesno)
+        (if (a some)
+            (q enough? "How many?" :pickone :source '(3 5 6 18))
+            (q want "Why not?" :string))
+        (and (q are :yesno)
+             (q you :yesno)
+             (q sure? :yesno)))
     (print names)
     (print (funcall askman :update nil))
     (print (funcall askman :update `((,(car names) . "true"))))
@@ -161,8 +161,8 @@
     :target #'print
     (q some "Are there any?" :yesno)
     (if (a some)
-  (q enough? "How many?" :pickone :source '(3 5 6 18))
-  (q want "Why not?" :string))
+        (q enough? "How many?" :pickone :source '(3 5 6 18))
+        (q want "Why not?" :string))
     (form (q are :yesno)
-   (q you :yesno)
-   (q sure? :yesno))))
+          (q you :yesno)
+          (q sure? :yesno))))
