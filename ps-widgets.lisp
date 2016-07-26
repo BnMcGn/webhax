@@ -175,7 +175,7 @@
 
     (def-component webhax-form-toplevel
         (let ((fspecs (prop fieldspecs))
-              (data (prop data))
+              (data (prop prefill))
               (dispatch (prop dispatch))
               (errors (prop errors))
               (subform (or (prop layout) webhax-simple-form))
