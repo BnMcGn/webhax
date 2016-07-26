@@ -73,12 +73,13 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
     (load-prefills askstore pr)))
 
 (defun create-ask-manager (code qs names)
-  (with-gensyms (continuations dispatch stor)
+  (with-gensyms (continuations dispatch stor destroy)
     `(let ((,continuations nil)
            (,dispatch nil)
            (,stor (make-instance 'ask-store
                                  :q-clauses (list ,@(mapcar #'%unquote-q qs))
-                                 :names ',names)))
+                                 :names ',names))
+           (,destroy nil))
        (%insert-prefills ,stor (list ,@*ask-prefills*))
        (flet ((answer (&rest params)
                 (apply #'answer ,stor params))
@@ -87,7 +88,11 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
          (macrolet ((a (itm)
                       `(answer ',itm :translate t))
                     (form (&body body)
-                      (%process-form body)))
+                      (%process-form body))
+                    (exit (&body body)
+                      `(prog1
+                           ,@body
+                         (remove-ask-manager *ask-formname*))))
            (cl-cont:with-call/cc
              (labels
                  ((display (name)
@@ -103,7 +108,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                (setf ,dispatch
                      (list (cons :success (%ask-proc-finish
                                            ,stor ,*ask-target* ,*ask-finish*))))
-               ))));FIXME: termination cleanup needed here;
+               (setf ,destroy t)))))
        (lambda (command data)
          (case command
            (:update
@@ -116,11 +121,13 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                            (dolist (keyname (%dispatch-keys ,dispatch))
                              (all (exists-answer ,stor keyname))) t)
                      (funcall (car ,continuations)))
+                   (when ,destroy
+                     (remove-ask-manager *ask-formname*))
                    ,dispatch)))
            (:get-store
             ,stor)
-           (:done
-            (error "Not implemented"))
+           (:destroy
+            (remove-ask-manager *ask-formname*))
            (:back
             (error "Not implemented"))
            (otherwise
