@@ -4,7 +4,7 @@
 
 
 (defparameter *ask-control-types*
-  '(:yesno :string :pickone :picksome :picksome-long :integer :date :month 
+  '(:yesno :string :pickone :picksome :picksome-long :integer :date :month
     :datetime :datetime-local :textentry))
 
 (defparameter *ask-multiple-controls*
@@ -28,7 +28,7 @@
       (thing-labels:thing-label (second q))))
 
 (defun get-q-type (q)
-    (aif (first-match *ask-control-types* (lambda (x) (member x (cddr q))))
+  (aif (first-match *ask-control-types* (lambda (x) (member x (cddr q))))
        it
        (error "Control type not found")))
 
@@ -39,34 +39,34 @@
        '(:email :number :date :month :datetime :datetime-local :integer)))
   (defun %ratify-sym-for-type (tsym)
     (cond ((member tsym ratify-matches) tsym)
-	  ((eq tsym :yesno) :boolean)
-	  (t nil))))
+          ((eq tsym :yesno) :boolean)
+          (t nil))))
 
 (defun %default-validator (q)
   (aif (%ratify-sym-for-type (get-q-type q))
        (ratify-wrapper it)
        (case (get-q-type q)
-	 (:pickone 
-	  (mkparse-in-list (fetch-keyword :source q)))
-	 (:picksome
-	  (mkparse-in-list (fetch-keyword :source q)))
-	 (otherwise ;Default - limits input length
-	  (ratify-wrapper :overlength))))) 
+         (:pickone
+          (mkparse-in-list (fetch-keyword :source q)))
+         (:picksome
+          (mkparse-in-list (fetch-keyword :source q)))
+         (otherwise ;Default - limits input length
+          (ratify-wrapper :overlength)))))
 
 (defun %q-validator (q)
   "Validator spec: function that returns (values <adjusted val> t) if good, or (values <error message> nil) if bad."
-  (labels ((to-func (x) (if (keywordp x) 
+  (labels ((to-func (x) (if (keywordp x)
                             (ratify-wrapper (%ratify-sym-for-type x))
                             x)))
     (let ((vald (aif2 (fetch-keyword :validator q)
-                      (to-func it) 
+                      (to-func it)
                       (%default-validator q)))
           (and-vald (to-func (fetch-keyword :and-validator q)))
           (or-vald (to-func (fetch-keyword :or-validator q))))
       (and and-vald or-vald
-           (error 
+           (error
             ":and-validator and :or-validator shouldn't be set in the same q"))
-      (cond 
+      (cond
         (and-vald (lambda (x)
                     (multiple-value-bind (val sig) (funcall vald x)
                       (if sig
@@ -78,7 +78,7 @@
                          (values val sig)
                          (funcall or-vald val)))))
         (t vald)))))
-			 
+
 
 
 
