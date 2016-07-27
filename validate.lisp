@@ -107,22 +107,24 @@
             (t (error "Not a valid option"))))
         (gadgets:fetch-keyword :options valspec))))
 
-
-(defun normalize-fieldspec-body (fieldspec
-                            &aux (fspec (alexandria:ensure-list fieldspec)))
-  ;;Doesn't handle name
-  (let ((vspec (getf fspec :type :string)))
-    (list
-     :initial (getf fspec :initial)
-     :compiled-validator (compile-validator vspec)
-     :widget (getf fspec :widget
-                   (recommend-widget vspec))
-     :nullok (nullok? vspec)
-     :options (options-list vspec)
-     :type vspec
-     :config (getf fspec :config)
-     :description (getf fspec :description "")
-     :documentation (getf fspec :documentation ""))))
+(defun normalize-fieldspec-body (fieldspec)
+  (if (stringp (car fieldspec))
+      (list* :description (car fieldspec)
+             (cddr (normalize-fieldspec-body (cdr fieldspec))))
+      (let ((vspec (car fieldspec))
+            (fspec (cdr fieldspec)))
+        ;;Doesn't handle name
+        (list
+         :description (getf fspec :description "")
+         :initial (getf fspec :initial)
+         :compiled-validator (compile-validator vspec)
+         :widget (getf fspec :widget
+                       (recommend-widget vspec))
+         :nullok (nullok? vspec)
+         :options (options-list vspec)
+         :type vspec
+         :config (getf fspec :config)
+         :documentation (getf fspec :documentation "")))))
 
 (defun prep-fieldspec-body-for-json (fspec)
   ;;Doesn't handle name
@@ -138,5 +140,5 @@
         (cl-hash-util:collect k
           (prep-fieldspec-body-for-json v)))
       fspecs))))
- 
+
 
