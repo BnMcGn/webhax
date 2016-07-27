@@ -155,19 +155,20 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
          (error 
           (format nil "Form ~a not found in askdata." aname)))))
 
-(defun remove-ask-manager (aname &key (session *session*))
-  (let ((askdata (gethash :askdata session)))
-    (if (not (hash-table-p askdata))
-        (warn "Askdata not found")
-        (if (not (gethash aname askdata))
-            (warn "Ask-manager not found in session!")
-            (remf (gethash name askdata))))))
+(eval-always
+  (defun remove-ask-manager (aname &key (session *session*))
+    (let ((askdata (gethash :askdata session)))
+      (if (not (hash-table-p askdata))
+          (warn "Askdata not found")
+          (if (not (gethash aname askdata))
+              (warn "Ask-manager not found in session!")
+              (remhash aname askdata))))))
 
 (defclass ask-store ()
   ((stor
     :initarg :storage
     :initform (make-hash-table))
-   (qs 
+   (qs
     :initarg :q-clauses)
    (names
     :initarg :names)
