@@ -12,7 +12,8 @@
    #:options-list
    #:normalize-fieldspec-body
    #:prep-fieldspec-body-for-json
-   #:convert-fieldspecs-to-json))
+   #:convert-fieldspecs-to-json
+   #:multiple?))
 
 (in-package :webhax-validate)
 
@@ -86,6 +87,9 @@
   "Null is ok unless explicitly set otherwise."
   (not (and (listp valspec) (member :notnull valspec))))
 
+(defun multiple? (widget)
+  (member widget '(:picksome :picksome-long)))
+
 ;;;FIXME: Mostly just a placeholder for now. Will fill out with time.
 (defun recommend-widget (valspec)
   (let ((valsym (or (and (listp valspec) (car valspec)) valspec)))
@@ -111,15 +115,17 @@
   (if (stringp (car fieldspec))
       (list* :description (car fieldspec)
              (cddr (normalize-fieldspec-body (cdr fieldspec))))
-      (let ((vspec (car fieldspec))
-            (fspec (cdr fieldspec)))
+      (let* ((vspec (car fieldspec))
+             (fspec (cdr fieldspec))
+             (widget (getf fspec :widget
+                           (recommend-widget vspec))))
         ;;Doesn't handle name
         (list
          :description (getf fspec :description "")
          :initial (getf fspec :initial)
          :compiled-validator (compile-validator vspec)
-         :widget (getf fspec :widget
-                       (recommend-widget vspec))
+         :widget widget
+         :multiple (multiple? widget)
          :nullok (nullok? vspec)
          :options (options-list vspec)
          :type vspec

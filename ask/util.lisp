@@ -2,11 +2,12 @@
 
 (in-package #:webhax)
 
-
+;;;remove
 (defparameter *ask-control-types*
   '(:yesno :string :pickone :picksome :picksome-long :integer :date :month
     :datetime :datetime-local :textentry))
 
+;;;remove
 (defparameter *ask-multiple-controls*
     '(:picksome :picksome-long))
 
@@ -22,11 +23,13 @@
       (setf counter 0))
     (mkstr name (incf counter))))
 
+;;;remove?
 (defun make-q-label (q)
   (if (stringp (third q))
       (third q)
       (thing-labels:thing-label (second q))))
 
+;;;remove?
 (defun get-q-type (q)
   (aif (first-match *ask-control-types* (lambda (x) (member x (cddr q))))
        it
@@ -34,7 +37,7 @@
 
 ;;;Validation
 
-
+;;;mostly go away
 (let ((ratify-matches
        '(:email :number :date :month :datetime :datetime-local :integer)))
   (defun %ratify-sym-for-type (tsym)
@@ -79,6 +82,10 @@
                          (funcall or-vald val)))))
         (t vald)))))
 
+(defun %q-validator (q)
+  (webhax-validate:compile-validator
+   (webhax-validate:normalize-fieldspec-body
+    (cddr q))))
 
 
 

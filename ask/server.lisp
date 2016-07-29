@@ -186,55 +186,36 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 
 (defgeneric nullok-p (stor name))
 (defmethod nullok-p (astor name)
-  (with-slots (names qs) astor
-    (member :nullok
-            (assoc-cdr name
-                       (pairlis names qs)))))
+  (with-slots (validators) astor
+    (getf (gethash name validators) :nullok)))
 
 (defgeneric multiple-p (stor name))
 (defmethod multiple-p (astor name)
-  (with-slots (names qs) astor
-    (member 
-     (get-q-type (assoc-cdr name (pairlis names qs)))
-     *ask-multiple-controls*)))
+  (with-slots (validators) astor
+    (getf (gethash name validators) :multiple)))
 
 (defgeneric add-input (stor input)
   (:documentation
    "Add input from a web source (alist format) to a storage object. Returns
    error messages if any input items don't validate."))
 
-(defun %proc-single-input (name input validator astor)
-  (let ((item (assoc name input :test #'equal)))
-    (when item
-      (multiple-value-bind (val sig)
-          (funcall validator (cdr item))
-        (if sig
-            (values t val sig)
-            (if (and (nullok-p astor name) (equal "" (cdr item)))
-                (values t nil t)
-                (values t val sig)))))))
-
-(defun %proc-multi-input (name input validator astor)
-  (declare (ignore astor))
-  (let ((items (assoc-all name input :test #'eq-symb-multiple)))
-    (when items
-      (apply #'values t 
-             (multiple-value-list 
-              (funcall (mkparse-all-members validator) items))))))
-
 (defmethod add-input ((astor ask-store) input)
   (with-slots (validators names stor) astor
     (multiple-value-bind (good errors)
         (with-collectors (g< e<)
           (dolist (n names)
-            (multiple-value-bind (present val sig)
-                (funcall (if (multiple-p astor n) 
-                             #'%proc-multi-input #'%proc-single-input)
-                         n input (gethash n validators) astor)
-              (when present
-                (if sig 
-                    (g< (cons n val))
-                    (e< (cons n val)))))))
+            (let ((value (if (multiple-p astor n)
+                             `((,n . ,(assoc-all n input
+                                                 :test #'eq-symb-multiple)))
+                             (assoc n input :test #'equal))))
+              (when value
+                (multiple-value-bind (val sig)
+                    (funcall
+                     (getf (gethash validators n) :compiled-validator)
+                     value)
+                  (if sig
+                      (g< (cons n val))
+                      (e< (cons n val))))))))
       (if errors
           errors
           (dolist (itm good)
