@@ -47,6 +47,21 @@
     (quotef (second newq)) ;The symbol/label
     (cons 'list newq)))
 
+(defun %unquote-q (q)
+  "Decide what portions of the q should not be executed."
+  (labels ((unquote-valspec (vs)
+             (optima:match vs
+               ((and (type keyword) val) val)
+               ((list* val rest)
+                `(list ,val ,@rest)))))
+    (optima:match q
+     ((list* 'q (and (type symbol) name) (and (type string) description)
+             valtype rest)
+      `(list 'q ',name ,description ,(unquote-valspec valtype) ,@rest))
+     ((list* 'q (and (type symbol) name) valtype rest)
+      `(list 'q ',name ,(unquote-valspec valtype) ,@rest))
+     (_ (error "Malformed q clause")))))
+
 (defun %dispatch-keys (disp)
   (hash-table-keys (assoc-cdr :next disp)))
 
@@ -179,7 +194,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 (defmethod initialize-instance :after ((stor ask-store) &key)
   (with-slots (qs names validators) stor
     (setf validators 
-          (collecting-hash-table (:mode :replace)
+          (collecting-hash-table (:mode :replace :test #'equal)
             (loop for q in qs
                for n in names
                do (collect n (%q-validator q)))))))
@@ -211,7 +226,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
               (when value
                 (multiple-value-bind (val sig)
                     (funcall
-                     (getf (gethash validators n) :compiled-validator)
+                     (getf (gethash n validators) :compiled-validator)
                      value)
                   (if sig
                       (g< (cons n val))

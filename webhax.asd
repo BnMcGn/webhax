@@ -18,7 +18,8 @@
                #:ningle
                #:cl-react
                #:ps-gadgets
-               #:webhax-validate)
+               #:webhax-validate
+               #:optima)
   :serial t
   :components ((:file "package")
                (:file "webhax-core")
