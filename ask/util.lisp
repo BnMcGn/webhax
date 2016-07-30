@@ -83,9 +83,8 @@
         (t vald)))))
 
 (defun %q-validator (q)
-  (webhax-validate:compile-validator
-   (webhax-validate:normalize-fieldspec-body
-    (cddr q))))
+  (webhax-validate:normalize-fieldspec-body
+   (cddr q)))
 
 
 
