@@ -69,6 +69,8 @@
      valspec)
     ((member valspec *ratify-tests*)
      (ratify-wrapper valspec))
+    ((eq valspec :yesno)
+     (ratify-wrapper :boolean))
     ((eq valspec :overlength)
      (ratify-wrapper :overlength))
     ((and (listp valspec) (symbolp (car valspec)))
@@ -78,7 +80,8 @@
        (:picksome
         (mkparse-all-members (mkparse-in-list (cdr valspec))))))
     ((and (listp valspec) (functionp (car valspec)))
-     (apply (car valspec) (cdr valspec)))))
+     (apply (car valspec) (cdr valspec)))
+    (t (error "Validator type not found"))))
 
 (defparameter *ratify-tests*
   '(:bit :day :date :hour :real :time :year :float :month :ratio :minute :number :offset :second :string :boolean :complex :integer :datetime :rational :character :unsigned-integer :ip :tel :uri :url :file :host :ipv4 :ipv6 :name :port :text :user :week :color :email :query :radio :range :domain :failed :object :scheme :search :numeric :checkbox :fragment :hostname :password :property :protocol :textarea :authority :alphabetic :alphanumeric :absolute-path :rootless-path :datetime-local :hierarchical-part))
@@ -93,7 +96,7 @@
 ;;;FIXME: Mostly just a placeholder for now. Will fill out with time.
 (defun recommend-widget (valspec)
   (let ((valsym (or (and (listp valspec) (car valspec)) valspec)))
-    (if (member valsym '(:integer :string :boolean :pickone :picksome))
+    (if (member valsym '(:integer :string :boolean :pickone :picksome :yesno))
         valsym
         :string)))
 
