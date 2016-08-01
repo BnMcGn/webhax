@@ -101,7 +101,10 @@
    #:repath-clack-env
    #:url-from-env
    #:session-from-env
-   #:mount-component))
+   #:mount-component
+   #:answers
+   #:exit
+   #:server))
 
 
 

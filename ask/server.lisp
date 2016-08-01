@@ -42,13 +42,6 @@
 
 (defun %unquote-q (q)
   "Decide what portions of the q should not be executed."
-  (let ((newq (copy-list q)))
-    (quotef (first newq)) ;The q
-    (quotef (second newq)) ;The symbol/label
-    (cons 'list newq)))
-
-(defun %unquote-q (q)
-  "Decide what portions of the q should not be executed."
   (labels ((unquote-valspec (vs)
              (optima:match vs
                ((and (type keyword) val) val)
@@ -85,8 +78,11 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 
 (defun %ask-proc-exit/server (exit-body)
   ;;Retain only server portions of the exit clause
-  (remove-if-not
-   (lambda (x) (and (listp x) (eq (car x) 'server)))
+  (mapcan
+   (lambda (x)
+     (when
+         (and (listp x) (eq (car x) 'server))
+       (cdr x)))
    exit-body))
 
 (defun %insert-prefills (askstore prefills)
@@ -115,7 +111,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                       (%process-form body))
                     (exit (&body body)
                       `(prog1
-                           ,@(%ask-proc-exit body)
+                           ,@(%ask-proc-exit/server body)
                          (remove-ask-manager *ask-formname*))))
            (cl-cont:with-call/cc
              (labels
