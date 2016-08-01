@@ -109,7 +109,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                       `(answer ',itm :translate t))
                     (form (&body body)
                       (%process-form body))
-                    (exit (&body body)
+                    (done (&body body)
                       `(prog1
                            ,@(%ask-proc-exit/server body)
                          (remove-ask-manager *ask-formname*))))
@@ -155,7 +155,6 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 
 ;;;FIXME: Should have some way of cleaning old askstores from session/askdata
 (defun register-ask-manager (aman &key (session *session*))
-  (print *session*)
   (unless (gethash :askdata session)
     (setf (gethash :askdata session) (make-hash-table :test #'equal)))
   (let* ((stor (gethash :askdata session))
@@ -232,7 +231,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                 (multiple-value-bind (val sig)
                     (funcall
                      (getf (gethash n validators) :compiled-validator)
-                     value)
+                     (cdr value))
                   (if sig
                       (g< (cons n val))
                       (e< (cons n val))))))))
