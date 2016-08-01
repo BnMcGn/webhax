@@ -63,6 +63,17 @@
                      (return-from exit (values it nil)))))
        t))))
 
+
+(let ((keymap '((:yesno . :boolean))))
+  (defun %handle-keyword (valkey)
+    (anaphora:aif (assoc valkey keymap)
+                  (ratify-wrapper (cddr anaphora:it))
+                  (ratify-wrapper valkey))))
+
+;;;FIXME: Badly needs tidying
+;;;FIXME: how shall overlength work?
+;;;FIXME: function/list specs have design issue: notnull in parameters
+
 (defun compile-validator (valspec)
   (cond
     ((functionp valspec)
@@ -78,7 +89,9 @@
        (:pickone
         (mkparse-in-list (cdr valspec)))
        (:picksome
-        (mkparse-all-members (mkparse-in-list (cdr valspec))))))
+        (mkparse-all-members (mkparse-in-list (cdr valspec))))
+       (otherwise
+        (%handle-keyword (car valspec)))))
     ((and (listp valspec) (functionp (car valspec)))
      (apply (car valspec) (cdr valspec)))
     (t (error "Validator type not found"))))
@@ -111,6 +124,10 @@
              (if (eq 2 (length option))
                  option
                  (error "Option must be a list of 2 elements")))
+            ;;For some reason this seemed to be a bad idea earlier???
+            ;;See what happens:
+            ((or (symbolp option) (stringp option) (numberp option))
+             (list option option))
             (t (error "Not a valid option"))))
         (gadgets:fetch-keyword :options valspec))))
 
