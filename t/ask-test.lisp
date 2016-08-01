@@ -51,7 +51,7 @@
 (defun date-test-form ()
   (ask
     (form
-     (q item :date :nullok))
+     (q item :date))
     :target (lambda (data)
         (setf *date-test-result* (gethash 'item data)))))
 
