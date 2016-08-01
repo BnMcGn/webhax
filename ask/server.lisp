@@ -83,6 +83,12 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
         (funcall-in-macro finish (all-answers askstore :translate t))
         res)))
 
+(defun %ask-proc-exit/server (exit-body)
+  ;;Retain only server portions of the exit clause
+  (remove-if-not
+   (lambda (x) (and (listp x) (eq (car x) 'server)))
+   exit-body))
+
 (defun %insert-prefills (askstore prefills)
   (dolist (pr prefills)
     (load-prefills askstore pr)))
@@ -99,14 +105,17 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
        (flet ((answer (&rest params)
                 (apply #'answer ,stor params))
               (exists-answer (&rest params)
-                (apply #'exists-answer ,stor params)))
+                (apply #'exists-answer ,stor params))
+              (answers ()
+                ;;FIXME: Verify that :strip t is correct here.
+                (all-answers ,stor :strip t :translate t)))
          (macrolet ((a (itm)
                       `(answer ',itm :translate t))
                     (form (&body body)
                       (%process-form body))
                     (exit (&body body)
                       `(prog1
-                           ,@body
+                           ,@(%ask-proc-exit body)
                          (remove-ask-manager *ask-formname*))))
            (cl-cont:with-call/cc
              (labels
@@ -193,7 +202,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 
 (defmethod initialize-instance :after ((stor ask-store) &key)
   (with-slots (qs names validators) stor
-    (setf validators 
+    (setf validators
           (collecting-hash-table (:mode :replace :test #'equal)
             (loop for q in qs
                for n in names
