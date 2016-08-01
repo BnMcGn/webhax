@@ -63,6 +63,11 @@
                      (return-from exit (values it nil)))))
        t))))
 
+(defun nullok-test (subtest)
+  (lambda (item)
+    (if (and item (< 0 (length item)))
+        (funcall subtest item)
+        (values nil t))))
 
 (let ((keymap '((:yesno . :boolean))))
   (defun %handle-keyword (valkey)
@@ -138,15 +143,18 @@
       (let* ((vspec (car fieldspec))
              (fspec (cdr fieldspec))
              (widget (getf fspec :widget
-                           (recommend-widget vspec))))
+                           (recommend-widget vspec)))
+             (nullok (nullok? vspec)))
         ;;Doesn't handle name
         (list
          :description (getf fspec :description "")
          :initial (getf fspec :initial)
-         :compiled-validator (compile-validator vspec)
+         :compiled-validator (if nullok
+                                 (nullok-test (compile-validator vspec))
+                                 (compile-validator vspec))
          :widget widget
          :multiple (multiple? widget)
-         :nullok (nullok? vspec)
+         :nullok nullok
          :options (options-list vspec)
          :type vspec
          :config (getf fspec :config)
