@@ -11,6 +11,7 @@
                         :serial t
                         :components ((:file "package")
                                      (:file "bind-validated-test")
+                                     (:file "validate-test")
                                      (:file "ask-test")))))
 
 

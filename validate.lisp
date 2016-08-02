@@ -2,6 +2,8 @@
 
 (defpackage #:webhax-validate
   (:use #:cl #:gadgets #:ratify)
+  (:import-from #:alexandria
+                #:compose)
   (:export
    #:mkparse-in-list
    #:mkparse-all-members
@@ -47,10 +49,11 @@
                                   *webhax-input-limit*))))
 
 (defun mkparse-in-list (items)
-  (lambda (item)
-    (aif2only (match-a-symbol item items)
-              (values it t)
-              (values "Value not in list of options" nil))))
+  (let ((matcher (match-various (mapcar #'car items))))
+    (lambda (item)
+      (aif2only (funcall matcher item)
+                (values it t)
+                (values "Value not in list of options" nil)))))
 
 (defun mkparse-all-members (subtest)
   (lambda (itemlist)
@@ -69,10 +72,23 @@
         (funcall subtest item)
         (values nil t))))
 
+(defun notnull-test (subtest)
+  (lambda (item)
+    (unless (stringp item)
+      (error (make-condition 'type-error :datum item :expected-type 'string)))
+    (if (> 1 (length item))
+        (values "Field must not be empty" nil)
+        (funcall subtest item))))
+
+(defun string-check (str)
+  (if (stringp str)
+      str
+      (error (make-condition 'type-error :datum str :expected-type 'string))))
+
 (let ((keymap '((:yesno . :boolean))))
   (defun %handle-keyword (valkey)
     (anaphora:aif (assoc valkey keymap)
-                  (ratify-wrapper (cddr anaphora:it))
+                  (ratify-wrapper (cdr anaphora:it))
                   (ratify-wrapper valkey))))
 
 ;;;FIXME: Badly needs tidying
@@ -92,9 +108,9 @@
     ((and (listp valspec) (symbolp (car valspec)))
      (case (car valspec)
        (:pickone
-        (mkparse-in-list (cdr valspec)))
+        (mkparse-in-list (options-list valspec)))
        (:picksome
-        (mkparse-all-members (mkparse-in-list (cdr valspec))))
+        (mkparse-all-members (mkparse-in-list (options-list valspec))))
        (otherwise
         (%handle-keyword (car valspec)))))
     ((and (listp valspec) (functionp (car valspec)))
@@ -119,6 +135,7 @@
         :string)))
 
 (defun options-list (valspec)
+  "Shall return list of options that consist of a two element list: (value label)"
   (and (listp valspec)
        (mapcar
         (lambda (option)
@@ -151,7 +168,7 @@
          :initial (getf fspec :initial)
          :compiled-validator (if nullok
                                  (nullok-test (compile-validator vspec))
-                                 (compile-validator vspec))
+                                 (notnull-test (compile-validator vspec)))
          :widget widget
          :multiple (multiple? widget)
          :nullok nullok
