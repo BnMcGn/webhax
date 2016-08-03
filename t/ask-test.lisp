@@ -14,11 +14,7 @@
            (q you :yesno)
            (q sure? :yesno))
       (done
-       (server (print "xthere")(setf result (answers)))))
-;      :target (lambda (answ)
-;                (maphash (lambda (k v)
-;                           (setf (gethash k answ) (car v))) answ)
-;                (setf result answ)))
+       (server (setf result (answers)))))
   (funcall askman :update nil)
   (funcall askman :update `((,(car names) . "true")))
   (funcall askman :update `((,(second names) . "5")))
