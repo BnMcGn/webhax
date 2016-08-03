@@ -6,7 +6,7 @@
 
 
 (defun extract-qs (code)
-  (collecting 
+  (collecting
       (dotree (itm code)
         (when (and (consp itm) (eq (car itm) 'q))
           (collect itm)))))
@@ -19,7 +19,7 @@
                      (if (atom tree)
                          tree
                          (if (eq-symb (car tree) 'q)
-                             (let ((isym 
+                             (let ((isym
                                     (create-numbered-name (second tree))))
                                (syms< isym)
                                (qs< tree)
@@ -169,7 +169,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
     (aif (gethash aname askdata)
          (let ((*ask-formname* aname))
            (funcall it command data))
-         (error 
+         (error
           (format nil "Form ~a not found in askdata." aname)))))
 
 (eval-always
