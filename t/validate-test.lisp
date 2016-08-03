@@ -41,7 +41,12 @@
   (is-false (callval #'val2 "0"))
   (is-false (callval #'val2 "NIL"))
 
-  )
+  (is (equal "x" (callval #'val3 "x")))
+  (is-false (nth-value 1 (callval #'val3 "a")))
+  (is (null (callval #'val3 "")))
+
+  (is (null (callval #'val4 "")))
+  (is (eq 'local-time:timestamp (type-of (callval #'val4 "2000-01-01")))))
 
 
 
