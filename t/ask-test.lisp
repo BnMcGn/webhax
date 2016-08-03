@@ -10,13 +10,15 @@
       (if (a some)
           (q enough? "How many?" (:pickone :options '(3 5 6 18)))
           (q want "Why not?" :string))
-      (and (q are :yesno)
+      (and (print "not here yet") (q are :yesno)
            (q you :yesno)
            (q sure? :yesno))
-      :target (lambda (answ)
-                (maphash (lambda (k v)
-                           (setf (gethash k answ) (car v))) answ)
-                (setf result answ)))
+      (done
+       (server (print "xthere")(setf result (answers)))))
+;      :target (lambda (answ)
+;                (maphash (lambda (k v)
+;                           (setf (gethash k answ) (car v))) answ)
+;                (setf result answ)))
   (funcall askman :update nil)
   (funcall askman :update `((,(car names) . "true")))
   (funcall askman :update `((,(second names) . "5")))
@@ -52,14 +54,14 @@
   (ask
     (form
      (q item :date))
-    :target (lambda (data)
-        (setf *date-test-result* (gethash 'item data)))))
+    (done
+     (server (setf *date-test-result* (gethash 'item (answers)))))))
 
 (test ask-date
   (is (null
        (progn
          (ask-test-fixture (date-test-form)
-                           (send :update '((item . ""))))
+           (send :update '((item . ""))))
          (car *date-test-result*))))
   (is (eq :error
           (caar (ask-test-fixture (date-test-form)

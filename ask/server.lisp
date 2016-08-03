@@ -71,7 +71,6 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
   (let ((res (funcall-in-macro
               (or target #'identity)
               (all-answers askstore :translate t))))
-    (print target)
     (if finish
         (funcall-in-macro finish (all-answers askstore :translate t))
         res)))
@@ -134,8 +133,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
            (:update
             (aif (add-input ,stor data)
                  (progn
-                   (print data)
-                   (print `((:error . ,it))))
+                   `((:error . ,it)))
                  (progn
                    (when (with-any/all/none
                            (dolist (keyname (%dispatch-keys ,dispatch))
@@ -176,12 +174,14 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
 
 (eval-always
   (defun remove-ask-manager (aname &key (session *session*))
-    (let ((askdata (gethash :askdata session)))
-      (if (not (hash-table-p askdata))
-          (warn "Askdata not found")
-          (if (not (gethash aname askdata))
-              (warn "Ask-manager not found in session!")
-              (remhash aname askdata))))))
+    (if (not (hash-table-p session))
+        (warn "Session not found")
+        (let ((askdata (gethash :askdata session)))
+          (if (not (hash-table-p askdata))
+              (warn "Askdata not found")
+              (if (not (gethash aname askdata))
+                  (warn "Ask-manager not found in session!")
+                  (remhash aname askdata)))))))
 
 (defclass ask-store ()
   ((stor
