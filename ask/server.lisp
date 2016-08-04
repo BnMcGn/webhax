@@ -89,13 +89,14 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
     (load-prefills askstore pr)))
 
 (defun create-ask-manager (code qs names)
-  (with-gensyms (continuations dispatch stor destroy)
+  (with-gensyms (continuations dispatch stor destroy display-queue)
     `(let ((,continuations nil)
            (,dispatch nil)
            (,stor (make-instance 'ask-store
                                  :q-clauses (list ,@(mapcar #'%unquote-q qs))
                                  :names ',names))
-           (,destroy nil))
+           (,destroy nil)
+           (,display-queue nil))
        (%insert-prefills ,stor (list ,@*ask-prefills*))
        (flet ((answer (&rest params)
                 (apply #'answer ,stor params))
@@ -103,7 +104,9 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                 (apply #'exists-answer ,stor params))
               (answers ()
                 ;;FIXME: Verify that :strip t is correct here.
-                (all-answers ,stor :strip t :translate t)))
+                (all-answers ,stor :strip t :translate t))
+              (%display-enqueue (name)
+                (push name ,display-queue)))
          (macrolet ((a (itm)
                       `(answer ',itm :translate t))
                     (form (&body body)
@@ -115,11 +118,20 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
            (cl-cont:with-call/cc
              (labels
                  ((display (name)
-                    (setf ,dispatch (dispatch-for-names ,stor (list name)))
+                    (setf ,dispatch
+                          (dispatch-for-names
+                           ,stor
+                           (nreverse (cons name ,display-queue))))
+                    (setf ,display-queue nil)
                     (cl-cont:let/cc k (push k ,continuations))
                     (answer name)) ;What does this do?
                   (%form-display (namelist)
-                    (setf ,dispatch (dispatch-for-names ,stor namelist))
+                    (setf ,dispatch
+                          (dispatch-for-names
+                           ,stor
+                           (concatenate 'list (nreverse ,display-queue)
+                                        namelist)))
+                    (setf ,display-queue nil)
                     (cl-cont:let/cc k (push k ,continuations))
                     :???))
                (declare (ignorable (function display) (function %form-display)))
