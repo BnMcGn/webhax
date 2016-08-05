@@ -114,27 +114,24 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                     (done (&body body)
                       `(prog1
                            ,@(%ask-proc-exit/server body)
-                         (remove-ask-manager *ask-formname*))))
+                         (remove-ask-manager *ask-formname*)))
+                    (display (name)
+                      `(progn (%display-enqueue ,name)
+                              (%send-display-queue)
+                              (answer ,name)))
+                    (%form-display (namelist)
+                      `(progn (mapc #'%display-enqueue (reverse ,namelist))
+                              (%send-display-queue)
+                              :???)))
            (cl-cont:with-call/cc
              (labels
-                 ((display (name)
+                 ((%send-display-queue ()
                     (setf ,dispatch
                           (dispatch-for-names
                            ,stor
-                           (nreverse (cons name ,display-queue))))
+                           (nreverse ,display-queue)))
                     (setf ,display-queue nil)
-                    (cl-cont:let/cc k (push k ,continuations))
-                    (answer name)) ;What does this do?
-                  (%form-display (namelist)
-                    (setf ,dispatch
-                          (dispatch-for-names
-                           ,stor
-                           (concatenate 'list (nreverse ,display-queue)
-                                        namelist)))
-                    (setf ,display-queue nil)
-                    (cl-cont:let/cc k (push k ,continuations))
-                    :???))
-               (declare (ignorable (function display) (function %form-display)))
+                    (cl-cont:let/cc k (push k ,continuations))))
                ,@code
                (setf ,dispatch
                      (list (cons :success (%ask-proc-finish

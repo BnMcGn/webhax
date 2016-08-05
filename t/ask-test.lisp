@@ -10,7 +10,7 @@
       (if (a some)
           (q enough? "How many?" (:pickone :options '(3 5 6 18)))
           (q want "Why not?" :string))
-      (and (print "not here yet") (q are :yesno)
+      (and (q are :yesno)
            (q you :yesno)
            (q sure? :yesno))
       (done
