@@ -91,7 +91,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
         res)))
 
 (defun %%ask-proc-exit/server (exit-body)
-  (mapcar
+  (mapcan
    (lambda (x)
      (if (and (listp x) (eq (car x) 'server))
          (cdr x)
@@ -118,7 +118,9 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                 ;;FIXME: Verify that :strip t is correct here.
                 (all-answers ,stor :strip t :translate t))
               (%display-enqueue (name)
-                (push name ,display-queue)))
+                (push name ,display-queue))
+              (%display-queue-contents ()
+                ,display-queue))
          (macrolet ((a (itm)
                       `(answer ',itm :translate t))
                     (form (&body body)
@@ -126,7 +128,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                     (done (&body body)
                       `(prog1
                            ,@(%%ask-proc-exit/server body)
-                         (when (length ,display-queue)
+                         (when (%display-queue-contents)
                            (%send-display-queue))
                          (remove-ask-manager *ask-formname*)))
                     (display (name)
