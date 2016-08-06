@@ -4,12 +4,16 @@
 
 ;;;Server side and other bits of the DSL
 
+(defun displayable-p (form)
+  "Checks a form to see if it is an Ask displayable/needs a label."
+  (and (consp form) (member (car form) '(q client client/react)
+                            :test #'eq-symb)))
 
-(defun extract-qs (code)
-  (collecting
-      (dotree (itm code)
-        (when (and (consp itm) (eq (car itm) 'q))
-          (collect itm)))))
+(defun %%displayable/server (displ name)
+  (optima:match displ
+    ((cons 'q _) `(display ,name))
+    ((cons 'client _) `(%display-enqueue ,name))
+    ((cons 'client/react _) `(%display-enqueue ,name))))
 
 (defun process-ask-code (code)
   (let (res)
@@ -18,12 +22,12 @@
           (labels ((treeproc (tree)
                      (if (atom tree)
                          tree
-                         (if (eq-symb (car tree) 'q)
+                         (if (displayable-p tree)
                              (let ((isym
                                     (create-numbered-name (second tree))))
                                (syms< isym)
                                (qs< tree)
-                               `(display ,isym))
+                               (%%displayable/server tree isym))
                              (cons
                               (treeproc (car tree))
                               (treeproc (cdr tree)))))))
@@ -40,7 +44,7 @@
                                                   (keyword-value :default q)
                                                   it nil)))))))))
 
-(defun %unquote-q (q)
+(defun %%unquote-q (q)
   "Decide what portions of the q should not be executed."
   (labels ((unquote-valspec (vs)
              (optima:match vs
@@ -53,7 +57,18 @@
       `(list 'q ',name ,description ,(unquote-valspec valtype) ,@rest))
      ((list* 'q (and (type symbol) name) valtype rest)
       `(list 'q ',name ,(unquote-valspec valtype) ,@rest))
+     ((cons 'client _) nil)
+     ((cons 'client/react _) nil)
      (_ (error "Malformed q clause")))))
+
+(defun %%store-gen (qs names &aux (qs (mapcar #'%%unquote-q qs)))
+  (multiple-value-bind (qs+ names+)
+      (with-collectors (qs< names<)
+        (loop for q in qs for n in names
+           when q do (progn (qs< q) (names< n))))
+    `(make-instance 'ask-store
+                    :q-clauses (list ,@qs+)
+                    :names ',names+)))
 
 (defun %dispatch-keys (disp)
   (hash-table-keys (assoc-cdr :next disp)))
@@ -75,13 +90,12 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
         (funcall-in-macro finish (all-answers askstore :translate t))
         res)))
 
-(defun %ask-proc-exit/server (exit-body)
-  ;;Retain only server portions of the exit clause
-  (mapcan
+(defun %%ask-proc-exit/server (exit-body)
+  (mapcar
    (lambda (x)
-     (when
-         (and (listp x) (eq (car x) 'server))
-       (cdr x)))
+     (if (and (listp x) (eq (car x) 'server))
+         (cdr x)
+         x))
    exit-body))
 
 (defun %insert-prefills (askstore prefills)
@@ -92,9 +106,7 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
   (with-gensyms (continuations dispatch stor destroy display-queue)
     `(let ((,continuations nil)
            (,dispatch nil)
-           (,stor (make-instance 'ask-store
-                                 :q-clauses (list ,@(mapcar #'%unquote-q qs))
-                                 :names ',names))
+           (,stor ,(%%store-gen qs names))
            (,destroy nil)
            (,display-queue nil))
        (%insert-prefills ,stor (list ,@*ask-prefills*))
@@ -113,7 +125,9 @@ it is set to nil, then *ask-target* is assumed to be returning page-mod."
                       (%process-form body))
                     (done (&body body)
                       `(prog1
-                           ,@(%ask-proc-exit/server body)
+                           ,@(%%ask-proc-exit/server body)
+                         (when (length ,display-queue)
+                           (%send-display-queue))
                          (remove-ask-manager *ask-formname*)))
                     (display (name)
                       `(progn (%display-enqueue ,name)
