@@ -173,6 +173,31 @@
                                (funcall dispatch
                                         (create :type :submit))))))))
 
+    (def-component webhax-widget-wrapper-builder
+        (let* ((wrapwidget (prop wrapwidget))
+               (name (prop name))
+               (data (prop data))
+               (corewidget
+                (psx
+                 (:widgi-select
+                  :id (strcat "inner-" name)
+                  :key name
+                  :widget (prop fieldspec widget)
+                  :options (prop fieldspec options)
+                  :value (getprop data name) :name name
+                  :formdata data
+                  :dispatch (prop dispatch)
+                  :... (prop fieldspec config)))))
+          (if wrapwidget
+              (psx
+               (:wrapwidget
+                :id name :description (prop fieldspec description)
+                :name name :key name
+                :error (getprop (prop errors) name)
+                :nullok (prop fieldspec nullok)
+                corewidget))
+              corewidget)))
+
     (def-component webhax-form-toplevel
         (let ((fspecs (prop fieldspecs))
               (data (prop prefill))
@@ -189,35 +214,15 @@
                 :formdata data :dispatch dispatch :fieldspecs fspecs
                 :errors errors
                 (collecting
-                    (if wrapwidget
-                        (do-keyvalue (name fspec fspecs)
+                    (do-keyvalue (name fspec fspecs)
+                      (if (chain fspec (has-own-property :prebuilt))
+                          (collect (@ fspec :prebuilt))
                           (collect
                               (psx
-                               (:wrapwidget
-                                :id name :description (@ fspec description)
-                                :name name
-                                :key name
-                                :error (getprop errors name)
-                                :nullok (@ fspec nullok)
-                                (:widgi-select
-                                 :widget (@ fspec widget)
-                                 :options (@ fspec options)
-                                 :value (getprop data name) :name name
-                                 :formdata data
-                                 :dispatch dispatch
-                                 :... (@ fspec config))))))
-                        (do-keyvalue (name fspec fspecs)
-                          (collect
-                              (psx
-                               (:widgi-select
-                                :id (strcat "inner-" name)
-                                :key name
-                                :widget (@ fspec widget)
-                                :options (@ fspec options)
-                                :value (getprop data name) :name name
-                                :formdata data
-                                :dispatch dispatch
-                                :... (@ fspec config)))))))))))
+                               (:webhax-widget-wrapper-builder
+                                :name name :errors errors
+                                :dispatch dispatch :fieldspec fspec
+                                :data data))))))))))
 
     (def-component webhax-form
         (let ((provider (@ -react-redux -provider))
