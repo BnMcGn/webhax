@@ -223,7 +223,7 @@
         (let ((provider (@ -react-redux -provider))
               (store
                (chain -redux (create-store (webhax-form-dispatcher
-                                            (prop fieldspecs) (prop data)
+                                            (prop fieldspecs) (prop prefill)
                                             (prop callback)))))
               (app
                (funcall
