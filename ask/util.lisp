@@ -19,6 +19,9 @@
   (webhax-validate:normalize-fieldspec-body
    (cddr q)))
 
+(defun %q-real-name (q)
+  (second q))
+
 
 
 

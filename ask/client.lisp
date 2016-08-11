@@ -37,6 +37,12 @@
                                (json:encode-json-to-string
                                 (webhax::generate-options-list ,it)))))))
 
+(defun generate-q-data (q)
+  (let ((val (%q-validator q)))
+    (list* 'create :real-name (%q-real-name q)
+           (alist->plist
+            (webhax-validate:prep-fieldspec-body-for-json val)))))
+
 (defun prep-client-code-block (spec)
   `(create
     :executable (lambda () ,@(cdr spec))
