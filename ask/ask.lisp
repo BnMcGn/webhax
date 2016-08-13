@@ -89,14 +89,10 @@
    (q you :yesno)
    (q sure? :yesno)))
 
-(defvar *ask-target* nil)
-
 (defmacro ask (&body body)
   (bind-extracted-keywords
-      (body short-body :target :finish (:prefill :multiple))
-    (let ((*ask-target* target)
-          (*ask-finish* (or finish *ask-finish*))
-          (*ask-prefills* prefill))
+      (body short-body (:prefill :multiple))
+    (let ((*ask-prefills* prefill))
       (multiple-value-bind (nbody qs names)
           (process-ask-code short-body)
         (ask-page-insert nbody qs names)))))
@@ -125,44 +121,12 @@
    (replace-with (format nil "form#~a > div" *ask-formname*)
                  (html-out (:div (:span "Entry Submitted"))))))
 
-(setf *ask-finish* '#'default-ask-finish)
-
 (defmacro t-ask (&body body)
   (bind-extracted-keywords
       (body short-body :target :finish (:prefill :multiple))
-    (let ((*ask-target* target)
-          (*ask-finish* (or finish *ask-finish*))
-          (*ask-prefills* prefill))
+    (let ((*ask-prefills* prefill))
       (multiple-value-bind (nbody qs names)
           (process-ask-code short-body)
         `(values
           ,(create-ask-manager nbody qs names)
           ',names)))))
-
-(defun server-test ()
-  (multiple-value-bind (askman names)
-      (t-ask
-        (q some "Are there any?" :yesno)
-        (if (a some)
-            (q enough? "How many?" :pickone :source '(3 5 6 18))
-            (q want "Why not?" :string))
-        (and (q are :yesno)
-             (q you :yesno)
-             (q sure? :yesno)))
-    (print names)
-    (print (funcall askman :update nil))
-    (print (funcall askman :update `((,(car names) . "true"))))
-    (print (funcall askman :update `((,(second names) . "5"))))
-    (print (funcall askman :update `((,(third names) . "fred"))))
-    (print (funcall askman :update `((,(fourth names) . "false"))))))
-
-(defun tester ()
-  (ask
-    :target #'print
-    (q some "Are there any?" :yesno)
-    (if (a some)
-        (q enough? "How many?" :pickone :source '(3 5 6 18))
-        (q want "Why not?" :string))
-    (form (q are :yesno)
-          (q you :yesno)
-          (q sure? :yesno))))
