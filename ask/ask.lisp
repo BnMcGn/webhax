@@ -95,7 +95,7 @@
     (let ((*ask-prefills* prefill))
       (multiple-value-bind (nbody qs names)
           (process-ask-code short-body)
-        (ask-page-insert nbody qs names)))))
+        (%%ask-page-insert nbody qs names)))))
 
 ;;;FIXME: Review the service url, make sure it works everywhere.
 (defun create-ask-service (app-obj &key (url "/ask-data/"))

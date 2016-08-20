@@ -81,7 +81,10 @@
           :commands (prop commands)
           :askname (prop askname)
           :info (prop info)
-          :prefill (prop prefill))))
+          ;;NOTE: prefill is not used by ask. prefills are put in the updates
+          ;;from the server
+          :prefill (prop prefill)
+          :server-url (prop server-url))))
 
     (def-component ask-server-connection
         (psx
@@ -318,6 +321,15 @@
    (ps-control-lib)
    (ps-widget-lib)))
 
+(defun %%ask-page-insert (nbody qs names)
+  `(let* ((formname (register-ask-manager
+                     ,(create-ask-manager nbody qs names)))
+          (initial-display (call-ask-manager formname :update nil)))
+     (mount-component (ask-main)
+       :commands (lisp-raw (json:encode-json-alist-to-string initial-display))
+       :askname (lisp formname)
+       :info ,(generate-client-data names qs)
+       :server-url  (lisp *ask-control-url*))))
 
 (defun ask-page-insert (nbody qs names)
   "The part of an Ask that gets stuck into the web page, including the 
