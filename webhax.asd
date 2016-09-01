@@ -32,6 +32,7 @@
                (:file "html-s-exp")
                (:file "page-mod")
                (:file "bind-validated-input")
+               (:file "demo-pages")
                (:module :ask
                         :serial t
                         :components ((:file "util")
