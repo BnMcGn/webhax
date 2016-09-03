@@ -111,6 +111,7 @@
                 (push name ,display-queue))
               (%display-queue-contents ()
                 ,display-queue))
+         (declare (ignorable #'answers #'%display-queue-contents))
          (macrolet ((a (itm)
                       `(answer ',itm :translate t))
                     (form (&body body)

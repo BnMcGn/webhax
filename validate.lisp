@@ -143,6 +143,8 @@
             ((and (consp option) (not (consp (cdr option))))
              (list (car option) (cdr option)))
             ((listp option)
+             (when (eq (car option) 'quote)
+               (error "Options-list shouldn't receive quoted lists"))
              (if (eq 2 (length option))
                  option
                  (error "Option must be a list of 2 elements")))
