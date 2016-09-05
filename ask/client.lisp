@@ -5,11 +5,12 @@
 ;;; Ask clientside/javascript stuff goes here.
 
 (defun generate-q-data (q)
-  (list* 'create :real-name (%q-real-name q)
-         `(lisp
+  `(create-from-list
+    (lisp (list*
+           :real-name ',(%q-real-name q)
            (alist->plist
             (webhax-validate:prep-fieldspec-body-for-json
-             (%q-validator ,(%%unquote-q q)))))))
+             (%q-validator ,(%%unquote-q q))))))))
 
 (defun prep-client-code-block (spec)
   `(create

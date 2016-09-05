@@ -62,3 +62,20 @@
   (is (eq :error
           (caar (ask-test-fixture (date-test-form)
                                   (send :update '((item . "today"))))))))
+
+;; Ask demo page
+
+(defun ask-demo-page ()
+  (print "here")
+  (ask
+    (q some "Are there any?" :yesno)
+    (if (a some)
+        (q enough? "How many?" (:pickone :options '(3 5 6 18)))
+        (q want "Why not?" :string))
+    (and (q are :yesno)
+         (q you :yesno)
+         (q sure? :yesno))))
+
+(register-demo-page 'ask-demo-page)
+
+

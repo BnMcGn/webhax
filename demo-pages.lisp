@@ -19,4 +19,5 @@
      (:h2 "Pages")
      (dolist (itm *demo-pages*)
        (htm
-        (:h3 (mkstr itm)))))))
+        (:h3 (str (mkstr itm))))
+       (funcall (symbol-function itm))))))
