@@ -33,7 +33,7 @@
         #:alexandria #:webhax-validate #:webhax-core
         #:webhax-json-call
         #:cl-who #:thing-labels #:clack
-        #:lack.request #:lack.response)
+        #:lack.request #:lack.response #:cl-react)
   (:shadowing-import-from #:parenscript #:switch)
   (:shadowing-import-from #:lack.component #:call)
   (:export
@@ -104,7 +104,10 @@
    #:mount-component
    #:answers
    #:done
-   #:server))
+   #:server
+   #:register-demo-page
+   #:demo-pages
+   #:webhax-ask))
 
 
 

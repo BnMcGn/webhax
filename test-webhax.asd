@@ -5,7 +5,8 @@
   :author "Your Name <your.name@example.com>"
   :license "Specify license here"
   :depends-on (#:webhax
-               #:fiveam) 
+               #:fiveam
+               #:cl-react) 
   :serial t
   :components ((:module :t
                         :serial t

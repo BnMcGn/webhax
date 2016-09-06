@@ -66,7 +66,6 @@
 ;; Ask demo page
 
 (defun ask-demo-page ()
-  (print "here")
   (ask
     (q some "Are there any?" :yesno)
     (if (a some)
