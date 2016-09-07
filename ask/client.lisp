@@ -64,7 +64,7 @@
             (:ask-collection-layer
              :commands (state commands)
              :errors (state errors)
-             :command-keys (state commands (keys))
+             :command-keys (chain -object (keys (state commands)))
              :info (prop info)
              :prefill (prop prefill)
              :dispatch (@ this call-server)))
@@ -124,7 +124,7 @@
             (:webhax-form-toplevel
              :prefill (prop data) :errors (prop errors) :dispatch (prop dispatch)
              :fieldspecs
-             (collecting
+             (ps-gadgets:collecting
                  (dolist (fspec (prop info))
                    (if (chain fspec (has-own-property :executable))
                        (let ((res
@@ -132,8 +132,8 @@
                                          (%ask-answers (prop data) (prop info))))
                                 (funcall (@ fspec :executable)))))
                          (when (@ fspec :is-element)
-                           (collect (create :prebuilt res))))
-                       (collect fspec)))))))
+                           (ps-gadgets:collect (create :prebuilt res))))
+                       (ps-gadgets:collect fspec)))))))
 
        ))))
 
