@@ -151,7 +151,7 @@
             (create
              :data
              (let ((res (create)))
-               (do-keyvalue (k v fieldspecs)
+               (do-window ((k v) fieldspecs :step 2)
                  (setf (getprop res k)
                        (if (not (eq (getprop data k) undefined))
                            (getprop data k)
@@ -159,7 +159,8 @@
                res)
              :fieldspecs fieldspecs ;; FIXME: When should validators be created?
              :errors (let ((res (create)))
-                       (do-keyvalue (k v fieldspecs) ;; borrow keys from data.
+                       (do-window ((k v) fieldspecs :step 2)
+                         ;; borrow keys from data.
                          (setf (getprop res k) nil))
                        res)))))
 
@@ -175,8 +176,8 @@
 
     (def-component webhax-widget-wrapper-builder
         (let* ((wrapwidget (prop wrapwidget))
-               (name (prop name))
-               (data (prop data))
+               (name (say (prop name)))
+               (data (say (prop data)))
                (corewidget
                 (psx
                  (:widgi-select
@@ -214,7 +215,7 @@
                 :formdata data :dispatch dispatch :fieldspecs fspecs
                 :errors errors
                 (collecting
-                    (do-keyvalue (name fspec fspecs)
+                    (do-window ((name fspec) fspecs :step 2)
                       (if (chain fspec (has-own-property :prebuilt))
                           (collect (@ fspec :prebuilt))
                           (collect
@@ -241,7 +242,15 @@
           (psx
            (:provider
             :store store
-            (:app :... (@ this props))))))
+            (:app :... (@ this props)))))
+      prop-types
+      (create :fieldspecs
+              (chain -react -prop-types
+                     (array-of
+                      (chain -react -prop-types
+                             (one-of
+                              (chain -react -prop-types string)
+                              (chain -react -prop-types object)))))))
 
     (defun webhax-form-element (fieldspecs data callback)
       (psx
