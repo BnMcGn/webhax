@@ -5,13 +5,12 @@
 ;;; Ask clientside/javascript stuff goes here.
 
 (defun generate-q-data (q)
-  `(create-from-list
-    (lisp-raw
-     (json:encode-json-alist-to-string
-      (list*
-       (cons :real-name ',(%q-real-name q))
-       (webhax-validate:prep-fieldspec-body-for-json
-        (%q-validator ,(%%unquote-q q))))))))
+  `(lisp-raw
+    (json:encode-json-alist-to-string
+     (list*
+      (cons :real-name ',(%q-real-name q))
+      (webhax-validate:prep-fieldspec-body-for-json
+       (%q-validator ,(%%unquote-q q)))))))
 
 (defun prep-client-code-block (spec)
   `(create
@@ -122,10 +121,11 @@
        (def-component ask-displayable-manager
            (psx
             (:webhax-form-toplevel
-             :prefill (prop data) :errors (prop errors) :dispatch (prop dispatch)
+             :prefill (prop data) :errors (prop errors)
+             :dispatch (prop dispatch)
              :fieldspecs
              (ps-gadgets:collecting
-                 (dolist (fspec (prop info))
+                 (ps-gadgets:do-keyvalue (k fspec (prop info))
                    (if (chain fspec (has-own-property :executable))
                        (let ((res
                               (labels ((answers ()
