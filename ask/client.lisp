@@ -62,6 +62,7 @@
            (psx
             (:ask-collection-layer
              :commands (state commands)
+             :ordering (state ordering)
              :errors (state errors)
              :command-keys (chain -object (keys (state commands)))
              :info (prop info)
@@ -78,12 +79,14 @@
                  (errors (if (chain (prop commands) (has-own-property :errors))
                              (prop commands errors)
                              (-object))))
-             (create :commands commands :errors errors)))
+             (create :commands commands :errors errors
+                     :ordering (prop commands ordering))))
          call-server
          (lambda (updates)
            (json-post-bind (commands (strcat (prop server-url) (prop askname)) updates)
                            (when (chain commands (has-own-property :next))
-                             (set-state commands (@ commands next)))
+                             (set-state commands (@ commands next))
+                             (set-state ordering (@ commands ordering)))
                            (when (chain commands (has-own-property :errors))
                              (set-state errors (@ commands errors))))))
 
@@ -91,6 +94,7 @@
            (psx
             (:ask-displayable-manager
              :commands (prop commands)
+             :ordering (prop ordering)
              :info (prop info)
              :data (state data)
              :dispatch (@ this dispatch)
@@ -121,19 +125,28 @@
        (def-component ask-displayable-manager
            (psx
             (:webhax-form-toplevel
-             :prefill (prop data) :errors (prop errors)
+             :prefill (or (prop data) (create))
+             :errors (prop errors)
              :dispatch (prop dispatch)
              :fieldspecs
              (ps-gadgets:collecting
-                 (ps-gadgets:do-keyvalue (k fspec (prop info))
-                   (if (chain fspec (has-own-property :executable))
-                       (let ((res
-                              (labels ((answers ()
-                                         (%ask-answers (prop data) (prop info))))
-                                (funcall (@ fspec :executable)))))
-                         (when (@ fspec :is-element)
-                           (ps-gadgets:collect (create :prebuilt res))))
-                       (ps-gadgets:collect fspec)))))))
+                 (dolist (k (prop ordering))
+                   (ps-gadgets:collect k)
+                   (let ((fspec (getprop (prop info) k)))
+                     (if (chain fspec (has-own-property :executable))
+                         (let ((res
+                                (labels ((answers ()
+                                           (%ask-answers
+                                            (prop data) (prop info))))
+                                  (funcall (@ fspec :executable)))))
+                           (when (@ fspec :is-element)
+                             (ps-gadgets:collect (create :prebuilt res))))
+                         (ps-gadgets:collect fspec)))))))
+         prop-types
+         (create :ordering
+                 (chain -react -prop-types
+                        (array-of
+                         (chain -react -prop-types string)))))
 
        ))))
 

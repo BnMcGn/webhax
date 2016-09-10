@@ -338,4 +338,5 @@ applicable numbered key."))
                   `(,@(multiple-value-bind (val sig)
                                            (calculate-prefill astor n)
                                            (when sig
-                                             (list :default val))))))))))))
+                                             (list :default val)))))))))
+     (cons :ordering namelist))))

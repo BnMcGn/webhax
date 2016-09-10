@@ -119,7 +119,7 @@
          (getprop
           (create :string ww-simple :integer ww-simple :boolean ww-yesno
                   :pickone ww-pickone :picksome ww-picksome
-                  "pickoneLong" ww-pickone-long)
+                  "pickoneLong" ww-pickone-long :yesno ww-yesno)
           (prop widget))
          (@ this props)
          nil)
@@ -176,8 +176,8 @@
 
     (def-component webhax-widget-wrapper-builder
         (let* ((wrapwidget (prop wrapwidget))
-               (name (say (prop name)))
-               (data (say (prop data)))
+               (name (prop name))
+               (data (prop data))
                (corewidget
                 (psx
                  (:widgi-select
