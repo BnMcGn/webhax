@@ -27,10 +27,12 @@
     (def-component ww-yesno
         (psx
          (:span
+          "Yes"
           (:input :type "radio"
                   :name (prop name) :value "true"
                   :on-change (event-dispatcher (prop name) (prop dispatch))
                   :... (when (prop value) (create :checked "checked")))
+          "No"
           (:input :type "radio"
                   :name (prop name) :value "false"
                   :on-change (event-dispatcher (prop name) (prop dispatch))
