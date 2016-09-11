@@ -193,13 +193,14 @@
                   :dispatch (prop dispatch)
                   :... (prop fieldspec config)))))
           (if wrapwidget
-              (psx
-               (:wrapwidget
+              (create-element
+               wrapwidget
+               (create
                 :id name :description (prop fieldspec description)
                 :name name :key name
                 :error (getprop (prop errors) name)
-                :nullok (prop fieldspec nullok)
-                corewidget))
+                :nullok (prop fieldspec nullok))
+               corewidget)
               corewidget)))
 
     (def-component webhax-form-toplevel
