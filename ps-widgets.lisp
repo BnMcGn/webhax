@@ -27,6 +27,7 @@
     (def-component ww-yesno
         (psx
          (:span
+          ;;FIXME: labels aren't adjustable
           "Yes"
           (:input :type "radio"
                   :name (prop name) :value "true"
@@ -225,7 +226,7 @@
                                (:webhax-widget-wrapper-builder
                                 :name name :errors errors
                                 :dispatch dispatch :fieldspec fspec
-                                :data data))))))))))
+                                :data data :wrapwidget wrapwidget))))))))))
 
     (def-component webhax-form
         (let ((provider (@ -react-redux -provider))
