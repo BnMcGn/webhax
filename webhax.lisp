@@ -25,16 +25,16 @@
   (declare (ignore ctype))
   (error "Needs reimplementation"))
  
-(defun input-function-wrapper (handler &key content-type)
+(defun input-function-wrapper (handler &key (content-type "text/html"))
   (lambda (input)
-    (when content-type
-      (set-content-type content-type))
-    (multiple-value-bind (*regular-web-input* *key-web-input*)
-        (input-normalize input)
-      (let ((*session* ningle:*session*))
-        (bind-webspecials (nth-value 1 (input-normalize input))
-          (with-output-to-string (*webhax-output*)
-            (funcall handler)))))))
+    (list 200 (list :content-type content-type)
+          (list
+           (multiple-value-bind (*regular-web-input* *key-web-input*)
+               (input-normalize input)
+             (let ((*session* ningle:*session*))
+               (bind-webspecials (nth-value 1 (input-normalize input))
+                 (with-output-to-string (*webhax-output*)
+                   (funcall handler)))))))))
 
 ;;;FIXME: *webhax-output* rebind to string is not taking effect.
 (defmacro quick-page (&rest parts-and-main)
