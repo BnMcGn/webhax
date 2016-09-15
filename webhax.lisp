@@ -102,7 +102,7 @@ Mount-id, when specified, causes the component to be mounted to the element name
   (let ((tagid (unless mount-id
                  (mkstr (gensym (mkstr "mount-" component-name #\-))))))
     `(html-out
-       (when tagid (htm (:div :id ,tagid)))
+       (when ,tagid (htm (:div :id ,tagid)))
        (:script
         :type "text/javascript"
         (str

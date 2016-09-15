@@ -56,7 +56,10 @@
              ;;NOTE: prefill is not used by ask. prefills are put in the updates
              ;;from the server
              :prefill (prop prefill)
-             :server-url (prop server-url))))
+             :server-url (prop :server-url)))
+         prop-types
+         (create
+          :server-url (chain -react -prop-types string is-required)))
 
        (def-component ask-server-connection
            (psx
@@ -83,12 +86,15 @@
                      :ordering (prop commands ordering))))
          call-server
          (lambda (updates)
-           (json-post-bind (commands (strcat (prop server-url) (prop askname)) updates)
-                           (when (chain commands (has-own-property :next))
-                             (set-state commands (@ commands next))
-                             (set-state ordering (@ commands ordering)))
-                           (when (chain commands (has-own-property :errors))
-                             (set-state errors (@ commands errors))))))
+           (ps-gadgets:json-post-bind (commands
+                                       (ps-gadgets:strcat
+                                        (prop server-url) (prop askname))
+                                       updates)
+              (when (chain commands (has-own-property :next))
+                (set-state commands (@ commands next))
+                (set-state ordering (@ commands ordering)))
+              (when (chain commands (has-own-property :errors))
+                (set-state errors (@ commands errors))))))
 
        (def-component ask-collection-layer
            (psx
@@ -99,6 +105,12 @@
              :data (state data)
              :dispatch (@ this dispatch)
              :errors (prop errors)))
+         ;; Prefill: state of fields at start of form, fields optional
+         ;; Data: current state of all fields, fields optional
+         ;; Current: a copy of Data that contains only items found in
+         ;; command-keys, fields optional
+         ;; Dispatch on submit: must contain all of the keys in command-keys
+         ;; even if they aren't found anywhere else
          get-initial-state
          (lambda ()
            (create :current (-object) :data (prop prefill)))
@@ -107,7 +119,12 @@
            (case (@ action type)
              (:submit
               (funcall
-               (prop dispatch) (state :current))
+               (prop dispatch)
+               (let ((res (state :current)))
+                 (dolist (k (prop command-keys))
+                   (unless (chain res (has-own-property k))
+                     (setf (getprop res k) nil)))
+                 res))
               (set-state :current (-object)))
              (:edit
               ;;FIXME: add client-side validation here?
