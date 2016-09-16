@@ -90,7 +90,7 @@
                                        (ps-gadgets:strcat
                                         (prop server-url) (prop askname))
                                        updates)
-              (when (chain commands (has-own-property :next))
+              (when (chain commands (has-own-property :|next|))
                 (set-state commands (@ commands next))
                 (set-state ordering (@ commands ordering)))
               (when (chain commands (has-own-property :errors))
@@ -113,28 +113,26 @@
          ;; even if they aren't found anywhere else
          get-initial-state
          (lambda ()
-           (create :current (-object) :data (prop prefill)))
+           (create :data (or (prop prefill) (-object))))
          dispatch
          (lambda (action) ;Can be replaced with redux dispatching.
            (case (@ action type)
              (:submit
               (funcall
                (prop dispatch)
-               (let ((res (state :current)))
+               (let ((res (-object))
+                     (dat (state data)))
                  (dolist (k (prop command-keys))
-                   (unless (chain res (has-own-property k))
-                     (setf (getprop res k) nil)))
-                 res))
-              (set-state :current (-object)))
+                   (if (chain dat (has-own-property k))
+                       (setf (getprop res k) (getprop dat k))
+                       (setf (getprop res k) nil))
+                 res))))
              (:edit
               ;;FIXME: add client-side validation here?
               (if (member (@ action name) (prop command-keys))
-                  (progn
-                    (set-state :current
-                               (set-copy (state :current)
-                                         (@ action name) (@ action value)))
-                    (set-state :data
-                               (copy-merge-all (state data) (state current))))
+                  (set-state :data
+                             (set-copy (state data)
+                                       (@ action name) (@ action value)))
                   (throw "Tried to write to a non-current Ask field")))
              (otherwise
               (throw "No such action!")))))
