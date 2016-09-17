@@ -29,12 +29,12 @@
          (:span
           ;;FIXME: labels aren't adjustable
           "Yes"
-          (:input :type "radio"
+          (:input :type "radio" :key 1
                   :name (prop name) :value "true"
                   :on-change (event-dispatcher (prop name) (prop dispatch))
                   :... (when (prop value) (create :checked "checked")))
           "No"
-          (:input :type "radio"
+          (:input :type "radio" :key 2
                   :name (prop name) :value "false"
                   :on-change (event-dispatcher (prop name) (prop dispatch))
                   :... (unless (prop value) (create :checked "checked"))))))
@@ -110,12 +110,12 @@
     (def-component widgi-wrap-simple
         (psx
          (:div
-          (:span :class "webhax-label" (or (prop description) (prop name))
+          (:span :class "webhax-label" :key 1 (or (prop description) (prop name))
                  (unless (prop nullok)
-                   (psx (:span :style (create "fontColor" "red") " *"))))
+                   (psx (:span :style :key 3 (create "fontColor" "red") " *"))))
           (prop children)
           (when (prop error)
-            (:span (prop error))))))
+            (:span (prop error) :key 2)))))
 
     (def-component widgi-select
         (create-element
@@ -170,12 +170,13 @@
     (def-component webhax-simple-form
         (let ((dispatch (prop dispatch)))
           (psx
-          (:form
-           (prop children)
-           (:input :type "button" :value "Submit"
-                   :on-click (lambda ()
-                               (funcall dispatch
-                                        (create :type :submit))))))))
+           (:form
+            :key "form0"
+            (prop children)
+            (:input :type "button" :value "Submit" :key "form1"
+                    :on-click (lambda ()
+                                (funcall dispatch
+                                         (create :type :submit))))))))
 
     (def-component webhax-widget-wrapper-builder
         (let* ((wrapwidget (prop wrapwidget))
@@ -225,6 +226,7 @@
                           (collect
                               (psx
                                (:webhax-widget-wrapper-builder
+                                :key (unique-id)
                                 :name name :errors errors
                                 :dispatch dispatch :fieldspec fspec
                                 :data data :wrapwidget wrapwidget))))))))))
