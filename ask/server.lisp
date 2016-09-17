@@ -182,7 +182,10 @@
       (error "Askdata not found."))
     (aif (gethash aname askdata)
          (let ((*ask-formname* aname))
-           (funcall it command data))
+           (print command)
+           (print data)
+           (print "response:")
+           (print (funcall it command data)))
          (error
           (format nil "Form ~a not found in askdata." aname)))))
 

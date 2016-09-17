@@ -125,8 +125,8 @@
                  (dolist (k (prop command-keys))
                    (if (chain dat (has-own-property k))
                        (setf (getprop res k) (getprop dat k))
-                       (setf (getprop res k) nil))
-                 res))))
+                       (setf (getprop res k) nil)))
+                 res)))
              (:edit
               ;;FIXME: add client-side validation here?
               (if (member (@ action name) (prop command-keys))
