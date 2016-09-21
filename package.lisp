@@ -41,6 +41,10 @@
    #:ask
    #:q
    #:a
+   #:answers
+   #:done
+   #:client
+   #:client/react
    #:*session*
    #:*webhax-output*
    #:html-out
@@ -102,7 +106,6 @@
    #:url-from-env
    #:session-from-env
    #:mount-component
-   #:answers
    #:done
    #:server
    #:register-demo-page

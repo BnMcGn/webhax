@@ -73,7 +73,11 @@
         (q want "Why not?" :string))
     (and (q are :yesno)
          (q you :yesno)
-         (q sure? :yesno))))
+         (q sure? :yesno))
+    (done
+     (client (grab (answers)))
+     )))
+
 
 (register-demo-page 'ask-demo-page)
 
