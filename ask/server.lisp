@@ -15,6 +15,11 @@
     ((cons 'client _) `(%display-enqueue ,name))
     ((cons 'client/react _) `(%display-enqueue ,name))))
 
+(defun guess-numbered-name (namesym)
+  ;;FIXME: Guessing whether a displayable needs a name might be a little
+  ;;too clever. Reconsider this someday.
+  (create-numbered-name (if (symbolp namesym) namesym :autoname)))
+
 (defun process-ask-code (code)
   (let (res)
     (multiple-value-bind (syms qs)
@@ -24,7 +29,7 @@
                          tree
                          (if (displayable-p tree)
                              (let ((isym
-                                    (create-numbered-name (second tree))))
+                                    (guess-numbered-name (second tree))))
                                (syms< isym)
                                (qs< tree)
                                (%%displayable/server tree isym))
