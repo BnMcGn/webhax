@@ -14,12 +14,12 @@
 
 (defun prep-client-code-block (spec)
   `(create
-    :executable (lambda () ,@(cdr spec))
+    :executable (lambda (answers) ,@(cdr spec))
     :is-element nil))
 
 (defun prep-react-element (spec)
   `(create
-    :executable (lambda () ,@(cdr spec))
+    :executable (lambda (answers) ,@(cdr spec))
     :is-element t))
 
 (defun generate-client-data (symbols qs)
@@ -42,7 +42,7 @@
 
        (defun %ask-answers (data fieldspecs)
          (let ((res (-object)))
-           (do-keyvalue (k fspec fieldspecs)
+           (ps-gadgets:do-keyvalue (k fspec fieldspecs)
              (setf (getprop res (@ fspec :real-name))
                    (getprop data k)))
            res))
@@ -150,10 +150,10 @@
                    (let ((fspec (getprop (prop info) k)))
                      (if (chain fspec (has-own-property :executable))
                          (let ((res
-                                (labels ((answers ()
+                                (funcall (@ fspec :executable)
+                                         (lambda ()
                                            (%ask-answers
-                                            (prop data) (prop info))))
-                                  (funcall (@ fspec :executable)))))
+                                            (prop data) (prop info))))))
                            (when (@ fspec :is-element)
                              (ps-gadgets:collect (create :prebuilt res))))
                          (ps-gadgets:collect fspec)))))))
