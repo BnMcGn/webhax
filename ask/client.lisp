@@ -43,7 +43,7 @@
        (defun %ask-answers (data fieldspecs)
          (let ((res (-object)))
            (ps-gadgets:do-keyvalue (k fspec fieldspecs)
-             (setf (getprop res (@ fspec :real-name))
+             (setf (getprop res (@ fspec 'real-name))
                    (getprop data k)))
            res))
 
