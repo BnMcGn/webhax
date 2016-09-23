@@ -25,19 +25,20 @@
                  :on-change (event-dispatcher (prop name) (prop dispatch)))))
 
     (def-component ww-yesno
-        (psx
-         (:span
-          ;;FIXME: labels aren't adjustable
-          "Yes"
-          (:input :type "radio" :key 1
-                  :name (prop name) :value "true"
-                  :on-change (event-dispatcher (prop name) (prop dispatch))
-                  :... (when (prop value) (create :checked "checked")))
-          "No"
-          (:input :type "radio" :key 2
-                  :name (prop name) :value "false"
-                  :on-change (event-dispatcher (prop name) (prop dispatch))
-                  :... (unless (prop value) (create :checked "checked"))))))
+        (let ((value (boolify (prop value))))
+          (psx
+           (:span
+            ;;FIXME: labels aren't adjustable
+            "Yes"
+            (:input :type "radio" :key 1
+                    :name (prop name) :value "true"
+                    :on-change (event-dispatcher (prop name) (prop dispatch))
+                    :... (when value (create :checked "checked")))
+            "No"
+            (:input :type "radio" :key 2
+                    :name (prop name) :value "false"
+                    :on-change (event-dispatcher (prop name) (prop dispatch))
+                    :... (unless value (create :checked "checked")))))))
 
     (def-component ww-pickone
         (let ((props (@ this props)))
@@ -220,16 +221,17 @@
                 :formdata data :dispatch dispatch :fieldspecs fspecs
                 :errors errors
                 (collecting
-                    (do-window ((name fspec) fspecs :step 2)
-                      (if (chain fspec (has-own-property :prebuilt))
-                          (collect (@ fspec :prebuilt))
-                          (collect
-                              (psx
-                               (:webhax-widget-wrapper-builder
-                                :key (unique-id)
-                                :name name :errors errors
-                                :dispatch dispatch :fieldspec fspec
-                                :data data :wrapwidget wrapwidget))))))))))
+                    (let ((counter 0))
+                      (do-window ((name fspec) fspecs :step 2)
+                        (if (chain fspec (has-own-property :prebuilt))
+                            (collect (@ fspec :prebuilt))
+                            (collect
+                                (psx
+                                 (:webhax-widget-wrapper-builder
+                                  :key (incf counter)
+                                  :name name :errors errors
+                                  :dispatch dispatch :fieldspec fspec
+                                  :data data :wrapwidget wrapwidget)))))))))))
 
     (def-component webhax-form
         (let ((provider (@ -react-redux -provider))
