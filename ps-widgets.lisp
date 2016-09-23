@@ -47,19 +47,20 @@
             :key 1
             (mapcar (lambda (option)
                       (let ((label (elt option 1))
-                            (value (elt option 0)))
+                            (value (elt option 0))
+                            (valstr (-string (elt option 0))))
                         (psx
                          (:label ;;:for value
                           :key (unique-id)
                           (:input :type "radio" :name (@ props name)
                                   :key 1
                                   :id value
-                                  :on-change 
+                                  :on-change
                                   (event-dispatcher
                                    (@ props name) (@ props dispatch))
                                   :value value
-                                  :... (when (eq (@ props value)
-                                                 value)
+                                  :... (when (eq (-string (@ props value))
+                                                 valstr)
                                          (create :checked "checked")))
                           label))))
                     (prop options))))))
