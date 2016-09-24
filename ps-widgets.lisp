@@ -38,7 +38,8 @@
             (:input :type "radio" :key 2
                     :name (prop name) :value "false"
                     :on-change (event-dispatcher (prop name) (prop dispatch))
-                    :... (unless value (create :checked "checked")))))))
+                    :... (when  (and (not value) (prop prefilled))
+                           (create :checked "checked")))))))
 
     (def-component ww-pickone
         (let ((props (@ this props)))
@@ -192,6 +193,7 @@
                   :widget (prop fieldspec widget)
                   :options (prop fieldspec options)
                   :value (getprop data name) :name name
+                  :prefilled (chain data (has-own-property name))
                   :formdata data
                   :dispatch (prop dispatch)
                   :... (prop fieldspec config)))))
