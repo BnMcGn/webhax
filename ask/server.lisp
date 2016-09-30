@@ -90,9 +90,9 @@
   ;;Why mapcan? Nothing omitted...
   (mapcan
    (lambda (x)
-     (list (if (and (listp x) (eq (car x) 'server))
-               (cdr x)
-               x)))
+     (if (and (listp x) (eq (car x) 'server))
+         (cdr x)
+         (list x)))
    exit-body))
 
 (defun %insert-prefills (askstore prefills)
