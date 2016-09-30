@@ -87,7 +87,6 @@
           ,@code))))
 
 (defun %%ask-proc-exit/server (exit-body)
-  ;;Why mapcan? Nothing omitted...
   (mapcan
    (lambda (x)
      (if (and (listp x) (eq (car x) 'server))
