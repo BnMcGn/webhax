@@ -18,7 +18,7 @@
 
     (def-component ww-simple
         (psx
-         (:input :type "text"
+         (:input :type "text" :class "webhax-widget"
                  :key 1
                  ;:default-value (prop value)
                  :value (prop value)
@@ -27,7 +27,7 @@
     (def-component ww-yesno
         (let ((value (boolify (prop value))))
           (psx
-           (:span
+           (:span :class "webhax-widget"
             ;;FIXME: labels aren't adjustable
             "Yes"
             (:input :type "radio" :key 1
@@ -44,7 +44,7 @@
     (def-component ww-pickone
         (let ((props (@ this props)))
           (psx
-           (:span
+           (:span :class "webhax-widget"
             :key 1
             (mapcar (lambda (option)
                       (let ((label (elt option 1))
@@ -69,7 +69,7 @@
     (def-component ww-pickone-long
         (let ((props (@ this props)))
           (psx
-           (:select
+           (:select :class "webhax-widget"
             :key 1
             :name (prop name)
             :value (prop value)
@@ -84,7 +84,7 @@
 
     (def-component ww-textentry
         (psx
-         (:textarea :rows 5 :cols 40
+         (:textarea :rows 5 :cols 40 :class "webhax-widget"
                     :value (prop value)
                     :on-change (event-dispatcher (prop name) (prop dispatch)))))
 
@@ -99,7 +99,7 @@
                  (funcall (prop action) (prop form-name) (prop name)
                           (@ ev target value)))))
           (psx
-           (:select :multiple "multiple"
+           (:select :multiple "multiple" :class "webhax-widget"
                     (mapcar
                      (lambda (option)
                        (psx
