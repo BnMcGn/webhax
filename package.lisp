@@ -110,7 +110,10 @@
    #:server
    #:register-demo-page
    #:demo-pages
-   #:webhax-ask))
+   #:webhax-ask
+   #:test-component
+   #:*ask-mount-name*
+   #:fake-ask))
 
 
 

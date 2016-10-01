@@ -95,10 +95,6 @@
   (add-part :@javascript
             "https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js"))
 
-(defparameter *mount-component-render* 'react:render
-  "Allows replacement of the render function in mount-component, eg. for
-debugging")
-
 (defmacro mount-component ((component-name &key mount-id) &body parameters)
   "Produces html output to mount a named react component in place, creating a named div element, then creating a script element that renders the component in the div. Parameters are alternating keys and values, sent to the component as initial props. Values, therefore, are parenscript. Lisp values must be wrapped in lisp or lisp-raw.
 
@@ -111,11 +107,24 @@ Mount-id, when specified, causes the component to be mounted to the element name
         :type "text/javascript"
         (str
          (ps
-           (,*mount-component-render*
+           (react:render
             (react:create-element ,component-name
                             (create ,@parameters))
             (chain document
                    (get-element-by-id ,(or tagid mount-id))))))))))
+
+(defmacro test-component ((component-name func-name) &body parameters)
+  "Defines a javascript function named func-name. The function will return a
+detached DOM node containing the specified component. Meant as a testing equivalent
+to mount-component."
+  `(html-out
+     (:script
+      :type "text/javascript"
+      (defun ,func-name ()
+        ((@ react-test-utils render-into-document)
+         (react-create-element ,component-name
+                               (create ,@parameters)))))))
+
 
 ;;;;;;;;
 

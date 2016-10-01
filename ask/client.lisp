@@ -166,14 +166,28 @@
 
        ))))
 
-(defparameter *ask-mount-id* nil)
+(defparameter *ask-mount-name* nil)
 
 (defun %%ask-page-insert (nbody qs names)
   `(let* ((formname (register-ask-manager
                      ,(create-ask-manager nbody qs names)))
           (initial-display (call-ask-manager formname :update nil)))
-     (mount-component (ask-main :mount-id ,*ask-mount-id*)
+     (mount-component (ask-main :mount-id ,*ask-mount-name*)
        :commands (lisp-raw (json:encode-json-alist-to-string initial-display))
        :askname (lisp formname)
        :info ,(generate-client-data names qs)
        :server-url  (lisp *ask-control-url*))))
+
+(defun %%ask-test-create (nbody qs names)
+  "Equivalent to ask-page-insert, for testing"
+  (unless *ask-mount-name*
+    (error "*ask-mount-name* must be set for test version of ask."))
+  `(let* ((formname (register-ask-manager
+                     ,(create-ask-manager nbody qs names)))
+          (initial-display (call-ask-manager formname :update nil)))
+     (test-component (ask-main ,*ask-mount-name*)
+       :commands (lisp-raw (json:encode-json-alist-to-string initial-display))
+       :askname (lisp formname)
+       :info ,(generate-client-data names qs)
+       :server-url (lisp *ask-control-url*))))
+

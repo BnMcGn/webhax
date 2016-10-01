@@ -97,6 +97,15 @@
           (process-ask-code short-body)
         (%%ask-page-insert nbody qs names)))))
 
+(defmacro fake-ask ((name) &body body)
+  (bind-extracted-keywords
+      (body short-body (:prefill :multiple))
+    (let ((*ask-prefills* prefill))
+      (multiple-value-bind (nbody qs names)
+          (process-ask-code short-body)
+        (let ((*ask-mount-name* name))
+          (%%ask-test-create nbody qs names))))))
+
 ;;;FIXME: Review the service url, make sure it works everywhere.
 (defun create-ask-service (app-obj &key (url "/ask-data/"))
   (create-route (app-obj url :content-type "text/json")
