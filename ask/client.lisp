@@ -166,11 +166,13 @@
 
        ))))
 
+(defparameter *ask-mount-id* nil)
+
 (defun %%ask-page-insert (nbody qs names)
   `(let* ((formname (register-ask-manager
                      ,(create-ask-manager nbody qs names)))
           (initial-display (call-ask-manager formname :update nil)))
-     (mount-component (ask-main)
+     (mount-component (ask-main :mount-id ,*ask-mount-id*)
        :commands (lisp-raw (json:encode-json-alist-to-string initial-display))
        :askname (lisp formname)
        :info ,(generate-client-data names qs)
