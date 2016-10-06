@@ -65,8 +65,46 @@
 
 ;; Ask demo page
 
+(defun ask-testing-tools ()
+  (ps:ps
+
+    (defun get-current-qs (tree)
+      (chain -react-test-utils
+             (scry-rendered-components-with-type tree widgi-select)))
+
+    (defun get-displayable-manager (tree)
+      (chain -react-test-utils
+             (find-rendered-component-with-type tree ask-displayable-manager)))
+
+    (defun send-edit (tree name value)
+      "Use internal dispatch function to place a value into a test Ask form."
+      (let ((widget-container
+             (first-match
+              (lambda (x)
+                (equal name (@ x props name)))
+              (get-current-qs tree))))
+        (unless widget-container
+          (raise "Tried to set inactive widget value"))
+        (chain
+         widget-container props
+         (dispatch (create :type :edit :name name :value value)))))
+
+    (defun send-submit (tree)
+      (funcall
+       (chain (get-displayable-manager tree) props
+              (dispatch (create :type :submit)))))))
+
 (defun ask-demo-page ()
-  (ask
+  (html-out
+    (:script :src "/static/reactest.js")
+    (:script :src "/static/mocha.js")
+    (:link :href "/static/mocha.css")
+    (:script :type "text/javascript"
+             (str (ps:ps (defvar -react-test-utils
+                           (require "react-addons-test-utils"))))
+             (str (ask-testing-tools))))
+
+  (fake-ask (ask-demo)
     (q some "Are there any?" :yesno)
     (if (a some)
         (q enough? "How many?" (:pickone :options '(3 5 6 18)))
@@ -75,8 +113,12 @@
          (q you :yesno)
          (q sure? :yesno))
     (done
-     (client (grab (answers)))
-     )))
+     (client (grab (answers)))))
+
+  (html-out
+    (:script
+     :type "text/javascript"
+     (str (ps:ps (defvar demo (ask-demo)))))))
 
 
 (register-demo-page 'ask-demo-page)

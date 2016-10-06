@@ -113,6 +113,7 @@ Mount-id, when specified, causes the component to be mounted to the element name
             (chain document
                    (get-element-by-id ,(or tagid mount-id))))))))))
 
+;;;FIXME: Assumes that ReactTestUtils is loaded
 (defmacro test-component ((component-name func-name) &body parameters)
   "Defines a javascript function named func-name. The function will return a
 detached DOM node containing the specified component. Meant as a testing equivalent
@@ -120,10 +121,12 @@ to mount-component."
   `(html-out
      (:script
       :type "text/javascript"
-      (defun ,func-name ()
-        ((@ react-test-utils render-into-document)
-         (react-create-element ,component-name
-                               (create ,@parameters)))))))
+      (str
+       (ps
+         (defun ,func-name ()
+           ((@ -react-test-utils render-into-document)
+            (react:create-element ,component-name
+                                  (create ,@parameters)))))))))
 
 
 ;;;;;;;;
