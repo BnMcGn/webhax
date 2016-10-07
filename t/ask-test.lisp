@@ -89,10 +89,9 @@
          widget-container props
          (dispatch (create :type :edit :name name :value value)))))
 
-    (defun send-submit (tree)
-      (funcall
-       (chain (get-displayable-manager tree) props
-              (dispatch (create :type :submit)))))))
+    (defun send-submit (tree &key on-success)
+      (chain (get-displayable-manager tree) props
+             (dispatch (create :type :submit))))))
 
 (defun ask-demo-page ()
   (html-out
@@ -101,7 +100,8 @@
     (:link :href "/static/mocha.css")
     (:script :type "text/javascript"
              (str (ps:ps (defvar -react-test-utils
-                           (require "react-addons-test-utils"))))
+                           (require "react-addons-test-utils"))
+                         (defvar chai (require "chai"))))
              (str (ask-testing-tools))))
 
   (fake-ask (ask-demo)
@@ -116,9 +116,31 @@
      (client (grab (answers)))))
 
   (html-out
+    (:div :id "mocha")
     (:script
      :type "text/javascript"
-     (str (ps:ps (defvar demo (ask-demo)))))))
+     (str
+      (ps:ps
+        (defvar demo (ask-demo))
+        (let ((sert (@ chai assert))
+              (suite (@ mocha suite))
+              (test (@ mocha test))
+              (item nil))
+          (chain mocha (setup "tdd"))
+          (suite
+           "Ask"
+           (lambda ()
+             (test "Ask session should start with a single widget"
+               (lambda ()
+                 (chain sert (length-of (get-current-qs demo) 1))))
+             (test "Widget should be a yesno"
+               (lambda ()
+                 (setf item (chain (get-current-qs demo) 0))
+                 (chain sert (equal "yesno" (@ item props widget)))))
+             (test "Widget value should be undefined"
+               (lambda ()
+                 (chain sert (equal undefined (@ item props value))))))))
+          (chain mocha (run)))))))
 
 
 (register-demo-page 'ask-demo-page)
