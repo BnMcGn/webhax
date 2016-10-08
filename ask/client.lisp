@@ -36,6 +36,8 @@
 
 (define-parts webhax-ask
   (add-part
+   :@javascript #'ps-react-gadgets:ps-react-gadgets)
+  (add-part
    :@javascript
    (lambda ()
      (ps
@@ -64,14 +66,15 @@
 
        (def-component ask-server-connection
            (psx
-            (:ask-collection-layer
-             :commands (state commands)
-             :ordering (state ordering)
-             :errors (state errors)
-             :command-keys (chain -object (keys (state commands)))
-             :info (prop info)
-             :prefill (prop prefill)
-             :dispatch (@ this call-server)))
+            (:update-notify
+             (:ask-collection-layer
+              :commands (state commands)
+              :ordering (state ordering)
+              :errors (state errors)
+              :command-keys (chain -object (keys (state commands)))
+              :info (prop info)
+              :prefill (prop prefill)
+              :dispatch (@ this call-server))))
          get-initial-state
          (lambda ()
            ;;commands prop switches nature here:

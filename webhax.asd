@@ -18,6 +18,7 @@
                #:ningle
                #:cl-react
                #:ps-gadgets
+               #:ps-react-gadgets
                #:webhax-validate
                #:optima)
   :serial t
