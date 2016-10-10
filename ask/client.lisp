@@ -96,7 +96,8 @@
               (when (chain commands (has-own-property :|next|))
                 (set-state commands (@ commands next))
                 (set-state ordering (@ commands ordering)))
-              (when (chain commands (has-own-property :errors))
+              (when (chain commands (has-own-property :|errors|))
+                (say "ask-server-connection: found errors")
                 (set-state errors (@ commands errors))))))
 
        (def-component ask-collection-layer

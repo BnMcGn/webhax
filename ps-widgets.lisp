@@ -113,12 +113,14 @@
     (def-component widgi-wrap-simple
         (psx
          (:div
-          (:span :class "webhax-label" :key 1 (or (prop description) (prop name))
+          (:span :class "webhax-label" :key 1
+                 (or (prop description) (prop name))
                  (unless (prop nullok)
-                   (psx (:span :style :key 3 (create "fontColor" "red") " *"))))
+                   (psx
+                    (:span :style :key 3 (create "fontColor" "red") " *"))))
           (prop children)
           (when (prop error)
-            (:span (prop error) :key 2)))))
+            (psx (:span :key 2 (prop error)))))))
 
     (def-component widgi-select
         (create-element

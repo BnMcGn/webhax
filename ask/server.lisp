@@ -152,7 +152,7 @@
            (:update
             (aif (add-input ,stor data)
                  (progn
-                   `((:error . ,it)))
+                   `((:errors . ,it)))
                  (progn
                    (when (with-any/all/none
                            (dolist (keyname (%dispatch-keys ,dispatch))

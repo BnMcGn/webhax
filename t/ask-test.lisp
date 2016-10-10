@@ -156,16 +156,19 @@
              (test "Should submit without error"
                (lambda (done)
                  (send-edit demo (@ item props name) "true")
-                 (send-update-callback
-                  demo
-                  (oneshot done))
+                 (send-update-callback demo (oneshot done))
                  (send-submit demo)
                  nil));;Beware the implicit return!
              (test "Widget should now be a pickone"
                (lambda ()
                  (setf item (chain (get-current-qs demo) 0))
-                 (say (get-current-qs demo))
                  (chain sert (equal "pickone" (@ item props widget)))))
+             (test "Invalid input should submit without error"
+               (lambda (done)
+                 (send-edit demo (@ item props name) "13")
+                 (send-update-callback demo (oneshot done))
+                 (send-submit demo)
+                 nil))
              )))
           (chain mocha (run)))))))
 
