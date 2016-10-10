@@ -89,9 +89,22 @@
          widget-container props
          (dispatch (create :type :edit :name name :value value)))))
 
-    (defun send-submit (tree &key on-success)
+    (defun send-submit (tree)
       (chain (get-displayable-manager tree) props
-             (dispatch (create :type :submit))))))
+             (dispatch (create :type :submit))))
+
+    (defun send-update-callback (tree cb)
+      (chain (get-displayable-manager tree) props
+             (dispatch (create :type 'set-callback :callback cb))))
+
+    (defun oneshot (func)
+      (lambda ()
+        (when func
+          (let ((tmp func))
+            (setf func nil)
+            (funcall tmp)))))
+
+    ))
 
 (defun ask-demo-page ()
   (html-out
@@ -139,7 +152,21 @@
                  (chain sert (equal "yesno" (@ item props widget)))))
              (test "Widget value should be undefined"
                (lambda ()
-                 (chain sert (equal undefined (@ item props value))))))))
+                 (chain sert (equal undefined (@ item props value)))))
+             (test "Should submit without error"
+               (lambda (done)
+                 (send-edit demo (@ item props name) "true")
+                 (send-update-callback
+                  demo
+                  (oneshot done))
+                 (send-submit demo)
+                 nil));;Beware the implicit return!
+             (test "Widget should now be a pickone"
+               (lambda ()
+                 (setf item (chain (get-current-qs demo) 0))
+                 (say (get-current-qs demo))
+                 (chain sert (equal "pickone" (@ item props widget)))))
+             )))
           (chain mocha (run)))))))
 
 

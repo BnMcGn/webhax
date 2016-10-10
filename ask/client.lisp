@@ -66,15 +66,14 @@
 
        (def-component ask-server-connection
            (psx
-            (:update-notify
-             (:ask-collection-layer
-              :commands (state commands)
-              :ordering (state ordering)
-              :errors (state errors)
-              :command-keys (chain -object (keys (state commands)))
-              :info (prop info)
-              :prefill (prop prefill)
-              :dispatch (@ this call-server))))
+            (:ask-collection-layer
+             :commands (state commands)
+             :ordering (state ordering)
+             :errors (state errors)
+             :command-keys (chain -object (keys (state commands)))
+             :info (prop info)
+             :prefill (prop prefill)
+             :dispatch (@ this call-server)))
          get-initial-state
          (lambda ()
            ;;commands prop switches nature here:
@@ -102,13 +101,14 @@
 
        (def-component ask-collection-layer
            (psx
-            (:ask-displayable-manager
-             :commands (prop commands)
-             :ordering (prop ordering)
-             :info (prop info)
-             :data (state data)
-             :dispatch (@ this dispatch)
-             :errors (prop errors)))
+            (:update-notify
+             (:ask-displayable-manager
+              :commands (prop commands)
+              :ordering (prop ordering)
+              :info (prop info)
+              :data (state data)
+              :dispatch (@ this dispatch)
+              :errors (prop errors))))
          ;; Prefill: state of fields at start of form, fields optional
          ;; Data: current state of all fields, fields optional
          ;; Current: a copy of Data that contains only items found in
