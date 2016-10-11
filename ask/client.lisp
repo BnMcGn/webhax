@@ -93,12 +93,18 @@
                                        (ps-gadgets:strcat
                                         (prop server-url) (prop askname))
                                        updates)
-              (when (chain commands (has-own-property :|next|))
-                (set-state commands (@ commands next))
-                (set-state ordering (@ commands ordering)))
-              (when (chain commands (has-own-property :|errors|))
-                (say "ask-server-connection: found errors")
-                (set-state errors (@ commands errors))))))
+              (say "in ask-server-connection")
+              (say commands)
+              (let ((res {}))
+                (when (chain commands (has-own-property :|next|))
+                  (setf (@ res commands) (@ commands next))
+                  (setf (@ res ordering) (@ commands ordering)))
+                (setf (@ res errors)
+                      (if (chain commands (has-own-property :|errors|))
+                          (@ commands errors)
+                          {}))
+                ;;Can't use regular set-state because of pre-made object.
+                (chain component-this-ref (#:set-state res))))))
 
        (def-component ask-collection-layer
            (psx
