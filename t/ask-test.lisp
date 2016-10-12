@@ -126,7 +126,7 @@
          (q you :yesno)
          (q sure? :yesno))
     (done
-     (client (grab (answers)))))
+     (client (setf (@ window ask-results) (answers)))))
 
   (html-out
     (:div :id "mocha")
@@ -201,7 +201,18 @@
                  (send-update-callback demo (oneshot done))
                  (send-submit demo)
                  nil))
-
+             (test "'some' should equal 'true'"
+               (lambda ()
+                 (chain sert (equal (@ window ask-results some) "true"))))
+             (test "'enough?' should equal '18'"
+               (lambda ()
+                 (chain sert (equal (@ window ask-results "enough?") "18"))))
+             (test "'are' should equal 'true'"
+               (lambda ()
+                 (chain sert (equal (@ window ask-results are) "true"))))
+             (test "'you' should equal 'false'"
+               (lambda ()
+                 (chain sert (equal (@ window ask-results you) "false"))))
              )))
           (chain mocha (run)))))))
 
