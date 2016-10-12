@@ -93,8 +93,6 @@
                                        (ps-gadgets:strcat
                                         (prop server-url) (prop askname))
                                        updates)
-              (say "in ask-server-connection")
-              (say commands)
               (let ((res {}))
                 (when (chain commands (has-own-property :|next|))
                   (setf (@ res commands) (@ commands next))

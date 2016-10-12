@@ -169,6 +169,39 @@
                  (send-update-callback demo (oneshot done))
                  (send-submit demo)
                  nil))
+             (test "Widget should still be pickone"
+               (lambda ()
+                 (setf item (chain (get-current-qs demo) 0))
+                 (chain sert (equal "pickone" (@ item props widget)))))
+             (test "There should be an error message"
+               (lambda ()
+                 (chain sert (length-of
+                              (chain -object
+                                     (keys (chain
+                                            (get-displayable-manager demo)
+                                            props errors)))
+                              1))))
+             (test "Should submit without error"
+               (lambda (done)
+                 (send-edit demo (@ item props name) "18")
+                 (send-update-callback demo (oneshot done))
+                 (send-submit demo)
+                 nil))
+             (test "Should submit without error"
+               (lambda (done)
+                 (setf item (chain (get-current-qs demo) 0))
+                 (send-edit demo (@ item props name) "true")
+                 (send-update-callback demo (oneshot done))
+                 (send-submit demo)
+                 nil))
+             (test "Should submit without error"
+               (lambda (done)
+                 (setf item (chain (get-current-qs demo) 0))
+                 (send-edit demo (@ item props name) "false")
+                 (send-update-callback demo (oneshot done))
+                 (send-submit demo)
+                 nil))
+
              )))
           (chain mocha (run)))))))
 
