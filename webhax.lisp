@@ -174,3 +174,48 @@ to mount-component."
 (defun session-from-env (env)
   (getf env :lack.session))
 
+(defun blank-key-p (item)
+  "Determine if an item denotes an empty (root) url path."
+  (cond
+    ((stringp item) (not (boolify (length item))))
+    ((keywordp item) (member item '(:empty :blank :/)))
+    ((symbolp item) (eq item '/))
+    (t nil)))
+
+(defparameter *url-parentage* nil)
+
+(defmacro url-case (&body clauses)
+  (with-gensyms (matfunc input foundkey)
+    (multiple-value-bind (keys cases)
+        (with-collectors (keys< cases<)
+          (dolist (clause clauses)
+            (destructuring-bind (key clause-body) clause
+              (if (atom key)
+                  (cond
+                    ((symbolp key)
+                     (if (eq key 'otherwise)
+                         (cases< `((t ,clause-body)))
+                         (if (blank-key-p key)
+                             (cases< `((not ,input) ,clause-body))
+                             (progn (cases< `((eq ,foundkey ,key)
+                                              ,clause-body))
+                                    (keys< key)))))
+                    ((stringp key)
+                     (if (string= "" key)
+                         (cases< `((not ,input) ,clause-body))
+                         (error
+                          "Strings/pattern matching not supported yet.")))
+                    ((numberp key)
+                     (cases< `((eq ,foundkey ,key) ,clause-body))
+                     (keys< key)))
+                  (error "Non-atomic routes not supported yet.")))))
+      `(let* ((,matfunc (gadgets:match-various ',keys))
+              (,input (car *regular-web-input*))
+              (,foundkey (funcall ,matfunc ,input))
+              (*url-parentage* (cons (car *regular-web-input*)
+                                     *url-parentage*))
+              (*regular-web-input* (cdr *regular-web-input)))
+         (cond
+           ,@cases)))))
+
+
