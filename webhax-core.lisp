@@ -13,6 +13,7 @@
 (defvar *regular-web-input*)
 (defvar *key-web-input*)
 (defvar *session* nil)
+(defvar *web-env*)
 
 (defun output-string (string)
   (princ string *webhax-output*))

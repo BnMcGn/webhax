@@ -218,4 +218,64 @@ to mount-component."
          (cond
            ,@cases)))))
 
+(defmacro define-webapp (name parameters &body body)
+  (let ((name-int (symb name '-internal)))
+    `(progn
+      (defun ,name ,parameters
+        (lambda (env)
+          (let* ((*web-env* env)
+                 (*session* (session-from-env env))
+                 (*request* (lack.request:make-request env))
+                 (*response* (lack.response:make-response 200))
+                 (*key-web-input* (lack.request:request-parameters *request*))
+                 (*regular-web-input*
+                  ;;How to handle mounted sub-apps?
+                  (if (boundp *regular-web-input*)
+                      *regular-web-input*
+                      (split-sequence
+                       #\/ (lack.request:request-path-info *request)
+                       :remove-empty-subseqs t))))
+            (setf (lack.response:response-body *response*)
+                  (list (apply #',name-int ,parameters)))
+            (lack.response:finalize-response *response*))))
+      (defun ,name-int ,parameters
+        ,@body))))
+
+(defvar *clack-app*)
+
+(defmacro define-middleware (name parameters &body body)
+  (let ((name-int (symb name '-internal)))
+    `(progn
+       (defun ,name ,parameters
+         (lambda (app)
+           (lambda (env)
+             (let* ((*clack-app* app)
+                    (*web-env* env)
+                    (*session* (session-from-env env))
+                    (*request* (lack.request:make-request env))
+                    (*response* (lack.response:make-response 200))
+                    (*key-web-input*
+                     (lack.request:request-parameters *request*))
+                    (*regular-web-input*
+                     (if (boundp *regular-web-input*)
+                         *regular-web-input*
+                         (split-sequence
+                          #\/ (lack.request:request-path-info *request)
+                          :remove-empty-subseqs t))))
+               (setf (lack.response:response-body *response*)
+                     (list (apply #',name-int ,parameters)))
+               (lack.response:finalize-response *response*)))))
+       (defun ,name-int ,parameters
+         ,@body))))
+
+(defmacro with-content-type (ctype &body body)
+  `(progn
+     (setf (lack.response:response-headers *response* :content-type) ,ctype)
+     ,@body))
+
+(defmacro as-html (&body body)
+  `(with-content-type "text/html" ,@body))
+
+(defmacro as-json (&body body)
+  `(with-content-type "application/json" ,@body))
 

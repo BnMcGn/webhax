@@ -113,7 +113,13 @@
    #:webhax-ask
    #:test-component
    #:*ask-mount-name*
-   #:fake-ask))
+   #:fake-ask
+   #:url-case
+   #:define-middleware
+   #:define-webapp
+   #:with-content-type
+   #:as-html
+   #:as-json))
 
 
 
