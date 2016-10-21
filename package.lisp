@@ -119,7 +119,8 @@
    #:define-webapp
    #:with-content-type
    #:as-html
-   #:as-json))
+   #:as-json
+   #:middleware-chain))
 
 
 

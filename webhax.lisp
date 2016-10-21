@@ -218,6 +218,8 @@ to mount-component."
          (cond
            ,@cases)))))
 
+(defparameter *default-content-type* "text/html")
+
 (defmacro define-webapp (name parameters &body body)
   (let ((name-int (symb name '-internal)))
     `(progn
@@ -235,8 +237,9 @@ to mount-component."
                       (split-sequence
                        #\/ (lack.request:request-path-info *request)
                        :remove-empty-subseqs t))))
-            (setf (lack.response:response-body *response*)
-                  (list (apply #',name-int ,parameters)))
+            (with-content-type *default-content-type*
+              (setf (lack.response:response-body *response*)
+                    (list (apply #',name-int ,parameters))))
             (lack.response:finalize-response *response*))))
       (defun ,name-int ,parameters
         ,@body))))
@@ -262,8 +265,9 @@ to mount-component."
                          (split-sequence
                           #\/ (lack.request:request-path-info *request)
                           :remove-empty-subseqs t))))
-               (setf (lack.response:response-body *response*)
-                     (list (apply #',name-int ,parameters)))
+               (with-content-type *default-content-type*
+                 (setf (lack.response:response-body *response*)
+                       (list (apply #',name-int ,parameters))))
                (lack.response:finalize-response *response*)))))
        (defun ,name-int ,parameters
          ,@body))))
@@ -279,3 +283,7 @@ to mount-component."
 (defmacro as-json (&body body)
   `(with-content-type "application/json" ,@body))
 
+(defun middleware-chain (&rest mwarez)
+  "Join a chain of middlewares into a single middleware"
+  (lambda (app)
+    (reduce #'funcall (concatenate 'list mwarez (list app)))))
