@@ -13,6 +13,8 @@
 (defvar *regular-web-input*)
 (defvar *key-web-input*)
 (defvar *session* nil)
+(defvar *request* nil)
+(defvar *response* nil)
 (defvar *web-env*)
 
 (defun output-string (string)

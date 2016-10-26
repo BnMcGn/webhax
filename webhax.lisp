@@ -263,7 +263,7 @@ to mount-component."
                      (if (boundp *regular-web-input*)
                          *regular-web-input*
                          (split-sequence
-                          #\/ (lack.request:request-path-info *request)
+                          #\/ (lack.request:request-path-info *request*)
                           :remove-empty-subseqs t))))
                (with-content-type *default-content-type*
                  (setf (lack.response:response-body *response*)
@@ -274,7 +274,8 @@ to mount-component."
 
 (defmacro with-content-type (ctype &body body)
   `(progn
-     (setf (lack.response:response-headers *response* :content-type) ,ctype)
+     (setf (getf (lack.response:response-headers *response*) :content-type)
+           ,ctype)
      ,@body))
 
 (defmacro as-html (&body body)
