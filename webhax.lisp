@@ -223,7 +223,7 @@ to mount-component."
 (defmacro define-webapp (name parameters &body body)
   (let ((name-int (symb name '-internal)))
     `(progn
-      (defun ,name ,parameters
+      (defun ,name (&rest params)
         (lambda (env)
           (let* ((*web-env* env)
                  (*session* (session-from-env env))
@@ -239,7 +239,7 @@ to mount-component."
                        :remove-empty-subseqs t))))
             (with-content-type *default-content-type*
               (setf (lack.response:response-body *response*)
-                    (list (apply #',name-int ,parameters))))
+                    (list (apply #',name-int params))))
             (lack.response:finalize-response *response*))))
       (defun ,name-int ,parameters
         ,@body))))
@@ -249,7 +249,9 @@ to mount-component."
 (defmacro define-middleware (name parameters &body body)
   (let ((name-int (symb name '-internal)))
     `(progn
-       (defun ,name ,parameters
+       ;;FIXME: Would be nice to use parameters here so that user options
+       ;;show up in the hints.
+       (defun ,name (&rest params)
          (lambda (app)
            (lambda (env)
              (let* ((*clack-app* app)
@@ -267,7 +269,7 @@ to mount-component."
                           :remove-empty-subseqs t))))
                (with-content-type *default-content-type*
                  (setf (lack.response:response-body *response*)
-                       (list (apply #',name-int ,parameters))))
+                       (list (apply #',name-int params))))
                (lack.response:finalize-response *response*)))))
        (defun ,name-int ,parameters
          ,@body))))
