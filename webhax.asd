@@ -20,6 +20,7 @@
                #:ps-gadgets
                #:ps-react-gadgets
                #:webhax-validate
+               #:userfig
                #:optima)
   :serial t
   :components ((:file "package")

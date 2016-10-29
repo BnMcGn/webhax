@@ -18,7 +18,10 @@
    #:start-test-app
    #:*session*
    #:get-user-name
-   #:get-display-name))
+   #:get-display-name
+   #:*web-env*
+   #:*response*
+   #:*request*))
 
 (defpackage #:webhax-json-call
   (:use #:cl #:webhax-core #:gadgets #:alexandria)
