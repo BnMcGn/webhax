@@ -100,7 +100,6 @@
    #:register-json-symbols
    #:json-call
    #:clack-tool
-   #:call
    #:execute
    #:define-react-class
    #:clack-server-manager
