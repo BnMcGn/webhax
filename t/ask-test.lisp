@@ -59,7 +59,7 @@
          (ask-test-fixture (date-test-form)
            (send :update '((item . ""))))
          (car *date-test-result*))))
-  (is (eq :error
+  (is (eq :errors
           (caar (ask-test-fixture (date-test-form)
                                   (send :update '((item . "today"))))))))
 

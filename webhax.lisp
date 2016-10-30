@@ -214,7 +214,7 @@ to mount-component."
               (,foundkey (funcall ,matfunc ,input))
               (*url-parentage* (cons (car *regular-web-input*)
                                      *url-parentage*))
-              (*regular-web-input* (cdr *regular-web-input)))
+              (*regular-web-input* (cdr *regular-web-input*)))
          (cond
            ,@cases)))))
 
