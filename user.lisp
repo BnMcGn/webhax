@@ -49,7 +49,7 @@
 
 ;; From session :username :display-name :email?
 
-(defun sign-up-page ()
+'(defun sign-up-page ()
   (with-html-output-to-string (s)
       (:html
        (:head (:title "Sign up"))
@@ -59,7 +59,7 @@
                 (form
                  (q )))))))
 
-
+;;FIXME: Freaks on compile from scratch.
 (define-middleware webhax-user-core ()
   (url-case
     (:sign-up (sign-up-page))

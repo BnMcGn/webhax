@@ -223,6 +223,8 @@ to mount-component."
 (defmacro define-webapp (name parameters &body body)
   (let ((name-int (symb name '-internal)))
     `(progn
+      (defun ,name-int ,parameters
+        ,@body)
       (defun ,name (&rest params)
         (lambda (env)
           (let* ((*web-env* env)
@@ -240,9 +242,7 @@ to mount-component."
             (with-content-type *default-content-type*
               (setf (lack.response:response-body *response*)
                     (list (apply #',name-int params))))
-            (lack.response:finalize-response *response*))))
-      (defun ,name-int ,parameters
-        ,@body))))
+            (lack.response:finalize-response *response*)))))))
 
 (defvar *clack-app*)
 
@@ -251,6 +251,8 @@ to mount-component."
     `(progn
        ;;FIXME: Would be nice to use parameters here so that user options
        ;;show up in the hints.
+       (defun ,name-int ,parameters
+         ,@body)
        (defun ,name (&rest params)
          (lambda (app)
            (lambda (env)
@@ -270,9 +272,7 @@ to mount-component."
                (with-content-type *default-content-type*
                  (setf (lack.response:response-body *response*)
                        (list (apply #',name-int params))))
-               (lack.response:finalize-response *response*)))))
-       (defun ,name-int ,parameters
-         ,@body))))
+               (lack.response:finalize-response *response*))))))))
 
 (defmacro with-content-type (ctype &body body)
   `(progn
