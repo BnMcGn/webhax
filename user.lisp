@@ -59,7 +59,6 @@
                 (form
                  (q )))))))
 
-;;FIXME: Freaks on compile from scratch.
 (define-middleware webhax-user-core ()
   (url-case
     (:sign-up (sign-up-page))
