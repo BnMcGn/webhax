@@ -40,6 +40,19 @@
 
 (defvar *webhax-input-limit* 200)
 
+;;; Existing value: some tests will need to know the previous value of a field,
+;;; perhaps to see if it is being changed. The code that calls the validator
+;;; needs to support this feature, if desired, by calling the validator with
+;;; *existing-value* set to the established value and
+;;; *existing-value-available-p* set to t.
+;;;
+;;; Validators that use the feature should be written with the fact in mind
+;;; that it is optional and may not be present in the environment. Check
+;;; *existing-value-available-p*, in other words.
+
+(defvar *existing-value* nil)
+(defvar *existing-value-available-p* nil)
+
 ;;;FIXME: How to handle start,end? Are they always defined?
 (define-test overlength (item start end)
   (if (< (length item) *webhax-input-limit*)
