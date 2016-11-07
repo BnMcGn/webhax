@@ -15,7 +15,8 @@
    #:normalize-fieldspec-body
    #:prep-fieldspec-body-for-json
    #:convert-fieldspecs-to-json
-   #:multiple?))
+   #:multiple?
+   #:validate-batch))
 
 (in-package :webhax-validate)
 
@@ -207,4 +208,57 @@
           (prep-fieldspec-body-for-json v)))
       fspecs))))
 
+(defun normalize-input (input fieldspecs &optional translation-table)
+  (let ((trans
+         (if translation-table
+             (lambda (key) (gethash key translation-table)) #'identity)))
+    (collecting
+      (gadgets:do-window ((k v) fieldspecs :step 2)
+        (let ((val (if (getf v :multiple)
+                       `((,k . ,(gadgets:assoc-all
+                                 (funcall trans k) input
+                                 :test #'webhax-core:eq-symb-multiple)))
+                       (assoc (funcall trans k) input :test #'equal))))
+          (when val
+            (collect (cons k (cdr val)))))))))
 
+(defparameter *incoming-values* nil)
+
+(defun validate-batch (input-alist fieldspecs-plist
+                       &key existing-hash edit translation-table keylist)
+  "Translation-table has the internal key as the key and the input key as the
+ value"
+  (when (and edit (not existing-hash))
+    (error "Edit is t, but no existing store supplied"))
+  (let ((keylist (or keylist
+                     (gadgets:map-by-2
+                      (lambda (&rest x) (car x)) fieldspecs-plist)))
+        (results (make-hash-table))
+        (errors (make-hash-table))
+        (input (normalize-input input-alist fieldspecs-plist translation-table)))
+    (dolist (key keylist)
+      (when (assoc key input)
+        (let ((*existing-value-available-p*
+               (and existing-hash (gadgets:key-in-hash? key existing-hash) t))
+              (*existing-value* (gethash key existing-hash))
+              ;;FIXME: incoming-values won't be validated! Don't like!0
+              (*incoming-values* input))
+          (multiple-value-bind (val sig)
+              (funcall
+               (getf (getf fieldspecs-plist key) :compiled-validator)
+               (gadgets:assoc-cdr key input))
+            (if sig
+                (setf (gethash key results) val)
+                (setf (gethash (if translation-table
+                                   (gethash key translation-table)
+                                   key)
+                               errors)
+                      val))))))
+    (if (gadgets:not-empty (alexandria:hash-table-keys errors))
+        (values errors nil)
+        (values (if edit
+                    (collecting-hash-table (:existing existing-hash :mode :replace)
+                      (do-hash-table (k v results)
+                        (collect k v)))
+                    results)
+                t))))
