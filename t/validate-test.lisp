@@ -57,17 +57,37 @@
    :three
    (normalize-fieldspec-body '((:yesno)))))
 
-'((:one . 1) (:two . "qwerzx") (:three . "true") (:one . 5))
 (test validate-batch
   (multiple-value-bind (results sig)
       (validate-batch
        '((:one . "1") (:two . "qwerzx") (:three . "true") (:one . "5"))
        (batch-val))
-    (is (not (null sig)))
+    (is-true sig)
     (is (listp (gethash :one results)))
     (is (equal "qwerzx" (gethash :two results)))
     (is (gethash :three results))
-    (is (= 2 (length (gethash :one results))))))
+    (is (= 2 (length (gethash :one results)))))
+  (multiple-value-bind (results sig)
+      (validate-batch
+       '((:one . "1") (:two . "qwerzx") (:three . "true") (:one . "2"))
+       (batch-val))
+    (is-false sig)
+    (is (= 1 (length (alexandria:hash-table-keys results))))
+    (is (equal '(:one) (alexandria:hash-table-keys results)))))
+
+(test validate-batch-translate
+  (let ((data (hu:plist->hash '(:y "yyzz" :z nil)))
+        (table (hu:plist->hash '(:x :one :y :two :z :three))))
+    (multiple-value-bind (results sig)
+        (validate-batch
+         '((:one . "1") (:three . "true") (:one . "5"))
+         (batch-val)
+         :existing-hash data :translation-table table)
+      (print (hu:hash->plist results))
+      (is-true sig)
+      (is-false (gethash :z results))
+      (is (listp (gethash :x results)))
+      (is (equal "qwerzx" (gethash :y results))))))
 
 
 
