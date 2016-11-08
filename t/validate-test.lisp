@@ -48,5 +48,26 @@
   (is (null (callval #'val4 "")))
   (is (eq 'local-time:timestamp (type-of (callval #'val4 "2000-01-01")))))
 
+(defun batch-val ()
+  (list
+   :one
+   (normalize-fieldspec-body '((:picksome :options (1 3 5))))
+   :two
+   (normalize-fieldspec-body '((:string)))
+   :three
+   (normalize-fieldspec-body '((:yesno)))))
+
+'((:one . 1) (:two . "qwerzx") (:three . "true") (:one . 5))
+(test validate-batch
+  (multiple-value-bind (results sig)
+      (validate-batch
+       '((:one . "1") (:two . "qwerzx") (:three . "true") (:one . "5"))
+       (batch-val))
+    (is (not (null sig)))
+    (is (listp (gethash :one results)))
+    (is (equal "qwerzx" (gethash :two results)))
+    (is (gethash :three results))
+    (is (= 2 (length (gethash :one results))))))
+
 
 

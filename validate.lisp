@@ -215,9 +215,9 @@
     (collecting
       (gadgets:do-window ((k v) fieldspecs :step 2)
         (let ((val (if (getf v :multiple)
-                       `((,k . ,(gadgets:assoc-all
-                                 (funcall trans k) input
-                                 :test #'webhax-core:eq-symb-multiple)))
+                       (cons k (gadgets:assoc-all
+                                (funcall trans k) input
+                                :test #'webhax-core:eq-symb-multiple))
                        (assoc (funcall trans k) input :test #'equal))))
           (when val
             (collect (cons k (cdr val)))))))))
@@ -235,13 +235,14 @@
                       (lambda (&rest x) (car x)) fieldspecs-plist)))
         (results (make-hash-table))
         (errors (make-hash-table))
-        (input (normalize-input input-alist fieldspecs-plist translation-table)))
+        (input
+         (normalize-input input-alist fieldspecs-plist translation-table)))
     (dolist (key keylist)
       (when (assoc key input)
         (let ((*existing-value-available-p*
                (and existing-hash (gadgets:key-in-hash? key existing-hash) t))
-              (*existing-value* (gethash key existing-hash))
-              ;;FIXME: incoming-values won't be validated! Don't like!0
+              (*existing-value* (and existing-hash (gethash key existing-hash)))
+              ;;FIXME: incoming-values won't be validated! Don't like!
               (*incoming-values* input))
           (multiple-value-bind (val sig)
               (funcall
