@@ -83,7 +83,6 @@
          '((:x . "1") (:z . "true") (:x . "5"))
          (batch-val)
          :existing-hash data :translation-table table :edit t)
-      (print (hu:hash->plist results))
       (is-true sig)
       (is-true (gethash :three results))
       (is (listp (gethash :one results)))

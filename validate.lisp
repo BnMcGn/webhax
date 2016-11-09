@@ -258,8 +258,11 @@
                                    key)
                                errors)
                       val))))))
-    (if (gadgets:not-empty (alexandria:hash-table-keys errors))
-        (values errors nil)
+    (if (not-empty (alexandria:hash-table-keys errors))
+        (values (if translation-table
+                    (rekey errors (invert-hash-table translation-table))
+                    errors)
+                nil)
         (values (if edit
                     (collecting-hash-table (:existing existing-hash :mode :replace)
                       (do-hash-table (k v results)
