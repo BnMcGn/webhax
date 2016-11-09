@@ -16,7 +16,8 @@
    #:prep-fieldspec-body-for-json
    #:convert-fieldspecs-to-json
    #:multiple?
-   #:validate-batch))
+   #:validate-batch
+   #:batch-response-json))
 
 (in-package :webhax-validate)
 
@@ -269,3 +270,8 @@
                         (collect k v)))
                     results)
                 t))))
+
+(defun batch-response-json (data success)
+  (if success
+      (cl-json:encode-json-plist-to-string '(:success t))
+      (cl-json:encode-json-plist-to-string `(:errors ,data))))
