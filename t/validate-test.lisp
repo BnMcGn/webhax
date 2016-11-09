@@ -76,18 +76,18 @@
     (is (equal '(:one) (alexandria:hash-table-keys results)))))
 
 (test validate-batch-translate
-  (let ((data (hu:plist->hash '(:y "yyzz" :z nil)))
-        (table (hu:plist->hash '(:x :one :y :two :z :three))))
+  (let ((data (hu:plist->hash '(:two "yyzz" :three nil)))
+        (table (hu:plist->hash '(:one :x :two :y :three :z))))
     (multiple-value-bind (results sig)
         (validate-batch
-         '((:one . "1") (:three . "true") (:one . "5"))
+         '((:x . "1") (:z . "true") (:x . "5"))
          (batch-val)
-         :existing-hash data :translation-table table)
+         :existing-hash data :translation-table table :edit t)
       (print (hu:hash->plist results))
       (is-true sig)
-      (is-false (gethash :z results))
-      (is (listp (gethash :x results)))
-      (is (equal "qwerzx" (gethash :y results))))))
+      (is-true (gethash :three results))
+      (is (listp (gethash :one results)))
+      (is (equal "yyzz" (gethash :two results))))))
 
 
 

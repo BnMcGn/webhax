@@ -211,14 +211,17 @@
 (defun normalize-input (input fieldspecs &optional translation-table)
   (let ((trans
          (if translation-table
-             (lambda (key) (gethash key translation-table)) #'identity)))
+             (lambda (key)
+               (gethash key translation-table))
+             #'identity)))
     (collecting
       (gadgets:do-window ((k v) fieldspecs :step 2)
-        (let ((val (if (getf v :multiple)
-                       (cons k (gadgets:assoc-all
-                                (funcall trans k) input
-                                :test #'webhax-core:eq-symb-multiple))
-                       (assoc (funcall trans k) input :test #'equal))))
+        (let* ((out-key (funcall trans k))
+               (val (if (getf v :multiple)
+                        (cons k (gadgets:assoc-all
+                                 out-key input
+                                 :test #'webhax-core:eq-symb-multiple))
+                        (assoc out-key input :test #'equal))))
           (when val
             (collect (cons k (cdr val)))))))))
 
