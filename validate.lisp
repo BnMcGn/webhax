@@ -271,7 +271,8 @@
                     results)
                 t))))
 
+;;FIXME: The frontend may want to know about successes even when there are
+;;errors, because some successes will reformat the input. User should see that.
 (defun batch-response-json (data success)
-  (if success
-      (cl-json:encode-json-plist-to-string '(:success t))
-      (cl-json:encode-json-plist-to-string `(:errors ,data))))
+  (cl-json:encode-json-plist-to-string
+   (list (if success :success :errors) data)))
