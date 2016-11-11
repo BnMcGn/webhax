@@ -81,6 +81,14 @@
                      (return-from exit (values it nil)))))
        t))))
 
+(defun mkparse-unique (items)
+  (lambda (item)
+    (if (and *existing-value-available-p* (equal *existing-value* item))
+        (values item t)
+        (if (member item items :test #'equal)
+            (values "Value needs to be unique" nil)
+            (values item t)))))
+
 (defun nullok-test (subtest)
   (lambda (item)
     (if (and item (< 0 (length item)))
