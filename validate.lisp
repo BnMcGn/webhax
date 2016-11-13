@@ -17,10 +17,18 @@
    #:convert-fieldspecs-to-json
    #:multiple?
    #:validate-batch
-   #:batch-response-json))
+   #:batch-response-json
+   #:eq-symb-multiple))
 
 (in-package :webhax-validate)
 
+;;For things that send multiple items with "[]" appended to the var name.
+(defun eq-symb-multiple (a b)
+  (or (eq-symb a b)
+      (and (= (length (mkstr a)) (+ 2 (length (mkstr b))))
+           (eq-symb a (symb b '[])))
+      (and (= (+ 2 (length (mkstr a))) (length (mkstr b)))
+           (eq-symb (symb a '[]) b))))
 
 (defun ratify-wrapper (basename)
   (let ((*package* (find-package 'webhax-validate)))
@@ -229,7 +237,7 @@
                (val (if (getf v :multiple)
                         (cons k (gadgets:assoc-all
                                  out-key input
-                                 :test #'webhax-core:eq-symb-multiple))
+                                 :test #'eq-symb-multiple))
                         (assoc out-key input :test #'equal))))
           (when val
             (collect (cons k (cdr val)))))))))
