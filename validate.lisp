@@ -125,28 +125,30 @@
 ;;;FIXME: Badly needs tidying
 ;;;FIXME: how shall overlength work?
 ;;;FIXME: function/list specs have design issue: notnull in parameters
+;;;FIXME: Options handling for vals needs rethinking
 
 (defun compile-validator (valspec)
-  (cond
-    ((functionp valspec)
-     valspec)
-    ((member valspec *ratify-tests*)
-     (ratify-wrapper valspec))
-    ((eq valspec :yesno)
-     (ratify-wrapper :boolean))
-    ((eq valspec :overlength)
-     (ratify-wrapper :overlength))
-    ((and (listp valspec) (symbolp (car valspec)))
-     (case (car valspec)
-       (:pickone
-        (mkparse-in-list (options-list valspec)))
-       (:picksome
-        (mkparse-all-members (mkparse-in-list (options-list valspec))))
-       (otherwise
-        (%handle-keyword (car valspec)))))
-    ((and (listp valspec) (functionp (car valspec)))
-     (apply (car valspec) (cdr valspec)))
-    (t (error "Validator type not found"))))
+  (let ((optionspecs (options-handler valspec)))
+    (cond
+      ((functionp valspec)
+       valspec)
+      ((member valspec *ratify-tests*)
+       (ratify-wrapper valspec))
+      ((eq valspec :yesno)
+       (ratify-wrapper :boolean))
+      ((eq valspec :overlength)
+       (ratify-wrapper :overlength))
+      ((and (listp valspec) (symbolp (car valspec)))
+       (case (car valspec)
+         (:pickone
+          (mkparse-in-list (getf optionspecs :options)))
+          (:picksome
+           (mkparse-all-members (mkparse-in-list (getf optionspecs :options))))
+          (otherwise
+           (%handle-keyword (car valspec)))))
+       ((and (listp valspec) (functionp (car valspec)))
+        (apply (car valspec) (cdr valspec)))
+       (t (error "Validator type not found")))))
 
 (defparameter *ratify-tests*
   '(:bit :day :date :hour :real :time :year :float :month :ratio :minute :number :offset :second :string :boolean :complex :integer :datetime :rational :character :unsigned-integer :ip :tel :uri :url :file :host :ipv4 :ipv6 :name :port :text :user :week :color :email :query :radio :range :domain :failed :object :scheme :search :numeric :checkbox :fragment :hostname :password :property :protocol :textarea :authority :alphabetic :alphanumeric :absolute-path :rootless-path :datetime-local :hierarchical-part))
@@ -193,29 +195,30 @@ will be filled.
 :autofill-func is for the frontend, not supported yet, but has the same
 constraints as options-func, above. It is used to provide autocomplete info for
 a field."
-  (bind-extracted-keywords
-      (valspec shortspec :options :options-func :autofill-func)
-    (flatten-1
-     (list
-      (when options (list :options (options-list valspec)))
-      (when options-func
-        (list :options-func
-              (if (symbolp options-func)
-                  (symbol-function options-func)
-                  (if (functionp options-func)
-                      options-func
-                      (error "Options-func is not a symbol or function")))))
-      (when (and options-func (symbolp options-func))
-        (list :options-func-name options-func))
-      (when autofill-func
-        (list :autofill-func
-              (if (symbolp autofill-func)
-                  (symbol-function autofill-func)
-                  (if (functionp autofill-func)
-                      autofill-func
-                      (error "Autofill-func is not a symbol or function")))))
-      (when (and autofill-func (symbolp autofill-func))
-        (list :autofill-func-name autofill-func))))))
+  (and (listp valspec)
+       (bind-extracted-keywords
+           (valspec shortspec :options :options-func :autofill-func)
+         (flatten-1
+          (list
+           (when options (list :options (options-list valspec)))
+           (when options-func
+             (list :options-func
+                   (if (symbolp options-func)
+                       (symbol-function options-func)
+                       (if (functionp options-func)
+                           options-func
+                           (error "Options-func is not a symbol or function")))))
+           (when (and options-func (symbolp options-func))
+             (list :options-func-name options-func))
+           (when autofill-func
+             (list :autofill-func
+                   (if (symbolp autofill-func)
+                       (symbol-function autofill-func)
+                       (if (functionp autofill-func)
+                           autofill-func
+                           (error "Autofill-func is not a symbol or function")))))
+           (when (and autofill-func (symbolp autofill-func))
+             (list :autofill-func-name autofill-func)))))))
 
 (defun options-list (valspec)
   "Shall return list of options that consist of a two element list: (value label)"
@@ -248,7 +251,7 @@ a field."
                            (recommend-widget vspec)))
              (nullok (nullok? vspec)))
         ;;Doesn't handle name
-        (list
+        (list*
          :description (getf fspec :description "")
          :initial (getf fspec :initial)
          :compiled-validator (if nullok
@@ -257,10 +260,10 @@ a field."
          :widget widget
          :multiple (multiple? widget)
          :nullok nullok
-         :options (options-list vspec)
          :type vspec
          :config (getf fspec :config)
-         :documentation (getf fspec :documentation "")))))
+         :documentation (getf fspec :documentation "")
+         (options-handler vspec)))))
 
 (defun prep-fieldspec-body-for-json (fspec)
   ;;Doesn't handle name
