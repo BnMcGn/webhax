@@ -165,6 +165,58 @@
         valsym
         :string)))
 
+;;;FIXME: Rethinking options handling:
+;; - Want :options-func so that it can update live, respond to other fields, etc
+;; - Options are for validation and for the user interface. Sometimes the list
+;; for the user interface should be updated from the server because a field
+;; or other condition has changed. How to set that up?
+;; - Sometimes the user should not be able to see the (full) list of options, for
+;; security reasons, eg.
+;; - Can specify server/client options list/validation?
+
+(defun options-handler (valspec)
+  "Scans the valspec for keywords relating to the provision of options. Processes
+them, returning a plist containing option info. Returns, as second value, the
+valspec minus the option keywords.
+
+:options is a fixed list of options for a field. It can be used both by the
+widget and the validator.
+
+:options-func returns a list of options when called. It may adjust based on
+various environment variables, such as the value of other fields or the
+identity of the user. It is meant to be used by the validator, yet might be
+needed by the frontend. If a symbol for a function is provided, rather than the
+function itself, the frontend will be able to find the function using [future
+AJAX funcall tool]. If a symbol has been provided, the :options-func-name field
+will be filled.
+
+:autofill-func is for the frontend, not supported yet, but has the same
+constraints as options-func, above. It is used to provide autocomplete info for
+a field."
+  (bind-extracted-keywords
+      (valspec shortspec :options :options-func :autofill-func)
+    (flatten-1
+     (list
+      (when options (list :options (options-list valspec)))
+      (when options-func
+        (list :options-func
+              (if (symbolp options-func)
+                  (symbol-function options-func)
+                  (if (functionp options-func)
+                      options-func
+                      (error "Options-func is not a symbol or function")))))
+      (when (and options-func (symbolp options-func))
+        (list :options-func-name options-func))
+      (when autofill-func
+        (list :autofill-func
+              (if (symbolp autofill-func)
+                  (symbol-function autofill-func)
+                  (if (functionp autofill-func)
+                      autofill-func
+                      (error "Autofill-func is not a symbol or function")))))
+      (when (and autofill-func (symbolp autofill-func))
+        (list :autofill-func-name autofill-func))))))
+
 (defun options-list (valspec)
   "Shall return list of options that consist of a two element list: (value label)"
   (and (listp valspec)
