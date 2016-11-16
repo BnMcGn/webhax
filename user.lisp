@@ -4,7 +4,9 @@
 
 (defpackage #:webhax-user
   (:use #:cl #:webhax-core #:webhax #:gadgets #:parenscript)
-  (:shadowing-import-from #:lack.component #:call))
+  (:shadowing-import-from #:lack.component #:call)
+  (:export
+   #:list-of-screen-names))
 
 (in-package #:webhax-user)
 
@@ -32,6 +34,13 @@
   (middleware-chain
    (userfig:userfig-component userfig-specs)
    (webhax-user-core )))
+
+(defun list-of-screen-names ()
+  (remove-if #'null
+             (userfig:map-users
+              (lambda (user data)
+                (declare (ignore user))
+                (and data (gethash 'screen-name data))))))
 
 (defparameter *userfig-for-user*
   '(signed-up

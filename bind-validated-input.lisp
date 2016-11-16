@@ -55,7 +55,7 @@
     (with-gensyms (value)
       `(let ((,value ,(if multiple
                           `(assoc-all ',(%spec-name other)
-                                      ,input :test #'eq-symb-multiple)
+                                      ,input :test #'gadgets:eq-symb-multiple)
                           `(assoc ',(%spec-name other)
                                   ,input :test #'eq-symb))))
          ,@(when required
