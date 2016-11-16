@@ -134,11 +134,13 @@
        (case (car valspec)
          (:pickone
           (mkparse-in-list (getf optionspecs :options)))
-          (:picksome
-           (mkparse-all-members (mkparse-in-list (getf optionspecs :options))))
-          (otherwise
-           (%handle-keyword (car valspec)))))
-       ((and (listp valspec) (functionp (car valspec)))
+         (:picksome
+          (mkparse-all-members (mkparse-in-list (getf optionspecs :options))))
+         (:unique
+          (mkparse-unique (getf optionspecs :options-func)))
+         (otherwise
+          (%handle-keyword (car valspec)))))
+      ((and (listp valspec) (functionp (car valspec)))
         (apply (car valspec) (cdr valspec)))
        (t (error "Validator type not found")))))
 
