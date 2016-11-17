@@ -87,6 +87,7 @@
           ,@code))))
 
 (defun %%ask-proc-exit/server (exit-body)
+  ;;FIXME: Should (server...) contain an implicit progn?
   (mapcan
    (lambda (x)
      (if (and (listp x) (eq (car x) 'server))
@@ -270,15 +271,20 @@
         (pairlis (mapcar #'second qs) names))))
 
 (defgeneric load-prefills (stor dict &key test)
-  (:documentation "For loading alists or hash-tables into the prefill store. No validation."))
+  (:documentation "For loading alists, plists or hash-tables into the prefill store. No validation."))
 (defmethod load-prefills (astor dict &key (test #'eq-symb))
   (with-slots (qs names prefill-stor) astor
     (let ((table (translation-table astor)))
-      (if (hash-table-p dict)
-          (do-hash-table (k v dict)
-            (setf (gethash (assoc-cdr k table :test test) prefill-stor) v))
-          (do-alist (k v dict)
-            (setf (gethash (assoc-cdr k table :test test) prefill-stor) v))))))
+      (cond ((hash-table-p dict)
+             (do-hash-table (k v dict)
+               (setf (gethash (assoc-cdr k table :test test) prefill-stor) v)))
+            ((alist-p dict)
+             (do-alist (k v dict)
+               (setf (gethash (assoc-cdr k table :test test) prefill-stor) v)))
+            (t
+             (do-window ((k v) dict :size 2 :step 2)
+               (setf
+                (gethash (assoc-cdr k table :test test) prefill-stor) v)))))))
 
 (defgeneric translate-key (stor key)
   (:documentation "Given the original symbol supplied by the user, return the
