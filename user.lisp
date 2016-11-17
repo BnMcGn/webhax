@@ -20,6 +20,19 @@
   (when *session*
     (gethash :display-name *session*)))
 
+(defun login-provider-fields (&optional key)
+  (when *session*
+    ;;FIXME: This is oid connect specific.
+    (let ((data (gethash :oid-connect-provider *session*)))
+      ;;FIXME: Some of the field names need cleaning up.
+      (if key
+          (assoc-cdr key data)
+          data))))
+
+;;FIXME: Rethink someday. Oid connect specific.
+(defun login-destination ()
+  clack-openid-connect:*login-destination*)
+
 (defun signed-up-p (&optional user)
   "Because a user could sign in, say with OpenID, yet not be known on the site"
   (let ((userfig:*userfig-user* user))
@@ -48,25 +61,33 @@
      :description "Date when you signed up"
      :documentation "Date when the user created an account. Nil if the user hasn't created an account.")
     screen-name
-    (:initial nil :editable t :type :string
+    (:initial nil :editable t :type (:unique :options-func list-of-screen-names)
      :description "Your preferred screen name")
     email
     (:initial nil :editable t :type :email
      :description "Your email address")
     ))
 
-
-;; From session :username :display-name :email?
-
-'(defun sign-up-page ()
-  (with-html-output-to-string (s)
+(defun sign-up-page ()
+  (cl-who:with-html-output-to-string (s)
       (:html
        (:head (:title "Sign up"))
        (:body (:h2 "New Account")
               (:p "Please confirm a few details to create your account.")
               (ask
+                :prefill (list :screen-name (get-display-name)
+                               :email (login-provider-fields :email))
                 (form
-                 (q )))))))
+                 (q screen-name "Your preferred screen name"
+                    (:unique :options-func 'list-of-screen-names))
+                 (q email "Your email address" :email))
+                (done
+                 (server (progn
+                           (setf (userfig:userfig-value 'screen-name)
+                                 (gethash 'screen-name (answers)))
+                           (setf (userfig:userfig-value 'email)
+                                 (gethash 'email (answers)))))
+                 (client (setf (@ window location) (login-destination)))))))))
 
 (define-middleware webhax-user-core ()
   (url-case
