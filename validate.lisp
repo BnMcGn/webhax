@@ -263,7 +263,8 @@ a field."
   ;;Doesn't handle name
   (cl-hash-util:plist->alist
    (nth-value
-    1 (gadgets:extract-keywords '(:compiled-validator) fspec))))
+    1 (gadgets:extract-keywords
+       '(:compiled-validator :options-func :autofill-func) fspec))))
 
 (defun convert-fieldspecs-to-json (fspecs)
   (json:encode-json-to-string

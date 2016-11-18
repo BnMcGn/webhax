@@ -264,7 +264,7 @@ to mount-component."
                     (*key-web-input*
                      (lack.request:request-parameters *request*))
                     (*regular-web-input*
-                     (if (boundp *regular-web-input*)
+                     (if (boundp '*regular-web-input*)
                          *regular-web-input*
                          (split-sequence
                           #\/ (lack.request:request-path-info *request*)
@@ -289,4 +289,4 @@ to mount-component."
 (defun middleware-chain (&rest mwarez)
   "Join a chain of middlewares into a single middleware"
   (lambda (app)
-    (reduce #'funcall (concatenate 'list mwarez (list app)))))
+    (reduce #'funcall mwarez :initial-value app :from-end t)))
