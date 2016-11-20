@@ -10,6 +10,9 @@
   "Outputs HTML to standard out."
   `(with-html-output (*webhax-output* nil :indent t) ,@body))
 
+(defmacro html-out-str (&body body)
+  `(with-html-output-to-string (*webhax-output* nil :indent t) ,@body))
+
 (defvar *regular-web-input*)
 (defvar *key-web-input*)
 (defvar *session* nil)

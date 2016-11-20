@@ -69,10 +69,31 @@
      :description "Your email address")
     ))
 
+(defun %javascript-part-extract (partfunc)
+  (with-output-to-string (s)
+    (dolist (func (gethash :@javascript (funcall partfunc (make-hash-table))))
+      (princ (funcall func) s))))
+
 (defun sign-up-page ()
-  (cl-who:with-html-output-to-string (s)
+  (html-out-str
       (:html
-       (:head (:title "Sign up"))
+       (:head
+        (:title "Sign up")
+        (:script :type "text/javascript"
+           :src "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js")
+        (:script :type "text/javascript"
+           :src "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js")
+        (:script :type "text/javascript"
+                 :src "/static/javascript/redux.js")
+        (:script :type "text/javascript"
+                 :src "/static/javascript/react-redux.js")
+        (:script :type "text/javascript"
+                 :src "/static/javascript/jquery/1.9.1/jquery.js")
+        (:script :type "text/javascript" (str (cl-react:build)))
+        (:script :type "text/javascript" (str (ps-gadgets:ps-gadgets)))
+        (:script :type "text/javascript" (str (webhax-widgets:ps-widgets)))
+        (:script :type "text/javascript" (str (%javascript-part-extract
+                                               #'webhax:webhax-ask))))
        (:body (:h2 "New Account")
               (:p "Please confirm a few details to create your account.")
               (ask

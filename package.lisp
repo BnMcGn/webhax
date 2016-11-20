@@ -21,7 +21,8 @@
    #:get-display-name
    #:*web-env*
    #:*response*
-   #:*request*))
+   #:*request*
+   #:html-out-str))
 
 (defpackage #:webhax-json-call
   (:use #:cl #:webhax-core #:gadgets #:alexandria)
