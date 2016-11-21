@@ -22,7 +22,9 @@
    #:*web-env*
    #:*response*
    #:*request*
-   #:html-out-str))
+   #:html-out-str
+   #:web-fail
+   #:handle-web-fail))
 
 (defpackage #:webhax-json-call
   (:use #:cl #:webhax-core #:gadgets #:alexandria)

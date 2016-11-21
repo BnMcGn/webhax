@@ -26,3 +26,16 @@
 (defun multiple-key-p (stritem)
   (ends-with-subseq "[]" stritem))
 
+;;;Web-fail: Return an http error response code with the lisp condition system.
+
+(define-condition web-fail (error)
+  ((text :initarg :text :reader text)
+   (response :initarg :response :reader response)))
+
+(defmacro handle-web-fail (&body body)
+  `(handler-case
+       ,@body
+     (web-fail (fail)
+       (with-slots (text response) fail
+         `(,response nil (,text))))))
+
