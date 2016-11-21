@@ -134,7 +134,7 @@
                               (%send-display-queue)
                               (answer ,name)))
                     (%form-display (namelist)
-                      `(progn (mapc #'%display-enqueue (reverse ,namelist))
+                      `(progn (mapc #'%display-enqueue ,namelist)
                               (%send-display-queue)
                               :???)))
            (cl-cont:with-call/cc
