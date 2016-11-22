@@ -9,7 +9,8 @@
    #:list-of-screen-names
    #:webhax-user
    #:check-authenticated
-   #:check-signed-up))
+   #:check-signed-up
+   #:authenticated-p))
 
 (in-package #:webhax-user)
 
@@ -26,7 +27,7 @@
 (defun login-provider-fields (&optional key)
   (when *session*
     ;;FIXME: This is oid connect specific.
-    (let ((data (gethash :oid-connect-provider *session*)))
+    (let ((data (gethash :oid-connect-userinfo *session*)))
       ;;FIXME: Some of the field names need cleaning up.
       (if key
           (assoc-cdr key data)
@@ -36,13 +37,16 @@
 (defun login-destination ()
   clack-openid-connect:*login-destination*)
 
+(defun authenticated-p ()
+  (gethash :username *session*))
+
 (defun signed-up-p (&optional user)
   "Because a user could sign in, say with OpenID, yet not be known on the site"
   (let ((userfig:*userfig-user* user))
     (userfig:userfig-value 'signed-up)))
 
 (defun check-authenticated ()
-  (unless (logged-in-p *web-env*)
+  (unless (authenticated-p)
     (error 'web-fail :response 403 :text "Please log in")))
 
 ;;;FIXME: Need way to set redirect??! 

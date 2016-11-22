@@ -125,7 +125,9 @@
    #:with-content-type
    #:as-html
    #:as-json
-   #:middleware-chain))
+   #:middleware-chain
+   #:*clack-app*
+   #:*web-env*))
 
 
 
