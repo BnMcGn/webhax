@@ -194,7 +194,7 @@ to mount-component."
                   (cond
                     ((symbolp key)
                      (if (eq key 'otherwise)
-                         (cases< `((t ,clause-body)))
+                         (cases< `(t ,clause-body))
                          (if (blank-key-p key)
                              (cases< `((not ,input) ,clause-body))
                              (progn (cases< `((eq ,foundkey ,key)
@@ -211,7 +211,7 @@ to mount-component."
                   (error "Non-atomic routes not supported yet.")))))
       `(let* ((,matfunc (gadgets:match-various ',keys))
               (,input (car *regular-web-input*))
-              (,foundkey (funcall ,matfunc ,input))
+              (,foundkey (when ,input (funcall ,matfunc ,input)))
               (*url-parentage* (cons (car *regular-web-input*)
                                      *url-parentage*))
               (*regular-web-input* (cdr *regular-web-input*)))
@@ -241,9 +241,12 @@ to mount-component."
                          #\/ (lack.request:request-path-info *request)
                          :remove-empty-subseqs t))))
               (with-content-type *default-content-type*
-                (setf (lack.response:response-body *response*)
-                      (list (apply #',name-int params))))
-              (lack.response:finalize-response *response*))))))))
+                (let ((res (ensure-list (apply #',name-int params))))
+                  (if (numberp (car res)) ;Test: is already a response
+                      res
+                      (progn
+                        (setf (lack.response:response-body *response*) res)
+                        (lack.response:finalize-response *response*))))))))))))
 
 (defvar *clack-app*)
 
@@ -272,9 +275,12 @@ to mount-component."
                             #\/ (lack.request:request-path-info *request*)
                             :remove-empty-subseqs t))))
                  (with-content-type *default-content-type*
-                   (setf (lack.response:response-body *response*)
-                         (list (apply #',name-int params))))
-                 (lack.response:finalize-response *response*)))))))))
+                   (let ((res (ensure-list (apply #',name-int params))))
+                     (if (numberp (car res)) ;Test: is already a response
+                         res
+                         (progn
+                           (setf (lack.response:response-body *response*) res)
+                           (lack.response:finalize-response *response*)))))))))))))
 
 (defmacro with-content-type (ctype &body body)
   `(progn

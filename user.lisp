@@ -127,7 +127,7 @@
 (define-middleware webhax-user-core ()
   (url-case
     (:sign-up (sign-up-page))
-    ))
+    (otherwise (funcall *clack-app* *web-env*))))
 
 
 
