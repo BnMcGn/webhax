@@ -7,7 +7,9 @@
   (:shadowing-import-from #:lack.component #:call)
   (:export
    #:list-of-screen-names
-   #:webhax-user))
+   #:webhax-user
+   #:check-authenticated
+   #:check-signed-up))
 
 (in-package #:webhax-user)
 
@@ -38,6 +40,16 @@
   "Because a user could sign in, say with OpenID, yet not be known on the site"
   (let ((userfig:*userfig-user* user))
     (userfig:userfig-value 'signed-up)))
+
+(defun check-authenticated ()
+  (unless (logged-in-p *web-env*)
+    (error 'web-fail :response 403 :text "Please log in")))
+
+;;;FIXME: Need way to set redirect??! 
+(defun check-signed-up ()
+  (error "not implemented")
+  (unless (signed-up-p)
+    (error 'web-fail :response)))
 
 (defun login-method ()
   (when (get-user-name)
@@ -75,6 +87,7 @@
       (princ (funcall func) s))))
 
 (defun sign-up-page ()
+  (check-authenticated)
   (html-out-str
       (:html
        (:head

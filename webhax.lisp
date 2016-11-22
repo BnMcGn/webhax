@@ -226,23 +226,24 @@ to mount-component."
       (defun ,name-int ,parameters
         ,@body)
       (defun ,name (&rest params)
-        (lambda (env)
-          (let* ((*web-env* env)
-                 (*session* (session-from-env env))
-                 (*request* (lack.request:make-request env))
-                 (*response* (lack.response:make-response 200))
-                 (*key-web-input* (lack.request:request-parameters *request*))
-                 (*regular-web-input*
-                  ;;How to handle mounted sub-apps?
-                  (if (boundp *regular-web-input*)
-                      *regular-web-input*
-                      (split-sequence
-                       #\/ (lack.request:request-path-info *request)
-                       :remove-empty-subseqs t))))
-            (with-content-type *default-content-type*
-              (setf (lack.response:response-body *response*)
-                    (list (apply #',name-int params))))
-            (lack.response:finalize-response *response*)))))))
+        (handle-web-fail
+          (lambda (env)
+            (let* ((*web-env* env)
+                   (*session* (session-from-env env))
+                   (*request* (lack.request:make-request env))
+                   (*response* (lack.response:make-response 200))
+                   (*key-web-input* (lack.request:request-parameters *request*))
+                   (*regular-web-input*
+                    ;;How to handle mounted sub-apps?
+                    (if (boundp *regular-web-input*)
+                        *regular-web-input*
+                        (split-sequence
+                         #\/ (lack.request:request-path-info *request)
+                         :remove-empty-subseqs t))))
+              (with-content-type *default-content-type*
+                (setf (lack.response:response-body *response*)
+                      (list (apply #',name-int params))))
+              (lack.response:finalize-response *response*))))))))
 
 (defvar *clack-app*)
 
@@ -256,23 +257,24 @@ to mount-component."
        (defun ,name (&rest params)
          (lambda (app)
            (lambda (env)
-             (let* ((*clack-app* app)
-                    (*web-env* env)
-                    (*session* (session-from-env env))
-                    (*request* (lack.request:make-request env))
-                    (*response* (lack.response:make-response 200))
-                    (*key-web-input*
-                     (lack.request:request-parameters *request*))
-                    (*regular-web-input*
-                     (if (boundp '*regular-web-input*)
-                         *regular-web-input*
-                         (split-sequence
-                          #\/ (lack.request:request-path-info *request*)
-                          :remove-empty-subseqs t))))
-               (with-content-type *default-content-type*
-                 (setf (lack.response:response-body *response*)
-                       (list (apply #',name-int params))))
-               (lack.response:finalize-response *response*))))))))
+             (handle-web-fail
+               (let* ((*clack-app* app)
+                      (*web-env* env)
+                      (*session* (session-from-env env))
+                      (*request* (lack.request:make-request env))
+                      (*response* (lack.response:make-response 200))
+                      (*key-web-input*
+                       (lack.request:request-parameters *request*))
+                      (*regular-web-input*
+                       (if (boundp '*regular-web-input*)
+                           *regular-web-input*
+                           (split-sequence
+                            #\/ (lack.request:request-path-info *request*)
+                            :remove-empty-subseqs t))))
+                 (with-content-type *default-content-type*
+                   (setf (lack.response:response-body *response*)
+                         (list (apply #',name-int params))))
+                 (lack.response:finalize-response *response*)))))))))
 
 (defmacro with-content-type (ctype &body body)
   `(progn
