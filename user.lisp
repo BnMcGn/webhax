@@ -10,7 +10,8 @@
    #:webhax-user
    #:check-authenticated
    #:check-signed-up
-   #:authenticated-p))
+   #:authenticated?
+   #:signed-up?))
 
 (in-package #:webhax-user)
 
@@ -37,23 +38,28 @@
 (defun login-destination ()
   clack-openid-connect:*login-destination*)
 
-(defun authenticated-p ()
+(defsetf login-destination () (newval)
+  `(setf clack-openid-connect:*login-destination* ,newval))
+
+(defun authenticated? ()
   (gethash :username *session*))
 
-(defun signed-up-p (&optional user)
+(defun signed-up? (&optional user)
   "Because a user could sign in, say with OpenID, yet not be known on the site"
-  (let ((userfig:*userfig-user* user))
-    (userfig:userfig-value 'signed-up)))
+  (and (authenticated?)
+       (let ((userfig:*userfig-user* user))
+         (userfig:userfig-value 'signed-up))))
 
 (defun check-authenticated ()
-  (unless (authenticated-p)
+  (unless (authenticated?)
     (error 'web-fail :response 403 :text "Please log in")))
 
-;;;FIXME: Need way to set redirect??! 
+;;;For now, we leave the middleware to decide whether a login or signup
+;;; is needed.
 (defun check-signed-up ()
-  (error "not implemented")
-  (unless (signed-up-p)
-    (error 'web-fail :response)))
+  (check-authenticated)
+  (unless (signed-up?)
+    (error 'web-fail :response 403 :text "User not a member here")))
 
 (defun login-method ()
   (when (get-user-name)
@@ -126,12 +132,21 @@
                                  (gethash 'screen-name (answers)))
                            (setf (userfig:userfig-value 'email)
                                  (gethash 'email (answers)))))
-                 (client (setf (@ window location) (login-destination)))))))))
+                 (client (setf (@ window location)
+                               (lisp (login-destination))))))))))
 
 (define-middleware webhax-user-core ()
   (url-case
     (:sign-up (sign-up-page))
-    (otherwise (funcall *clack-app* *web-env*))))
+    (otherwise
+     (let ((result (funcall *clack-app* *web-env*)))
+       ;;FIXME: Sometimes we shouldn't redirect to login page, such as on a
+       ;; 403 from a json url. Add support for a flag in the header?
+       (if (and (listp result) (eql 403 (car result)) (authenticated?))
+           (progn
+             (setf (login-destination) (url-from-env *web-env*))
+             (sign-up-page))
+           result)))))
 
 
 
