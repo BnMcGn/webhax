@@ -220,28 +220,34 @@ to mount-component."
 
 (defparameter *default-content-type* "text/html")
 
+(defun call-with-webhax-environment (func env)
+  (handle-web-fail
+    (let* ((*web-env* env)
+           (*session* (session-from-env env))
+           (*request* (lack.request:make-request env))
+           (*response* (lack.response:make-response 200))
+           (*key-web-input* (lack.request:request-parameters *request*))
+           (*regular-web-input*
+            ;;How to handle mounted sub-apps?
+            (if (boundp '*regular-web-input*)
+                *regular-web-input*
+                (split-sequence
+                 #\/ (lack.request:request-path-info *request*)
+                 :remove-empty-subseqs t))))
+      (funcall func))))
+
 (defun wrap-with-webhax-environment (func params)
   (lambda (env)
-    (handle-web-fail
-      (let* ((*web-env* env)
-             (*session* (session-from-env env))
-             (*request* (lack.request:make-request env))
-             (*response* (lack.response:make-response 200))
-             (*key-web-input* (lack.request:request-parameters *request*))
-             (*regular-web-input*
-              ;;How to handle mounted sub-apps?
-              (if (boundp *regular-web-input*)
-                  *regular-web-input*
-                  (split-sequence
-                   #\/ (lack.request:request-path-info *request*)
-                   :remove-empty-subseqs t))))
-        (with-content-type *default-content-type*
-          (let ((res (alexandria:ensure-list (apply func params))))
-            (if (numberp (car res)) ;Test: is already a response
-                res
-                (progn
-                  (setf (lack.response:response-body *response*) res)
-                  (lack.response:finalize-response *response*)))))))))
+    (call-with-webhax-environment
+     (lambda ()
+       (with-content-type *default-content-type*
+        (let ((res (alexandria:ensure-list (apply func params))))
+          (if (numberp (car res)) ;Test: is already a response
+              res
+              (progn
+                (setf (lack.response:response-body *response*) res)
+                (lack.response:finalize-response *response*))))))
+     env)))
 
 (defmacro define-webapp (name parameters &body body)
   (let ((name-int (symb name '-internal)))
