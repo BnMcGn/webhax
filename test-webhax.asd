@@ -6,13 +6,15 @@
   :license "Specify license here"
   :depends-on (#:webhax
                #:fiveam
-               #:cl-react) 
+               #:cl-react
+               #:webhax-user) 
   :serial t
   :components ((:module :t
                         :serial t
                         :components ((:file "package")
                                      (:file "bind-validated-test")
                                      (:file "validate-test")
-                                     (:file "ask-test")))))
+                                     (:file "ask-test")
+                                     (:file "user-test")))))
 
 

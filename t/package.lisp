@@ -1,6 +1,6 @@
 
 (defpackage #:webhax-test
-  (:use #:cl #:webhax #:fiveam #:webhax-validate #:gadgets
+  (:use #:cl #:webhax #:fiveam #:webhax-validate #:webhax-user #:gadgets
         #:cl-who
         #:alexandria #:cl-react #:parenscript)
   (:shadowing-import-from #:parenscript #:switch))

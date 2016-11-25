@@ -28,7 +28,6 @@
                (:file "web-input")
                (:file "metaplate")
                (:file "webhax" :depends-on ("web-input" "metaplate"))
-               (:file "user")
                (:file "clack-tool")
                (:file "json-call")
                (:file "html-s-exp")
