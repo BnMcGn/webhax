@@ -220,6 +220,19 @@ to mount-component."
 
 (defparameter *default-content-type* "text/html")
 
+(eval-always
+  (defmacro with-content-type (ctype &body body)
+   `(progn
+      (setf (getf (lack.response:response-headers *response*) :content-type)
+            ,ctype)
+      ,@body)))
+
+(defmacro as-html (&body body)
+  `(with-content-type "text/html" ,@body))
+
+(defmacro as-json (&body body)
+  `(with-content-type "application/json" ,@body))
+
 (defun call-with-webhax-environment (func env)
   (handle-web-fail
     (let* ((*web-env* env)
@@ -271,18 +284,6 @@ to mount-component."
          (lambda (app)
            (setf %app app)
            (wrap-with-webhax-environment #',name-int params))))))
-
-(defmacro with-content-type (ctype &body body)
-  `(progn
-     (setf (getf (lack.response:response-headers *response*) :content-type)
-           ,ctype)
-     ,@body))
-
-(defmacro as-html (&body body)
-  `(with-content-type "text/html" ,@body))
-
-(defmacro as-json (&body body)
-  `(with-content-type "application/json" ,@body))
 
 (defun middleware-chain (&rest mwarez)
   "Join a chain of middlewares into a single middleware"
