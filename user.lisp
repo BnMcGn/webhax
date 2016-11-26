@@ -11,7 +11,9 @@
    #:check-authenticated
    #:check-signed-up
    #:authenticated?
-   #:signed-up?))
+   #:signed-up?
+   #:get-display-name
+   #:get-user-name))
 
 (in-package #:webhax-user)
 

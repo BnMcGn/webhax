@@ -246,8 +246,7 @@ to mount-component."
               res
               (progn
                 (setf (lack.response:response-body *response*) res)
-                (lack.response:finalize-response *response*))))))
-     env)))
+                (lack.response:finalize-response *response*)))))))))
 
 (defmacro define-webapp (name parameters &body body)
   (let ((name-int (symb name '-internal)))
