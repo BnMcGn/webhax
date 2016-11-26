@@ -246,7 +246,8 @@ to mount-component."
               res
               (progn
                 (setf (lack.response:response-body *response*) res)
-                (lack.response:finalize-response *response*)))))))))
+                (lack.response:finalize-response *response*))))))
+     env)))
 
 (defmacro define-webapp (name parameters &body body)
   (let ((name-int (symb name '-internal)))
@@ -260,15 +261,16 @@ to mount-component."
 
 (defmacro define-middleware (name parameters &body body)
   (let ((name-int (symb name '-internal)))
-    `(progn
+    `(let ((%app nil))
        ;;FIXME: Would be nice to use parameters here so that user options
        ;;show up in the hints.
        (defun ,name-int ,parameters
-         ,@body)
+         (let ((*clack-app* %app))
+           ,@body))
        (defun ,name (&rest params)
          (lambda (app)
-           (let ((*clack-app* app))
-             (wrap-with-webhax-environment #',name-int params)))))))
+           (setf %app app)
+           (wrap-with-webhax-environment #',name-int params))))))
 
 (defmacro with-content-type (ctype &body body)
   `(progn
