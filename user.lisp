@@ -13,7 +13,8 @@
    #:authenticated?
    #:signed-up?
    #:get-display-name
-   #:get-user-name))
+   #:get-user-name
+   #:login-provider-fields))
 
 (in-package #:webhax-user)
 
@@ -49,7 +50,7 @@
 (defun signed-up? (&optional user)
   "Because a user could sign in, say with OpenID, yet not be known on the site"
   (and (authenticated?)
-       (let ((userfig:*userfig-user* user))
+       (let ((userfig:*userfig-user* (or user (authenticated?))))
          (userfig:userfig-value 'signed-up))))
 
 (defun check-authenticated ()
