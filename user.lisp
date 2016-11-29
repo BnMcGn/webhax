@@ -14,7 +14,8 @@
    #:signed-up?
    #:get-display-name
    #:get-user-name
-   #:login-provider-fields))
+   #:login-provider-fields
+   #:user-info-bundle))
 
 (in-package #:webhax-user)
 
@@ -31,11 +32,19 @@
 (defun login-provider-fields (&optional key)
   (when *session*
     ;;FIXME: This is oid connect specific.
-    (let ((data (gethash :oid-connect-userinfo *session*)))
-      ;;FIXME: Some of the field names need cleaning up.
+    (let* ((data (gethash :oid-connect-userinfo *session*))
+           (result
+            (list
+             (cons :name (assoc-cdr :name data))
+             (cons :given-name (assoc-cdr :given--name data))
+             (cons :family-name (assoc-cdr :family--name data))
+             (cons :picture (assoc-cdr :picture data))
+             (cons :email (assoc-cdr :email data))
+             (cons :email-verified (assoc-cdr :email--verified data))
+             (cons :locale (assoc-cdr :locale data)))))
       (if key
-          (assoc-cdr key data)
-          data))))
+          (assoc-cdr key result)
+          result))))
 
 ;;FIXME: Rethink someday. Oid connect specific.
 (defun login-destination ()
@@ -150,6 +159,13 @@
              (setf (login-destination) (url-from-env *web-env*))
              (sign-up-page))
            result)))))
+
+(defun user-info-bundle ()
+  (let ((res (login-provider-fields)))
+    (push (cons :login-url (clack-openid-connect:login-url)) res)
+    (push (cons :logout-url (clack-openid-connect:logout-url)) res)
+    (push (cons :settings-url (userfig:settings-url)) res)
+    res))
 
 
 
