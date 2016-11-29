@@ -58,7 +58,7 @@
              :info (prop info)
              ;;NOTE: prefill is not used by ask. prefills are put in the updates
              ;;from the server
-             :prefill (prop prefill)
+             ;;:prefill (prop prefill)
              :server-url (prop :server-url)))
          prop-types
          (create
@@ -72,7 +72,7 @@
              :errors (state errors)
              :command-keys (chain -object (keys (state commands)))
              :info (prop info)
-             :prefill (prop prefill)
+             ;;:prefill (prop prefill)
              :dispatch (@ this call-server)))
          get-initial-state
          (lambda ()
