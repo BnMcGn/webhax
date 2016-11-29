@@ -105,15 +105,19 @@
                 (chain component-this-ref (#:set-state res))))))
 
        (def-component ask-collection-layer
-           (psx
-            (:update-notify
-             (:ask-displayable-manager
-              :commands (prop commands)
-              :ordering (prop ordering)
-              :info (prop info)
-              :data (state data)
-              :dispatch (@ this dispatch)
-              :errors (prop errors))))
+           (let ((new-data (-object)))
+             (ps-gadgets:do-keyvalue (k v (prop commands))
+               (when (chain v (has-own-property "default"))
+                 (setf (getprop new-data k) (@ v default))))
+             (psx
+              (:update-notify
+               (:ask-displayable-manager
+                :commands (prop commands)
+                :ordering (prop ordering)
+                :info (prop info)
+                :data (copy-merge-all (state data) new-data)
+                :dispatch (@ this dispatch)
+                :errors (prop errors)))))
          ;; Prefill: state of fields at start of form, fields optional
          ;; Data: current state of all fields, fields optional
          ;; Current: a copy of Data that contains only items found in
@@ -122,7 +126,7 @@
          ;; even if they aren't found anywhere else
          get-initial-state
          (lambda ()
-           (create :data (or (prop prefill) (-object))))
+           (create :data (-object)))
          dispatch
          (lambda (action) ;Can be replaced with redux dispatching.
            (case (@ action type)
