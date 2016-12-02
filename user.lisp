@@ -160,13 +160,22 @@
              (sign-up-page))
            result)))))
 
+(defun signup-url ()
+  "/sign-up/")
+
+;;;Make the login process send user to sign-up page if not signed up.
+(setf clack-openid-connect:*login-destination-hook*
+      (lambda (&key username)
+        (if (userfig:new-user-p username)
+            (signup-url)
+            (login-destination))))
+
 (defun user-info-bundle ()
   (let ((res (login-provider-fields)))
     (push (cons :login-url (clack-openid-connect:login-url)) res)
     (push (cons :logout-url (clack-openid-connect:logout-url)) res)
     (push (cons :settings-url (userfig:settings-url)) res)
     res))
-
 
 
 
