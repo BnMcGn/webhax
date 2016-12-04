@@ -136,9 +136,13 @@
                (let ((res (-object))
                      (dat (state data)))
                  (dolist (k (prop command-keys))
-                   (if (chain dat (has-own-property k))
-                       (setf (getprop res k) (getprop dat k))
-                       (setf (getprop res k) nil)))
+                   (setf (getprop res k)
+                         (cond
+                           ((chain dat (has-own-property k)) (getprop dat k))
+                           ((chain (getprop (prop commands) k)
+                                   (has-own-property "default"))
+                            (getprop (prop commands) k "default"))
+                           (t nil))))
                  res)))
              (:edit
               ;;FIXME: add client-side validation here?
