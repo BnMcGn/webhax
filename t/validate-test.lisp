@@ -16,6 +16,11 @@
 (defun val4 ()
   (normalize-fieldspec-body '(:date)))
 
+(defun list-of-things () '("thing" "object" "doodad" "entity"))
+
+(defun val5 ()
+  (normalize-fieldspec-body '((:unique :options-func list-of-things))))
+
 (defun callval (valfunc input)
   (funcall
    (getf (funcall valfunc) :compiled-validator)
@@ -46,7 +51,9 @@
   (is (null (callval #'val3 "")))
 
   (is (null (callval #'val4 "")))
-  (is (eq 'local-time:timestamp (type-of (callval #'val4 "2000-01-01")))))
+  (is (eq 'local-time:timestamp (type-of (callval #'val4 "2000-01-01"))))
+  (is-false (nth-value 1 (callval #'val5 "doodad")))
+  (is-true (nth-value 1 (callval #'val5 "gizmo"))))
 
 (defun batch-val ()
   (list

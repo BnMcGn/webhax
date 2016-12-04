@@ -81,11 +81,12 @@
                      (return-from exit (values it nil)))))
        t))))
 
-(defun mkparse-unique (items)
+;;;FIXME: Should be handling lists of items too?
+(defun mkparse-unique (itemfunc)
   (lambda (item)
     (if (and *existing-value-available-p* (equal *existing-value* item))
         (values item t)
-        (if (member item items :test #'equal)
+        (if (member item (funcall itemfunc) :test #'equal)
             (values "Value needs to be unique" nil)
             (values item t)))))
 
