@@ -60,7 +60,7 @@
   "Because a user could sign in, say with OpenID, yet not be known on the site"
   (and (authenticated?)
        (let ((userfig:*userfig-user* (or user (authenticated?))))
-         (userfig:userfig-value 'signed-up))))
+         (userfig:initialized?))))
 
 (defun check-authenticated ()
   (unless (authenticated?)
