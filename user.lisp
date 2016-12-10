@@ -79,9 +79,10 @@
       ((key-in-hash? :oid-connect-provider *session*) :openid-connect))))
 
 (defun webhax-user (&key userfig-specs)
-  (middleware-chain
-   (userfig:userfig-component userfig-specs)
-   (webhax-user-core)))
+  (let ((specs (concatenate 'list *userfig-for-user* userfig-specs)))
+    (middleware-chain
+     (userfig:userfig-component specs)
+     (webhax-user-core specs))))
 
 (defun list-of-screen-names ()
   (remove-if #'null
@@ -103,12 +104,20 @@
      :description "Your email address")
     ))
 
+(defun save-signed-up-user (specs settings)
+  (userfig:initialize-user (authenticated?) specs)
+  (setf (userfig:userfig-value 'screen-name)
+        (gethash 'screen-name settings))
+  (setf (userfig:userfig-value 'email)
+        (gethash 'email settings)))
+
+;;;FIXME: Metaplate needs reworking. Temporary hack.
 (defun %javascript-part-extract (partfunc)
   (with-output-to-string (s)
     (dolist (func (gethash :@javascript (funcall partfunc (make-hash-table))))
       (princ (funcall func) s))))
 
-(defun sign-up-page ()
+(defun sign-up-page (userfig-specs)
   (check-authenticated)
   (html-out-str
       (:html
@@ -139,15 +148,11 @@
                     (:unique :options-func 'list-of-screen-names))
                  (q email "Your email address" :email))
                 (done
-                 (server (progn
-                           (setf (userfig:userfig-value 'screen-name)
-                                 (gethash 'screen-name (answers)))
-                           (setf (userfig:userfig-value 'email)
-                                 (gethash 'email (answers)))))
+                 (server (save-signed-up-user userfig-specs (answers)))
                  (client (setf (@ window location)
                                (lisp (login-destination))))))))))
 
-(define-middleware webhax-user-core ()
+(define-middleware webhax-user-core (userfig-specs)
   (url-case
     (:sign-up (sign-up-page))
     (otherwise
@@ -157,7 +162,7 @@
        (if (and (listp result) (eql 403 (car result)) (authenticated?))
            (progn
              (setf (login-destination) (url-from-env *web-env*))
-             (sign-up-page))
+             (sign-up-page userfig-specs))
            result)))))
 
 (defun signup-url ()
