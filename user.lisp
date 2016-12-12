@@ -93,14 +93,14 @@
 
 (defparameter *userfig-for-user*
   '(signed-up
-    (:initial nil :editable nil :viewable t :type :datestamp
+    (:date :initial nil :editable nil :viewable t 
      :description "Date when you signed up"
      :documentation "Date when the user created an account. Nil if the user hasn't created an account.")
     screen-name
-    (:initial nil :editable t :type (:unique :options-func list-of-screen-names)
+    ((:unique :options-func list-of-screen-names) :initial nil :editable t
      :description "Your preferred screen name")
     email
-    (:initial nil :editable t :type :email
+    (:email :initial nil :editable t
      :description "Your email address")
     ))
 
@@ -154,7 +154,7 @@
 
 (define-middleware webhax-user-core (userfig-specs)
   (url-case
-    (:sign-up (sign-up-page))
+    (:sign-up (sign-up-page userfig-specs))
     (otherwise
      (let ((result (funcall *clack-app* *web-env*)))
        ;;FIXME: Sometimes we shouldn't redirect to login page, such as on a
