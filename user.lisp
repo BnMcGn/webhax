@@ -82,7 +82,7 @@
   (let ((specs (concatenate 'list *userfig-for-user* userfig-specs)))
     (middleware-chain
      (userfig:userfig-component specs)
-     (webhax-user-core specs))))
+     (webhax-user-core))))
 
 (defun list-of-screen-names ()
   (remove-if #'null
@@ -104,8 +104,8 @@
      :description "Your email address")
     ))
 
-(defun save-signed-up-user (specs settings)
-  (userfig:initialize-user (authenticated?) specs)
+(defun save-signed-up-user (settings)
+  (funcall (getf *web-env* :userfig-initialize-user) (authenticated?))
   (setf (userfig:userfig-value 'screen-name)
         (gethash 'screen-name settings))
   (setf (userfig:userfig-value 'email)
@@ -117,7 +117,7 @@
     (dolist (func (gethash :@javascript (funcall partfunc (make-hash-table))))
       (princ (funcall func) s))))
 
-(defun sign-up-page (userfig-specs)
+(defun sign-up-page ()
   (check-authenticated)
   (html-out-str
       (:html
@@ -148,13 +148,13 @@
                     (:unique :options-func 'list-of-screen-names))
                  (q email "Your email address" :email))
                 (done
-                 (server (save-signed-up-user userfig-specs (answers)))
+                 (server (save-signed-up-user (answers)))
                  (client (setf (@ window location)
                                (lisp (login-destination))))))))))
 
-(define-middleware webhax-user-core (userfig-specs)
+(define-middleware webhax-user-core ()
   (url-case
-    (:sign-up (sign-up-page userfig-specs))
+    (:sign-up (sign-up-page))
     (otherwise
      (let ((result (funcall *clack-app* *web-env*)))
        ;;FIXME: Sometimes we shouldn't redirect to login page, such as on a
@@ -162,7 +162,7 @@
        (if (and (listp result) (eql 403 (car result)) (authenticated?))
            (progn
              (setf (login-destination) (url-from-env *web-env*))
-             (sign-up-page userfig-specs))
+             (sign-up-page))
            result)))))
 
 (defun signup-url ()
