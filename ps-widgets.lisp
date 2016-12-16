@@ -266,18 +266,20 @@
                               (chain -react -prop-types object)))))))
 
     (def-component webhax-form-connector
-        (:webhax-form
-         :fieldspecs (prop fieldspecs) :data (prop data)
-         :callback (@ this callback) :errors (state errors)
-         :success (state success))
+        (psx (:webhax-form
+              :fieldspecs (prop fieldspecs) :prefill (prop data)
+              :callback (@ this callback) :errors (state errors)
+              :success (state success)))
       callback
       (lambda (data)
         (ps-gadgets:json-post-bind (res (prop validation-url) data)
           (set-state errors (getprop res errors)
-                     success (getprop res success)))))
+                     success (getprop res success))))
+      get-initial-state
+      (lambda () (create :errors (create) :success (create))))
 
     (defun webhax-form-element (fieldspecs data callback)
       (psx
-       (:webhax-form :fieldspecs fieldspecs :data data :callback callback)))
+       (:webhax-form :fieldspecs fieldspecs :prefill data :callback callback)))
 
   ))
