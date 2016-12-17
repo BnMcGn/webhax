@@ -109,7 +109,10 @@
   (setf (userfig:userfig-value 'screen-name)
         (gethash 'screen-name settings))
   (setf (userfig:userfig-value 'email)
-        (gethash 'email settings)))
+        (gethash 'email settings))
+  ;;FIXME: Better to store UTC datestamp? Visible to users.
+  (setf (userfig:userfig-value 'signed-up)
+        (local-time:now)))
 
 ;;;FIXME: Metaplate needs reworking. Temporary hack.
 (defun %javascript-part-extract (partfunc)
