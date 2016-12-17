@@ -261,9 +261,9 @@
               (chain -react -prop-types
                      (array-of
                       (chain -react -prop-types
-                             (one-of
-                              (chain -react -prop-types string)
-                              (chain -react -prop-types object)))))))
+                             (one-of-type
+                              (list (chain -react -prop-types string)
+                                    (chain -react -prop-types object))))))))
 
     (def-component webhax-form-connector
         (psx (:webhax-form
