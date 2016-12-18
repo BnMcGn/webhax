@@ -94,14 +94,14 @@
 (defparameter *userfig-for-user*
   '(signed-up
     (:date :initial nil :editable nil :viewable t 
-     :description "Date when you signed up"
-     :documentation "Date when the user created an account. Nil if the user hasn't created an account.")
+     :description "Sign up date"
+     :documentation "Date when you first signed up.")
     screen-name
     ((:unique :options-func list-of-screen-names) :initial nil :editable t
-     :description "Your preferred screen name")
+     :description "Preferred screen name")
     email
     (:email :initial nil :editable t
-     :description "Your email address")
+     :description "Email address")
     ))
 
 (defun save-signed-up-user (settings)
