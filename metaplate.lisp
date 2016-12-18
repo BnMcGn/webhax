@@ -186,7 +186,7 @@ table"
            (parts (%%process-parts parts)))
       (if name
           `(watch-for-recompile
-             (recompile-watcher (,name ,@*watch-names*)
+             (dependency-watcher (,name ,@*watch-names*)
                (defun ,name (&rest ,params-sym)
                  (let ((,parts-sym ,parts))
                    ,@template))))
