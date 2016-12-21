@@ -183,6 +183,8 @@ to mount-component."
     (t nil)))
 
 (defparameter *url-parentage* nil)
+(defparameter *url-parentage-lock-level* 0
+  "To keep call-endware from unwinding the parentage more than was intended")
 
 (defmacro url-case (&body clauses)
   (with-gensyms (matfunc input foundkey)
@@ -289,3 +291,18 @@ to mount-component."
   "Join a chain of middlewares into a single middleware"
   (lambda (app)
     (reduce #'funcall mwarez :initial-value app :from-end t)))
+
+(defun call-endware (&key (clack-app *clack-app*)
+                       (web-env *web-env*)
+                       (index 0))
+  "Call the next app in the clack chain as endware, that is, without any
+trimming done to the parent portion of the URL."
+  ;;Undo any changes to web input back to last call-subware
+  (let ((%index (- *url-parentage-lock-level* index)))
+    (let ((*url-parentage*
+           (last *url-parentage* %index))
+          (*regular-web-input*
+           (concatenate 'list
+                        (butlast *url-parentage* %index)
+                        *regular-web-input*)))
+      (funcall clack-app web-env))))

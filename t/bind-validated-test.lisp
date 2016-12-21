@@ -36,7 +36,7 @@
 (defun testfunc3 ()
   (twrap
     (bind-validated-input
-        ((item1 :overlength)
+        ((item1 (:pickone :options '(one four five)))
          (item2 :integer)
          (item3 :integer))
       (values (+ item2 item3) item1))))
@@ -90,6 +90,7 @@
   (is (= 5 (nth-value 1 (testfunc2))))
   (is (string-equal "one" (testfunc2)))
   (is (= 5 (testfunc3)))
+  (is (eq 'one (nth-value 1 (testfunc3))))
   (is (string-equal "thing" (testfunc4)))
   (signals simple-error (testfunc5))
   (is (equal '("one" "2" "3") (testfunc6)))

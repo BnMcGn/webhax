@@ -83,6 +83,10 @@
                       (proc (cdr regspecs) (1+ count)))))))
     (apply #'concatenate 'list (proc regspecs 0))))
 
+(defun %%prep-valspec (vspec)
+  `(compile-validator
+    (list ,@(if (keywordp vspec) (list vspec) vspec))))
+
 (defun %%default-decider (bindspec inputform foundvar)
   (let ((filledp? (and (listp (car bindspec))
                        (third (car bindspec))
@@ -101,10 +105,10 @@
                              ,(if multiple
                                   `(funcall
                                     (mkparse-all-members
-                                     (compile-validator ,(second bindspec)))
+                                     ,(%%prep-valspec (second bindspec)))
                                     ,item)
                                   `(funcall
-                                    (compile-validator ,(second bindspec))
+                                    ,(%%prep-valspec (second bindspec))
                                     ,item))
                            (if ,valid
                                ,vitem

@@ -127,7 +127,8 @@
    #:as-json
    #:middleware-chain
    #:*clack-app*
-   #:*web-env*))
+   #:*web-env*
+   #:call-endware))
 
 
 
