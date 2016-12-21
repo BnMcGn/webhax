@@ -159,7 +159,7 @@
   (url-case
     (:sign-up (sign-up-page))
     (otherwise
-     (let ((result (funcall *clack-app* *web-env*)))
+     (let ((result (call-endware)))
        ;;FIXME: Sometimes we shouldn't redirect to login page, such as on a
        ;; 403 from a json url. Add support for a flag in the header?
        (if (and (listp result) (eql 403 (car result)) (authenticated?))

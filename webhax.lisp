@@ -292,8 +292,11 @@ to mount-component."
   (lambda (app)
     (reduce #'funcall mwarez :initial-value app :from-end t)))
 
-(defun call-endware (&key (clack-app *clack-app*)
-                       (web-env *web-env*)
+;;FIXME: The machination below should happen in wrap/call-with-whx-env
+;; so that users can mindlessly call apps and not arbitrarily need
+;; call-endware
+(defun call-endware (&key (app *clack-app*)
+                       (env *web-env*)
                        (index 0))
   "Call the next app in the clack chain as endware, that is, without any
 trimming done to the parent portion of the URL."
