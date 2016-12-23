@@ -16,7 +16,7 @@
   (twrap
     (bind-validated-input
         ((item1 :overlength)
-         (item2 :integer)
+         (item2 (:or :integer :string))
          &optional
          (item3 :integer)
          &key

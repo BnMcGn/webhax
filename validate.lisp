@@ -104,6 +104,20 @@
         (values "Field must not be empty" nil)
         (funcall subtest item))))
 
+(defun or-test (subtests)
+  (lambda (item)
+    (block top
+      (let ((errors nil))
+        (dolist (subtest subtests)
+          (multiple-value-bind (val sig) (funcall subtest item)
+            (when sig
+              (return-from top (values val sig)))
+            (push val errors)))
+        (values
+         (apply #'concatenate 'string
+                "Value did not qualify for any of these tests:"
+                (nreverse errors)))))))
+
 (defun string-check (str)
   (if (stringp str)
       str
@@ -139,6 +153,8 @@
           (mkparse-all-members (mkparse-in-list (getf optionspecs :options))))
          (:unique
           (mkparse-unique (getf optionspecs :options-func)))
+         (:or
+          (or-test (mapcar #'compile-validator (cdr valspec))))
          (otherwise
           (%handle-keyword (car valspec)))))
       ((and (listp valspec) (functionp (car valspec)))
