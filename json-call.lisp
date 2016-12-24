@@ -65,8 +65,8 @@
 (defun prep-call-ignorant (params keys
                   &key (symbols (json-symbols))
                     (callables *json-call-callables*))
-  (let ((function (first-match callables
-                               (curry #'eq-symb (car params))))
+  (let ((function (first-match (curry #'eq-symb (car params))
+                               callables))
         (reg-params
           (collecting
             (dolist (param (cdr params))
@@ -74,6 +74,16 @@
         (key-params
           (prep-keywords-ignorant keys symbols)))
     (values function (concatenate 'list reg-params key-params))))
+
+;;;FIXME: No support for authorization checking. Might want.
+(webhax:define-middleware json-call-component ()
+  (webhax:url-case
+    (:json-call
+     (multiple-value-bind (func params)
+         (prep-call-ignorant *regular-web-input* *key-web-input*)
+       (cl-json:encode-json-to-string
+        (apply (symbol-function func) params))))
+    (otherwise (webhax:call-endware))))
 
 (defclass json-call (clack-tool)
   ((webhax-core::base-url :initform "/json/")))
@@ -86,4 +96,5 @@
 
 ;;;FIXME: is the concept of call-to-link useful here? Some way to express
 ;;;a function call as a link or as a javascript function prototype.
-
+;;- problem: json doesn't work as function in javascript: needs callback.
+;;- react connection component might work.
