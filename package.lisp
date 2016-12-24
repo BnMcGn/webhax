@@ -24,7 +24,8 @@
    #:*request*
    #:html-out-str
    #:web-fail
-   #:handle-web-fail))
+   #:handle-web-fail
+   #:env-from-url))
 
 (defpackage #:webhax-json-call
   (:use #:cl #:webhax-core #:gadgets #:alexandria)

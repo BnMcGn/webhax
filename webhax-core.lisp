@@ -39,3 +39,13 @@
        (with-slots (text response) fail
          `(,response nil (,text))))))
 
+(defun env-from-url (url)
+  "Create a minimal clack-style env from a url. Mostly for quick testing."
+  (let ((uri (quri:uri url)))
+    (list
+     :query-parameters (quri:uri-query-params uri)
+     :request-uri url
+     :path-info (quri:uri-path uri)
+     :query-string (quri:uri-query uri)
+     :server-name (quri:uri-host uri)
+     :url-scheme (quri:uri-scheme uri))))
