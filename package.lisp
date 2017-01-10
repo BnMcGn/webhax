@@ -129,7 +129,9 @@
    #:middleware-chain
    #:*clack-app*
    #:*web-env*
-   #:call-endware))
+   #:call-endware
+   #:*webhax-link-collection*
+   #:register-link))
 
 
 

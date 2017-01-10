@@ -264,28 +264,43 @@ to mount-component."
                 (lack.response:finalize-response *response*))))))
      env)))
 
+(defun %%divide-body (code)
+  "See if code has (init ... (main ...)) structure. If so, split them out. Otherwise put everything in the (main ...) position."
+  (if (and (listp code) (listp (car code)) (eq 'init (caar code)))
+      (preserve-other-values
+       (divide-tree (lambda (x) (and (listp x) (eq 'main (car x))))
+                    (cdar code))
+       (lambda (x) (or x (error "Web component body has init without main"))))
+      (values
+       #'identity
+       (list* 'filler code))))
+
 (defmacro define-webapp (name parameters &body body)
-  (let ((name-int (symb name '-internal)))
-    `(progn
-       (defun ,name-int ,parameters
-         ,@body)
-       (defun ,name (&rest params)
-         (wrap-with-webhax-environment #',name-int params)))))
+  (multiple-value-bind (outer ibody) (%%divide-body body)
+    (let ((name-int (symb name '-internal)))
+      `(progn
+         (defun ,name-int ,parameters
+           ,@(cdr ibody))
+         (defun ,name (&rest params)
+           ,(funcall outer
+                     `(wrap-with-webhax-environment #',name-int params)))))))
 
 (defvar *clack-app*)
 
 (defmacro define-middleware (name parameters &body body)
-  (let ((name-int (symb name '-internal)))
-    `(let ((%app nil))
-       ;;FIXME: Would be nice to use parameters here so that user options
-       ;;show up in the hints.
-       (defun ,name-int ,parameters
-         (let ((*clack-app* %app))
-           ,@body))
-       (defun ,name (&rest params)
-         (lambda (app)
-           (setf %app app)
-           (wrap-with-webhax-environment #',name-int params))))))
+  (multiple-value-bind (outer ibody) (%%divide-body body)
+    (let ((name-int (symb name '-internal)))
+      `(let ((%app nil))
+         ;;FIXME: Would be nice to use parameters here so that user options
+         ;;show up in the hints.
+         (defun ,name-int ,parameters
+           (let ((*clack-app* %app))
+             ,@(cdr ibody)))
+         (defun ,name (&rest params)
+           (lambda (app)
+             (setf %app app)
+             ,(funcall
+               outer `(wrap-with-webhax-environment #',name-int params))))))))
 
 (defun middleware-chain (&rest mwarez)
   "Join a chain of middlewares into a single middleware"
@@ -309,3 +324,12 @@ trimming done to the parent portion of the URL."
                         (butlast *url-parentage* %index)
                         *regular-web-input*)))
       (funcall app env))))
+
+;;;;;;;;;;;;;;;;;;;
+;;; Link collection
+;;;;;;;;;;;;;;;;;;;
+
+(defparameter *webhax-link-collection* (make-hash-table :test #'eq))
+
+(defun register-link (key link &key (label ""))
+  (setf (gethash key *webhax-link-collection*) (list link label)))

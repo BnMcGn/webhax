@@ -185,5 +185,15 @@
     (push (cons :settings-url (userfig:settings-url)) res)
     res))
 
+(register-link 'clack-openid-connect::login
+               (clack-openid-connect:login-url)
+               :label "Log In")
+(register-link 'clack-openid-connect::logout
+               (clack-openid-connect:logout-url)
+               :label "Sign Out")
+(register-link 'userfig::settings
+               (userfig:settings-url)
+               :label "Settings")
+
 
 
