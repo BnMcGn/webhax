@@ -131,7 +131,9 @@
    #:*web-env*
    #:call-endware
    #:*webhax-link-collection*
-   #:register-link))
+   #:register-link
+   #:init
+   #:main))
 
 
 

@@ -282,7 +282,7 @@ to mount-component."
          (defun ,name-int ,parameters
            ,@(cdr ibody))
          (defun ,name (&rest params)
-           ,(funcall outer
+           ,@(funcall outer
                      `(wrap-with-webhax-environment #',name-int params)))))))
 
 (defvar *clack-app*)
@@ -299,7 +299,7 @@ to mount-component."
          (defun ,name (&rest params)
            (lambda (app)
              (setf %app app)
-             ,(funcall
+             ,@(funcall
                outer `(wrap-with-webhax-environment #',name-int params))))))))
 
 (defun middleware-chain (&rest mwarez)
