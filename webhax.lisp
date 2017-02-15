@@ -272,7 +272,7 @@ to mount-component."
                     (cdar code))
        (lambda (x) (or x (error "Web component body has init without main"))))
       (values
-       #'identity
+       #'list
        (list* 'filler code))))
 
 (defmacro define-webapp (name parameters &body body)
