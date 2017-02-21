@@ -54,8 +54,7 @@
   `(setf clack-openid-connect:*login-destination* ,newval))
 
 (defun authenticated? ()
-  (and (hash-table-p *session*)
-       (gethash :username *session*)))
+  (gethash :username *session*))
 
 (defun signed-up? (&optional user)
   "Because a user could sign in, say with OpenID, yet not be known on the site"
@@ -94,7 +93,7 @@
 
 (defparameter *userfig-for-user*
   '(signed-up
-    (:date :initial nil :editable nil :viewable t 
+    (:date :initial nil :editable nil :viewable t
      :description "Sign up date"
      :documentation "Date when you first signed up.")
     screen-name

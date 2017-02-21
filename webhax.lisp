@@ -31,7 +31,9 @@
           (list
            (multiple-value-bind (*regular-web-input* *key-web-input*)
                (input-normalize input)
-             (let ((*session* ningle:*session*))
+             (let ((*session* (or *session*
+                                  ningle:*session*
+                                  (session-from-env *web-env*))))
                (bind-webspecials (nth-value 1 (input-normalize input))
                  (with-output-to-string (*webhax-output*)
                    (funcall handler)))))))))
@@ -47,10 +49,12 @@
            ,@(when main `((add-part :@main-content ,main))))
         (,*metaplate-default-layout*)))))
 
+;;;FIXME: Deprecate?
 (defun create-simple-route (app route-spec function &key content-type)
   (set-route app route-spec
              (input-function-wrapper function :content-type content-type)))
 
+;;;FIXME: Deprecate?
 (defmacro create-route ((app route-spec &key content-type)
                         (&rest valspecs)
                         &body body)
