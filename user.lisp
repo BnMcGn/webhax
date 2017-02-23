@@ -114,6 +114,33 @@
   (setf (userfig:userfig-value 'signed-up)
         (local-time:now)))
 
+;;;FIXME: Need good way to test this page.
+(defun sign-up-page ()
+  (check-authenticated)
+  (funcall
+   (webhax:quick-page
+    #'webhax::react
+    #'webhax::redux
+    (webhax:add-part :@javascript #'webhax-widgets:ps-widgets)
+    #'webhax:webhax-ask
+    (lambda ()
+      (webhax:html-out
+        (:h2 "New Account")
+        (:p "Please confirm a few details to create your account.")
+        (ask
+          :prefill (list :screen-name (get-display-name)
+                         :email (login-provider-fields :email))
+          (form
+           (q screen-name "Your preferred screen name"
+              (:unique :options-func 'list-of-screen-names))
+           (q email "Your email address" :email))
+          (done
+           (server (save-signed-up-user (answers)))
+           (client (setf (@ window location)
+                         (lisp (login-destination)))))))))
+   nil))
+
+#|
 ;;;FIXME: Metaplate needs reworking. Temporary hack.
 (defun %javascript-part-extract (partfunc)
   (with-output-to-string (s)
@@ -154,6 +181,7 @@
                  (server (save-signed-up-user (answers)))
                  (client (setf (@ window location)
                                (lisp (login-destination))))))))))
+|#
 
 (define-middleware webhax-user-core ()
   (url-case
