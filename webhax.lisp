@@ -5,6 +5,8 @@
 ;;; "webhax" goes here. Hacks and glory await!
 
 (defparameter *set-content-type* nil)
+(defparameter *should-login-return* t
+  "Should the login link on a given page return the user to that page when the login is completed? This is intended as a rendering instruction for the page, so set as desired before the page is rendered/called.")
 
 (defun set-route (app route func)
   "Thin wrapper around setf ningle:route in case we stop using ningle."
