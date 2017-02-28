@@ -108,7 +108,9 @@
    #:register-link
    #:init
    #:main
-   #:*should-login-return*))
+   #:*should-login-return*
+   #:react-parts
+   #:redux-parts))
 
 
 

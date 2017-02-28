@@ -8,7 +8,8 @@
                #:cl-utilities
                #:gadgets
                #:cl-who
-               #:webhax-core)
+               #:webhax-core
+               #:cl-react)
   :serial t
   :components ((:file "metaplate")))
 

@@ -12,7 +12,9 @@
    #:add-part
    #:define-page
    #:render-menu
-   #:two-side-columns))
+   #:two-side-columns
+   #:react-parts
+   #:redux-parts))
 
 (in-package #:webhax-metaplate)
 
@@ -241,3 +243,20 @@ table"
           :@messages :@main-content :@footnotes)
                                         ;Footer
     (:div :id "footer" :@copyright)))
+
+;;;;;;;;
+;;; React
+;;;;;;;;
+
+(define-parts react-parts
+  (add-part :@javascript
+            "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js")
+  (add-part :@javascript
+            "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js")
+  (add-part :@javascript #'react:build))
+
+(define-parts redux-parts
+  (add-part :@javascript
+            "https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js")
+  (add-part :@javascript
+            "https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js"))
