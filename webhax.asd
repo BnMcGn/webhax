@@ -20,6 +20,7 @@
                #:ps-gadgets
                #:ps-react-gadgets
                #:webhax-validate
+               #:webhax-metaplate
                #:userfig
                #:optima)
   :serial t

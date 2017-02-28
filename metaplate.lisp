@@ -1,4 +1,20 @@
-(in-package :webhax)
+(in-package :cl-user)
+
+(defpackage #:webhax-metaplate
+  (:use #:cl #:webhax-core #:gadgets #:alexandria)
+  (:export
+   #:*metaplate-default-layout*
+   #:*metaplate-default-parts*
+   #:define-parts
+   #:define-default-parts
+   #:define-layout
+   #:define-default-layout
+   #:add-part
+   #:define-page
+   #:render-menu
+   #:two-side-columns))
+
+(in-package #:webhax-metaplate)
 
 (defparameter *metaplate-part-names*
   '(:@css :@javascript :@site-index :@title :@menu :@main-content

@@ -133,7 +133,8 @@
    #:*webhax-link-collection*
    #:register-link
    #:init
-   #:main))
+   #:main
+   #:*should-login-return*))
 
 
 
