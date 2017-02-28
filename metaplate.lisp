@@ -1,16 +1,5 @@
 (in-package :webhax)
 
-;;;FIXME: finish deprecation of page-bit
-(defmacro def-page-bit (name cat label &optional (tag :div))
-  `(defmacro ,name (params &body body)
-     (declare (ignore params))
-     `(html-out
-        (,,tag ,,cat ,,label
-               (htm ,@body)))))
-
-(def-page-bit pbit-featurebox-side :class "featurebox-side")
-(def-page-bit pbit-featurebox-content :class "featurebox-center")
-
 (defparameter *metaplate-part-names*
   '(:@css :@javascript :@site-index :@title :@menu :@main-content
     :@side-content :@site-search :@notifications :@external-links :@logo
