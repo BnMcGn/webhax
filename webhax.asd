@@ -21,14 +21,13 @@
                #:ps-react-gadgets
                #:webhax-validate
                #:webhax-metaplate
+               #:webhax-core
                #:userfig
                #:optima)
   :serial t
   :components ((:file "package")
-               (:file "webhax-core")
                (:file "web-input")
-               (:file "metaplate")
-               (:file "webhax" :depends-on ("web-input" "metaplate"))
+               (:file "webhax" :depends-on ("web-input"))
                (:file "clack-tool")
                (:file "json-call")
                (:file "html-s-exp")

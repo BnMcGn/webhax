@@ -1,31 +1,5 @@
 ;;;; package.lisp
 
-(defpackage #:webhax-core
-  (:use #:cl #:gadgets #:alexandria #:clack #:lack.request #:lack.response
-        #:cl-who)
-  (:export
-   #:*webhax-output*
-   #:html-out
-   #:*regular-web-input*
-   #:*key-web-input*
-   #:output-string
-   #:eq-symb-multiple
-   #:logged-in-p
-   #:clack-tool
-   #:function-wrapper
-   #:execute
-   #:multiple-key-p
-   #:start-test-app
-   #:*session*
-   #:get-user-name
-   #:get-display-name
-   #:*web-env*
-   #:*response*
-   #:*request*
-   #:html-out-str
-   #:web-fail
-   #:handle-web-fail
-   #:env-from-url))
 
 (defpackage #:webhax-json-call
   (:use #:cl #:webhax-core #:gadgets #:alexandria)
