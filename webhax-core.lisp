@@ -49,6 +49,7 @@
 (defvar *request* nil)
 (defvar *response* nil)
 (defvar *web-env*)
+(defvar *clack-app*)
 
 (defparameter *default-content-type* "text/html")
 
@@ -83,6 +84,10 @@
      :server-name (quri:uri-host uri)
      :url-scheme (quri:uri-scheme uri))))
 
+(defun normalize-input (&optional input)
+  (declare (ignore input))
+  (error "No input handler activated. This code shouldn't be reached."))
+
 (defun input-function-wrapper (handler &key (content-type "text/html"))
   (lambda (&optional input)
     (list 200 (list :content-type content-type)
@@ -96,4 +101,18 @@
                  (with-output-to-string (*webhax-output*)
                    (funcall handler))))))))
 
+(defparameter *default-content-type* "text/html")
+
+(eval-always
+  (defmacro with-content-type (ctype &body body)
+    `(progn
+       (setf (getf (lack.response:response-headers *response*) :content-type)
+             ,ctype)
+       ,@body)))
+
+(defmacro as-html (&body body)
+  `(with-content-type "text/html" ,@body))
+
+(defmacro as-json (&body body)
+  `(with-content-type "application/json" ,@body))
 

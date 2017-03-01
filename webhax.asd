@@ -22,6 +22,7 @@
                #:webhax-validate
                #:webhax-metaplate
                #:webhax-core
+               #:webhax-route
                #:userfig
                #:optima)
   :serial t

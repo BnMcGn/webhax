@@ -12,7 +12,7 @@
 (defpackage #:webhax
   (:use #:cl #:gadgets #:parenscript #:anaphora 
         #:alexandria #:webhax-validate #:webhax-core
-        #:webhax-json-call
+        #:webhax-json-call #:webhax-route
         #:cl-who #:thing-labels #:clack
         #:lack.request #:lack.response #:cl-react)
   (:shadowing-import-from #:parenscript #:switch)
