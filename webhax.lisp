@@ -12,33 +12,24 @@
   "Thin wrapper around setf ningle:route in case we stop using ningle."
   (setf (ningle:route app route) func))
 
-(defun input-normalize (input)
+(defun normalize-ningle-input (input)
   (values (awhen (assoc :splat input)
                  ;;FIXME: Should probably only remove zero lengths in last pos.
                  (remove-if (lambda (x)
                               (and (stringp x) (= 0 (length x))))
                             (split-sequence #\/ (second it))))
           (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
-                     input)))
+                     input)
+          ningle:*session*))
+
+;;;Replace stub in webhax-core
+(setf (symbol-function 'webhax-core:normalize-input #'normalize-ningle-input))
 
 (defun set-content-type (ctype)
   ;;FIXME: Don't know why this broke
   ;;(setf (lack.response:response-headers ningle:*response* :content-type) ctype))
   (declare (ignore ctype))
   (error "Needs reimplementation"))
- 
-(defun input-function-wrapper (handler &key (content-type "text/html"))
-  (lambda (input)
-    (list 200 (list :content-type content-type)
-          (list
-           (multiple-value-bind (*regular-web-input* *key-web-input*)
-               (input-normalize input)
-             (let ((*session* (or *session*
-                                  ningle:*session*
-                                  (session-from-env *web-env*))))
-               (bind-webspecials (nth-value 1 (input-normalize input))
-                 (with-output-to-string (*webhax-output*)
-                   (funcall handler)))))))))
 
 ;;;FIXME: *webhax-output* rebind to string is not taking effect.
 (defmacro quick-page (&rest parts-and-main)
@@ -208,7 +199,6 @@ to mount-component."
          (cond
            ,@cases)))))
 
-(defparameter *default-content-type* "text/html")
 
 (eval-always
   (defmacro with-content-type (ctype &body body)
