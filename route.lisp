@@ -3,7 +3,7 @@
 (in-package #:cl-user)
 
 (defpackage #:webhax-route
-  (:use #:cl #:alexandria #:cl-utilities #:gadgets)
+  (:use #:cl #:alexandria #:gadgets)
   (:export
    #:quick-page
    #:url-case
@@ -20,10 +20,10 @@
         (main (last-car parts-and-main)))
     `(input-function-wrapper
       (define-page nil
-          (,*metaplate-default-parts*
+          (,webhax-metaplate:*metaplate-default-parts*
            ,@parts
            ,@(when main `((add-part :@main-content ,main))))
-        (,*metaplate-default-layout*)))))
+        (,webhax-metaplate:*metaplate-default-layout*)))))
 
 (defparameter *url-parentage* nil)
 (defparameter *url-parentage-lock-level* 0

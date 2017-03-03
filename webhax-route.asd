@@ -8,6 +8,7 @@
                #:cl-utilities
                #:gadgets
                #:webhax-core
+               #:webhax-metaplate
                #:lack)
   :serial t
   :components ((:file "route")))
