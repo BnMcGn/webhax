@@ -1,7 +1,7 @@
 (in-package :cl-user)
 
 (defpackage #:webhax-metaplate
-  (:use #:cl #:webhax-core #:gadgets #:alexandria)
+  (:use #:cl #:webhax-core #:gadgets #:alexandria #:cl-who)
   (:export
    #:*metaplate-default-layout*
    #:*metaplate-default-parts*
@@ -78,49 +78,73 @@
 ;;; Define-page macro
 ;;;;;;;;;;;;;;;;;;;;;
 
-(defun %render-part (key data params)
-  (html-out
-    (dolist (x (gethash key data))
-      (if (stringp x)
-          (str x)
-          (apply #'funcall-in-macro x params)))))
+(defun %ensure-string (itm)
+  (if (stringp itm)
+      itm
+      (funcall-in-macro itm))) ;Right thing?
 
-(defun %render-title (key data params)
+(defun %render-part (key)
+  (html-out
+    (dolist (x (gethash key *parts*))
+      (str (%ensure-string x)))))
+
+(defun %render-title (key)
   (assert (eq key :@title))
   (html-out
     (:title (str
              (apply #'concatenate 'string
-                    (collecting
-                      (dolist (x (gethash :@title data))
-                        (if (stringp x)
-                            (collect x)
-                            (collect (apply-in-macro x params))))))))))
+                    (mapcar #'%ensure-string (gethash :@title *parts*)))))))
 
-(defun %render-javascript (key data params)
-  (declare (ignore params))
+(defun %render-javascript (key)
   (assert (eq key :@javascript))
-  ;;FIXME: hack: assumes itm is js URL if it is a string. If func, will be
-  ;;source code.
   (html-out
-    (dolist (itm (gethash :@javascript data))
-      (if (functionp itm)
-          (htm (:script :type "text/javascript" (str (funcall itm))))
-          (htm (:script :src itm))))))
+    (dolist (itm (gethash :@javascript *parts*))
+      (htm (:script :type "text/javascript" (str (%ensure-string itm)))))))
 
-(defun %render-css (key data params)
-  (declare (ignore params))
-  (assert (eq key :@css))
+(defun %render-javascript-link (key)
+  (assert (eq key :@javascript-link))
   (html-out
-    (dolist (itm (gethash :@css data))
+    (dolist (itm (gethash :@javascript-link *parts*))
+      (htm (:script :type "text/javascript"
+                    :src (str (%ensure-string itm)))))))
+
+(defun %render-css (key)
+  (declare (ignore key))
+  ;;FIXME:
+  (error "Not Implemented"))
+
+(defun %render-css-link (key)
+  (assert (eq key :@css-link))
+  (html-out
+    (dolist (itm (gethash :@css *parts*))
       (htm (:link :href itm :rel "stylesheet" :type "text/css")))))
 
 (defun %get-render-func (key)
   (assert (member key *metaplate-part-names*))
   (case key
     (:@css '%render-css)
+    (:@css-link '%render-css-link)
     (:@javascript '%render-javascript)
+    (:@javascript-link '%render-javascript-link)
     (:@title '%render-title)
+    (:@inner '%render-inner)
     (otherwise '%render-part)))
+
+(defvar *parts*)
+(defvar *template-stack* nil)
+
+(defun %render-inner (key)
+  (declare (ignore key))
+  (when *template-stack*
+    (let ((*template-stack* (cdr *template-stack*)))
+      (funcall (car *template-stack*)))))
+
+(defun %render (templates parts)
+  "Templates will be a list of template functions, from outer to inner. Parts will be a hash table of :@<label> keys containing lists of parts."
+  (let ((*template-stack* (cdr templates))
+        (*parts* parts))
+    (when templates
+      (funcall (car templates)))))
 
 (defun %%expand-templates (templates parts-sym params-sym)
   (labels ((walk-tree (tree)
