@@ -98,12 +98,9 @@
 
 (defmacro define-parts (name &body parts)
   `(eval-always
-     (watch-for-recompile/auto-watcher ,name
-       (defun ,name (previous)
-         (collecting-hash-table (:existing previous :mode :append)
-           (labels ((add-part (section part)
-                      (collect section part)))
-             ,@parts))))))
+     (defun ,name ()
+       (hu:plist->hash
+        (list ,@parts)))))
 
 (defmacro define-layout ((name &key wrapper) &body template)
   ;;Creates a function that returns three functions:
@@ -220,8 +217,8 @@
 
 (define-layout (two-side-columns :wrapper #'page-base)
   (:prepend-parts
-   (add-part :@css "/static/css/style.css")
-   (add-part :@menu #'render-menu))
+   :@css "/static/css/style.css"
+   :@menu #'render-menu)
   (html-out
                                         ;Header
     (:div :id "header_wrapper"
@@ -234,7 +231,7 @@
     (:div :id "right_side"
           :@site-search :@account-info :@external-links)
     (:div :id "content"
-          :@messages :@main-content :@footnotes)
+          :@messages :@inner :@footnotes)
                                         ;Footer
     (:div :id "footer" :@copyright)))
 
@@ -243,14 +240,14 @@
 ;;;;;;;;
 
 (define-parts react-parts
-  (add-part :@javascript
-            "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js")
-  (add-part :@javascript
-            "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js")
-  (add-part :@javascript #'react:build))
+  :@javascript
+  "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js"
+  :@javascript
+  "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js"
+  :@javascript #'react:build)
 
 (define-parts redux-parts
-  (add-part :@javascript
-            "https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js")
-  (add-part :@javascript
-            "https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js"))
+  :@javascript
+  "https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js"
+  :@javascript
+  "https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js")
