@@ -14,69 +14,15 @@
    #:render-menu
    #:two-side-columns
    #:react-parts
-   #:redux-parts))
+   #:redux-parts
+   #:display-page))
 
 (in-package #:webhax-metaplate)
 
 (defparameter *metaplate-part-names*
-  '(:@css :@javascript :@site-index :@title :@menu :@main-content
+  '(:@css :@javascript :@site-index :@title :@menu :@inner
     :@side-content :@site-search :@notifications :@external-links :@logo
     :@account-info :@footnotes :@copyright :@messages))
-
-(defvar *metaplate-default-layout*)
-(defvar *metaplate-default-parts*)
-
-(defmacro define-parts (name &body parts)
-  `(eval-always
-     (watch-for-recompile/auto-watcher ,name
-       (defun ,name (previous)
-         (collecting-hash-table (:existing previous :mode :append)
-           (labels ((add-part (section part)
-                      (collect section part)))
-             ,@parts))))))
-
-(defmacro define-default-parts (name &body parts)
-  `(eval-always
-     (define-parts ,name ,@parts)
-     (setf *metaplate-default-parts* '(function ,name))))
-
-(eval-always
-  (defun %make-part-func (key keyclauses)
-    (let ((lines (collecting
-                   (dolist (x keyclauses)
-                     (when (eq (car x) key)
-                       (dolist (y x)
-                         (collect y)))))))
-      (when lines
-        `(lambda (previous)
-           (collecting-hash-table (:existing previous :mode :append)
-             (labels ((add-part (section part)
-                        (collect section part)))
-               ,@lines)))))))
-
-(defmacro define-layout ((name &key wrapper) &body template)
-  (multiple-value-bind (keyclauses template)
-      (extract-keywords '(:prepend-parts :append-parts) template :in-list t)
-    `(eval-always
-       (watch-for-recompile/auto-watcher ,name
-         (defun ,name ()
-           (values
-            (quote ,(if wrapper
-                        (leaves-search-replace (funcall-in-macro wrapper)
-                                               :match :@inner
-                                               :value (car template))
-                        template))
-            (quote ,(%make-part-func :prepend-parts keyclauses))
-            (quote ,(%make-part-func :append-parts keyclauses))))))))
-
-(defmacro define-default-layout ((name &key wrapper) &body template)
-  `(eval-always
-     (define-layout (,name :wrapper ,wrapper) ,@template)
-     (setf *metaplate-default-layout* '(function ,name))))
-
-;;;;;;;;;;;;;;;;;;;;;
-;;; Define-page macro
-;;;;;;;;;;;;;;;;;;;;;
 
 (defun %ensure-string (itm)
   (if (stringp itm)
@@ -139,6 +85,104 @@
     (let ((*template-stack* (cdr *template-stack*)))
       (funcall (car *template-stack*)))))
 
+(defun %%process-template (template)
+  "Convert all :@ tags into %render- calls"
+  (labels ((walk-tree (tree)
+             (if (atom tree)
+                 (if (member tree *metaplate-part-names*)
+                     `(,(%get-render-func tree) ,tree)
+                     tree)
+                 (cons (walk-tree (car tree))
+                       (walk-tree (cdr tree))))))
+    (walk-tree template)))
+
+(defmacro define-parts (name &body parts)
+  `(eval-always
+     (watch-for-recompile/auto-watcher ,name
+       (defun ,name (previous)
+         (collecting-hash-table (:existing previous :mode :append)
+           (labels ((add-part (section part)
+                      (collect section part)))
+             ,@parts))))))
+
+(defmacro define-layout ((name &key wrapper) &body template)
+  ;;Creates a function that returns three functions:
+  ;; - function that runs the layout
+  ;; - function that returns hash table containing any prepended parts
+  ;; - function that returns hash table containing any appended parts
+  (multiple-value-bind (keyclauses template)
+      (extract-keywords '(:prepend-parts :append-parts) template :in-list t)
+    (let ((pre (flatten-1 (assoc-all :prepend-parts keyclauses)))
+          (app (flatten-1 (assoc-all :append-parts keyclauses))))
+      `(eval-always
+         (defun ,name ()
+           (values
+            (cons (lambda ()
+                    ,(%%process-template (car template)))
+                  ,(when wrapper
+                         `(funcall-in-macro ',wrapper)))
+            (lambda ()
+              (hu:plist->hash (list ,@pre)))
+            (lambda ()
+              (hu:plist->hash (list ,@app)))))))))
+
+(defvar *metaplate-default-layout*)
+(defvar *metaplate-default-parts*)
+
+ (defmacro define-default-parts (name &body parts)
+   `(eval-always
+      (define-parts ,name ,@parts)
+      (setf *metaplate-default-parts* '(function ,name))))
+
+ (defmacro define-default-layout ((name &key wrapper) &body template)
+   `(eval-always
+      (define-layout (,name :wrapper ,wrapper) ,@template)
+      (setf *metaplate-default-layout* '(function ,name))))
+
+(defun %mapc-template-items (func input)
+  "Send items one at a time to func, unless starts with a :@ keyword. Then send two items."
+  (if (null input)
+      nil
+      (if (member (car input) *metaplate-part-names*)
+          (if (null (cdr input))
+              (error "Metaplate tag needs a part after it.")
+              (progn
+                (funcall func (car input) (second input))
+                (%mapc-template-items func (cddr input))))
+          (progn
+            (funcall func (car input) nil)
+            (%mapc-template-items func (cdr input))))))
+
+(defun %process-template-items (items)
+  "This function does not know how to handle function items that are not eitherparts functions or template functions."
+  (let* ((templates nil)
+         (parts
+          (hu:collecting-hash-table (:mode :append)
+              (%mapc-template-items
+               (lambda (item aux)
+                 (typecase item
+                   (keyword
+                    (unless (member item *metaplate-part-names*)
+                      (error "Not a metaplate tag"))
+                    (hu:collect item aux))
+                   (hash-table
+                    (maphash #'hu:collect item))
+                   (function
+                    (let ((result (multiple-value-list (funcall item))))
+                      (cond
+                        ((= 3 (length result))
+                         (dolist (tmp (reverse (car result)))
+                           (push tmp templates))
+                         (maphash (alexandria:rcurry #'hu:collect :mode :push)
+                                  (second result))
+                        (maphash #'hu:collect (third result)))
+                        ((hash-table-p (car result))
+                         (maphash #'hu:collect (car result)))
+                        (t (error
+                            "Not a parts collection or template")))))))
+               items))))
+    (values (nreverse templates) parts)))
+
 (defun %render (templates parts)
   "Templates will be a list of template functions, from outer to inner. Parts will be a hash table of :@<label> keys containing lists of parts."
   (let ((*template-stack* (cdr templates))
@@ -146,88 +190,12 @@
     (when templates
       (funcall (car templates)))))
 
-(defun %%expand-templates (templates parts-sym params-sym)
-  (labels ((walk-tree (tree)
-             (if (atom tree)
-                 (cond
-                   ((eq tree :@inner)
-                    (unless (cdr templates)
-                      (error "Last template should not contain :@inner"))
-                    (%%expand-templates (cdr templates) parts-sym params-sym))
-                   ((member tree *metaplate-part-names*)
-                    `(,(%get-render-func tree) ,tree
-                      ,parts-sym ,params-sym))
-                   (t tree))
-                 (cons (walk-tree (car tree))
-                       (walk-tree (cdr tree))))))
-    (walk-tree (car templates))))
+(defun display-page (templates-and-parts)
+  (multiple-value-bind (templates parts)
+      (%process-template-items templates-and-parts)
+    (%render templates parts)))
 
-(defun %%process-templates (templates parts-sym params-sym)
-  (%%expand-templates
-   (collecting
-       (dolist (template templates)
-         (if (functionp-in-macro template)
-             (progn
-               (push (get-function-name-in-macro template) *watch-names*)
-               (multiple-value-bind (tmpl pre app) (funcall-in-macro template)
-                 (and pre (push pre *prepend-parts*))
-                 (and app (push app *append-parts*))
-                 (collect tmpl)))
-             (collect template))))
-   parts-sym params-sym))
-
-(defun %%collate-parts (parts)
-  "Each part will be a function specifier - #'function or a lambda expression,
-or an expression that otherwise evaluates to a function. This function will
-take a pre-existing hash table as its sole parameter, and will return a hash
-table"
-  (if (null parts)
-      '(make-hash-table)
-      (if (functionp-in-macro (car parts))
-          (progn
-            (push (get-function-name-in-macro (car parts))
-                  *watch-names*)
-            `(funcall-in-macro ,(car parts) ,(%%collate-parts (cdr parts))))
-          `(funcall ,(car parts) ,(%%collate-parts (cdr parts))))))
-
-(defun %%process-parts (parts)
-  (%%collate-parts
-   (concatenate 'list *prepend-parts* (nreverse parts) *append-parts*)))
-
-(defun add-part (section part)
-  "This add-part is for use in the parts section of define-page."
-  (lambda (previous)
-    (collecting-hash-table (:existing previous :mode :append)
-      (collect section part))))
-
-(defvar *prepend-parts*)
-(defvar *append-parts*)
-(defvar *watch-names*)
-
-(defmacro define-page (name parts templates)
-  (with-gensyms (parts-sym params-sym)
-    ;;Templates will sometimes include parts. They will placed in the
-    ;;*pre/ap-end-parts* lists by the template processor, and picked up
-    ;; by the parts processor. Both processors may supply names to be
-    ;; watched for recompilation.
-    (let* ((*prepend-parts* nil)
-           (*append-parts* nil)
-           (*watch-names* nil)
-           (template (%%process-templates templates parts-sym params-sym))
-           (parts (%%process-parts parts)))
-      (if name
-          `(watch-for-recompile
-             (dependency-watcher (,name ,@*watch-names*)
-               (defun ,name (&rest ,params-sym)
-                 (let ((,parts-sym ,parts))
-                   ,@template))))
-          `(lambda (&rest ,params-sym)
-             (let ((,parts-sym ,parts))
-               ,@template
-               (request-watch-on-names ',*watch-names*)))))))
-
-;;;End define-page
-
+;;;End of metaplate core items
 
 (defun render-menu (&rest _)
   (declare (ignore _))
@@ -243,7 +211,9 @@ table"
     (:html
      (:head
       :@title
+      :@javascript-link
       :@javascript
+      :@css-link
       :@css)
      (:body
       :@inner))))
