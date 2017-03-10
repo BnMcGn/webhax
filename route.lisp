@@ -20,11 +20,10 @@
   `(input-function-wrapper
     (lambda ()
       (display-page
-       (list
-        webhax-metaplate:*metaplate-default-layout*
-        webhax-metaplate:*metaplate-default-parts*
-        ,@parts-and-templates
-        ,@(when body (cons :@inner body)))))))
+       webhax-metaplate:*metaplate-default-layout*
+       webhax-metaplate:*metaplate-default-parts*
+       ,@parts-and-templates
+       ,@(when body (cons :@inner body))))))
 
 (defparameter *url-parentage* nil)
 (defparameter *url-parentage-lock-level* 0

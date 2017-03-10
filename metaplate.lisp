@@ -190,7 +190,7 @@
     (when templates
       (funcall (car templates)))))
 
-(defun display-page (templates-and-parts)
+(defun display-page (&rest templates-and-parts)
   (multiple-value-bind (templates parts)
       (%process-template-items templates-and-parts)
     (%render templates parts)))

@@ -66,11 +66,11 @@
    #:create-page-mod
    #:form
    #:ask-parts
-   #:add-part
    #:set-href
    #:*menu-items*
    #:define-default-layout
    #:define-default-parts
+   #:display-page
    #:quick-page
    #:*metaplate-default-layout*
    #:*metaplate-default-parts*
