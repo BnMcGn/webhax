@@ -17,7 +17,7 @@
 (in-package #:webhax-route)
 
 (defmacro quick-page ((&rest parts-and-templates) &body body)
-  `(input-function-wrapper
+  `(webhax-core:input-function-wrapper
     (lambda ()
       (display-page
        webhax-metaplate:*metaplate-default-layout*

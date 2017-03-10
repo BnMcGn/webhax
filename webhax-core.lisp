@@ -29,7 +29,11 @@
    #:handle-web-fail
    #:env-from-url
    #:input-function-wrapper
-   #:normalize-input))
+   #:normalize-input
+   #:under-path-p
+   #:repath-clack-env
+   #:url-from-env
+   #:session-from-env))
 
 (in-package #:webhax-core)
 
@@ -84,6 +88,38 @@
      :query-string (quri:uri-query uri)
      :server-name (quri:uri-host uri)
      :url-scheme (quri:uri-scheme uri))))
+
+(defun under-path-p (path testpath)
+  (let ((len (length path)))
+    (cond
+      ((string= path testpath) "/")
+      ((and (< len (length testpath))
+            (string= testpath path :end1 len)
+            (char= (aref testpath len) #\/))
+       (subseq testpath len))
+      (t nil))))
+
+(defun repath-clack-env (env newpath)
+  (mapcan-by-2
+   (lambda (k v)
+     (if (eq :path-info k)
+         (list :path-info newpath)
+         (list k v)))
+   env))
+
+(defun url-from-env (env)
+  "Extract the current request url from a clack environment."
+  (strcat
+   (format nil "~a://" (string-downcase (mkstr (or (getf env :url-scheme)
+                                                   (getf env :uri-scheme)))))
+   (getf env :server-name)
+   (awhen (getf env :server-port)
+     (unless (= 80 it)
+       (format nil ":~d" it)))
+   (getf env :request-uri)))
+
+(defun session-from-env (env)
+  (getf env :lack.session))
 
 (defun normalize-input (&optional input)
   (declare (ignore input))
