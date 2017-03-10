@@ -19,10 +19,11 @@
 
 (in-package #:webhax-metaplate)
 
-(defparameter *metaplate-part-names*
-  '(:@css :@javascript :@site-index :@title :@menu :@inner
-    :@side-content :@site-search :@notifications :@external-links :@logo
-    :@account-info :@footnotes :@copyright :@messages))
+(eval-always
+  (defparameter *metaplate-part-names*
+    '(:@css :@javascript :@site-index :@title :@menu :@inner
+      :@side-content :@site-search :@notifications :@external-links :@logo
+      :@account-info :@footnotes :@copyright :@messages)))
 
 (defun %ensure-string (itm)
   (if (stringp itm)
@@ -65,16 +66,17 @@
     (dolist (itm (gethash :@css *parts*))
       (htm (:link :href itm :rel "stylesheet" :type "text/css")))))
 
-(defun %get-render-func (key)
-  (assert (member key *metaplate-part-names*))
-  (case key
-    (:@css '%render-css)
-    (:@css-link '%render-css-link)
-    (:@javascript '%render-javascript)
-    (:@javascript-link '%render-javascript-link)
-    (:@title '%render-title)
-    (:@inner '%render-inner)
-    (otherwise '%render-part)))
+(eval-always
+  (defun %get-render-func (key)
+    (assert (member key *metaplate-part-names*))
+    (case key
+      (:@css '%render-css)
+      (:@css-link '%render-css-link)
+      (:@javascript '%render-javascript)
+      (:@javascript-link '%render-javascript-link)
+      (:@title '%render-title)
+      (:@inner '%render-inner)
+      (otherwise '%render-part))))
 
 (defvar *parts*)
 (defvar *template-stack* nil)
@@ -85,16 +87,17 @@
     (let ((*template-stack* (cdr *template-stack*)))
       (funcall (car *template-stack*)))))
 
-(defun %%process-template (template)
-  "Convert all :@ tags into %render- calls"
-  (labels ((walk-tree (tree)
-             (if (atom tree)
-                 (if (member tree *metaplate-part-names*)
-                     `(,(%get-render-func tree) ,tree)
-                     tree)
-                 (cons (walk-tree (car tree))
-                       (walk-tree (cdr tree))))))
-    (walk-tree template)))
+(eval-always
+  (defun %%process-template (template)
+    "Convert all :@ tags into %render- calls"
+    (labels ((walk-tree (tree)
+               (if (atom tree)
+                   (if (member tree *metaplate-part-names*)
+                       `(,(%get-render-func tree) ,tree)
+                       tree)
+                   (cons (walk-tree (car tree))
+                         (walk-tree (cdr tree))))))
+      (walk-tree template))))
 
 (defmacro define-parts (name &body parts)
   `(eval-always

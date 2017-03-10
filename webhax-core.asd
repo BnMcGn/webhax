@@ -6,7 +6,10 @@
   :license "Specify license here"
   :depends-on (#:gadgets
                #:alexandria
-               #:cl-who)
+               #:cl-who
+               #:clack
+               #:lack-request
+               #:lack-response)
   :serial t
   :components ((:file "webhax-core")))
 

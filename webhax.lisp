@@ -23,7 +23,7 @@
           ningle:*session*))
 
 ;;;Replace stub in webhax-core
-(setf (symbol-function 'webhax-core:normalize-input #'normalize-ningle-input))
+(setf (symbol-function 'webhax-core:normalize-input) #'normalize-ningle-input)
 
 (defun set-content-type (ctype)
   ;;FIXME: Don't know why this broke
@@ -142,13 +142,6 @@ to mount-component."
 (defun session-from-env (env)
   (getf env :lack.session))
 
-(defun blank-key-p (item)
-  "Determine if an item denotes an empty (root) url path."
-  (cond
-    ((stringp item) (not (boolify (length item))))
-    ((keywordp item) (member item '(:empty :blank :/)))
-    ((symbolp item) (eq item '/))
-    (t nil)))
 
 ;;;;;;;;;;;;;;;;;;;
 ;;; Link collection

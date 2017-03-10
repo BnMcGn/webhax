@@ -28,7 +28,8 @@
    #:web-fail
    #:handle-web-fail
    #:env-from-url
-   #:input-function-wrapper))
+   #:input-function-wrapper
+   #:normalize-input))
 
 (in-package #:webhax-core)
 
