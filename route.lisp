@@ -12,22 +12,31 @@
    #:define-webapp
    #:define-middleware
    #:middleware-chain
-   #:call-endware))
+   #:call-endware
+   #:blank-key-p))
 (in-package #:webhax-route)
 
-(defmacro quick-page (&rest parts-and-main)
-  (let ((parts (butlast parts-and-main))
-        (main (last-car parts-and-main)))
-    `(input-function-wrapper
-      (define-page nil
-          (,webhax-metaplate:*metaplate-default-parts*
-           ,@parts
-           ,@(when main `((add-part :@main-content ,main))))
-        (,webhax-metaplate:*metaplate-default-layout*)))))
+(defmacro quick-page ((&rest parts-and-templates) &body body)
+  `(input-function-wrapper
+    (lambda ()
+      (display-page
+       (list
+        webhax-metaplate:*metaplate-default-layout*
+        webhax-metaplate:*metaplate-default-parts*
+        ,@parts-and-templates
+        ,@(when body (cons :@inner body)))))))
 
 (defparameter *url-parentage* nil)
 (defparameter *url-parentage-lock-level* 0
   "To keep call-endware from unwinding the parentage more than was intended")
+
+(defun blank-key-p (item)
+  "Determine if an item denotes an empty (root) url path."
+  (cond
+    ((stringp item) (not (boolify (length item))))
+    ((keywordp item) (member item '(:empty :blank :/)))
+    ((symbolp item) (eq item '/))
+    (t nil)))
 
 (defmacro url-case (&body clauses)
   (with-gensyms (matfunc input foundkey)
