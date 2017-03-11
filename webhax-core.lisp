@@ -33,7 +33,12 @@
    #:under-path-p
    #:repath-clack-env
    #:url-from-env
-   #:session-from-env))
+   #:session-from-env
+   #:*default-content-type*
+   #:*clack-app*
+   #:with-content-type
+   #:as-html
+   #:as-json))
 
 (in-package #:webhax-core)
 
@@ -137,8 +142,6 @@
                    (normalize-input input)
                  (with-output-to-string (*webhax-output*)
                    (funcall handler))))))))
-
-(defparameter *default-content-type* "text/html")
 
 (eval-always
   (defmacro with-content-type (ctype &body body)

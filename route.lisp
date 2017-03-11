@@ -3,7 +3,7 @@
 (in-package #:cl-user)
 
 (defpackage #:webhax-route
-  (:use #:cl #:alexandria #:gadgets)
+  (:use #:cl #:alexandria #:gadgets #:webhax-core)
   (:export
    #:quick-page
    #:url-case
