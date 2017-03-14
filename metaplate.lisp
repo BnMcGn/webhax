@@ -15,7 +15,8 @@
    #:two-side-columns
    #:react-parts
    #:redux-parts
-   #:display-page))
+   #:display-page
+   #:page-base))
 
 (in-package #:webhax-metaplate)
 
@@ -23,7 +24,8 @@
   (defparameter *metaplate-part-names*
     '(:@css :@javascript :@site-index :@title :@menu :@inner
       :@side-content :@site-search :@notifications :@external-links :@logo
-      :@account-info :@footnotes :@copyright :@messages)))
+      :@account-info :@footnotes :@copyright :@messages
+      :@css-link :@javascript-link)))
 
 (defun %ensure-string (itm)
   (if (stringp itm)
@@ -58,12 +60,13 @@
 (defun %render-css (key)
   (declare (ignore key))
   ;;FIXME:
-  (error "Not Implemented"))
+  (when (gethash :@css *parts*)
+    (error "Not Implemented")))
 
 (defun %render-css-link (key)
   (assert (eq key :@css-link))
   (html-out
-    (dolist (itm (gethash :@css *parts*))
+    (dolist (itm (gethash :@css-link *parts*))
       (htm (:link :href itm :rel "stylesheet" :type "text/css")))))
 
 (eval-always
@@ -85,7 +88,7 @@
   (declare (ignore key))
   (when *template-stack*
     (let ((*template-stack* (cdr *template-stack*)))
-      (funcall (car *template-stack*)))))
+      (and *template-stack* (funcall (car *template-stack*))))))
 
 (eval-always
   (defun %%process-template (template)
@@ -120,24 +123,22 @@
             (cons (lambda ()
                     ,(%%process-template (car template)))
                   ,(when wrapper
-                         `(funcall-in-macro ',wrapper)))
-            (lambda ()
-              (hu:plist->hash (list ,@pre)))
-            (lambda ()
-              (hu:plist->hash (list ,@app)))))))))
+                         `(funcall ,wrapper)))
+            (hu:plist->hash (list ,@pre))
+            (hu:plist->hash (list ,@app))))))))
 
 (defvar *metaplate-default-layout*)
 (defvar *metaplate-default-parts*)
 
- (defmacro define-default-parts (name &body parts)
-   `(eval-always
-      (define-parts ,name ,@parts)
-      (setf *metaplate-default-parts* '(function ,name))))
+(defmacro define-default-parts (name &body parts)
+  `(eval-always
+     (define-parts ,name ,@parts)
+     (setf *metaplate-default-parts* (symbol-function ',name))))
 
- (defmacro define-default-layout ((name &key wrapper) &body template)
-   `(eval-always
-      (define-layout (,name :wrapper ,wrapper) ,@template)
-      (setf *metaplate-default-layout* '(function ,name))))
+(defmacro define-default-layout ((name &key wrapper) &body template)
+  `(eval-always
+     (define-layout (,name :wrapper ,wrapper) ,@template)
+     (setf *metaplate-default-layout* (symbol-function ',name))))
 
 (defun %mapc-template-items (func input)
   "Send items one at a time to func, unless starts with a :@ keyword. Then send two items."
@@ -192,7 +193,14 @@
 
 (defun display-page (&rest templates-and-parts)
   (multiple-value-bind (templates parts)
-      (%process-template-items templates-and-parts)
+      (%process-template-items
+       ;;Sometimes we'll get macro-style function designators coming through...
+       (mapcar
+        (lambda (x)
+          (if-let ((fname (gadgets:get-function-name-in-macro x)))
+            (symbol-function fname)
+            x))
+        templates-and-parts))
     (%render templates parts)))
 
 ;;;End of metaplate core items
@@ -220,7 +228,7 @@
 
 (define-layout (two-side-columns :wrapper #'page-base)
   (:prepend-parts
-   :@css "/static/css/style.css"
+   :@css-link "/static/css/style.css"
    :@menu #'render-menu)
   (html-out
                                         ;Header

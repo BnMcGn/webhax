@@ -110,7 +110,9 @@
    #:main
    #:*should-login-return*
    #:react-parts
-   #:redux-parts))
+   #:redux-parts
+   #:page-base
+   #:two-side-columns))
 
 
 

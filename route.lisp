@@ -13,13 +13,15 @@
    #:define-middleware
    #:middleware-chain
    #:call-endware
-   #:blank-key-p))
+   #:blank-key-p
+   #:init
+   #:main))
 (in-package #:webhax-route)
 
 (defmacro quick-page ((&rest parts-and-templates) &body body)
   `(webhax-core:input-function-wrapper
     (lambda ()
-      (display-page
+      (webhax-metaplate:display-page
        webhax-metaplate:*metaplate-default-layout*
        webhax-metaplate:*metaplate-default-parts*
        ,@parts-and-templates
