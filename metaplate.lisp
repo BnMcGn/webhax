@@ -27,35 +27,33 @@
       :@account-info :@footnotes :@copyright :@messages
       :@css-link :@javascript-link)))
 
-(defun %ensure-string (itm)
+(defun %output-item (itm)
+  "Return value of this function should be ignored. "
   (if (stringp itm)
-      itm
-      (funcall-in-macro itm))) ;Right thing?
+      (write-line itm *webhax-output*) ;; FIXME: write-string? no newline?
+      (funcall-in-macro itm)))
 
 (defun %render-part (key)
-  (html-out
-    (dolist (x (gethash key *parts*))
-      (str (%ensure-string x)))))
+  (mapc #'%output-item (gethash key *parts*)))
 
 (defun %render-title (key)
   (assert (eq key :@title))
   (html-out
-    (:title (str
-             (apply #'concatenate 'string
-                    (mapcar #'%ensure-string (gethash :@title *parts*)))))))
+    (:title
+     (mapc #'%output-item (gethash :@title *parts*)))))
 
 (defun %render-javascript (key)
   (assert (eq key :@javascript))
   (html-out
     (dolist (itm (gethash :@javascript *parts*))
-      (htm (:script :type "text/javascript" (str (%ensure-string itm)))))))
+      (htm (:script :type "text/javascript" (%output-item itm))))))
 
 (defun %render-javascript-link (key)
   (assert (eq key :@javascript-link))
   (html-out
     (dolist (itm (gethash :@javascript-link *parts*))
       (htm (:script :type "text/javascript"
-                    :src (str (%ensure-string itm)))))))
+                    :src (%output-item itm))))))
 
 (defun %render-css (key)
   (declare (ignore key))
