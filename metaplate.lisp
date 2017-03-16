@@ -86,9 +86,13 @@
 
 (defun %render-inner (key)
   (declare (ignore key))
-  (when *template-stack*
-    (let ((*template-stack* (cdr *template-stack*)))
-      (and *template-stack* (funcall (car *template-stack*))))))
+  (if *template-stack*
+    (let ((tmpl (car *template-stack*))
+          (*template-stack* (cdr *template-stack*)))
+      (funcall tmpl))
+    ;;FIXME: Should use %ensure-string here?
+    (dolist (itm (gethash :@inner *parts*))
+      (funcall itm))))
 
 (eval-always
   (defun %%process-template (template)
@@ -106,7 +110,7 @@
   `(eval-always
      (defun ,name ()
        (hu:plist->hash
-        (list ,@parts)))))
+        (list ,@parts) :mode :append))))
 
 (defmacro define-layout ((name &key wrapper) &body template)
   ;;Creates a function that returns three functions:
@@ -124,8 +128,8 @@
                     ,(%%process-template (car template)))
                   ,(when wrapper
                          `(funcall ,wrapper)))
-            (hu:plist->hash (list ,@pre))
-            (hu:plist->hash (list ,@app))))))))
+            (hu:plist->hash (list ,@pre) :mode :append)
+            (hu:plist->hash (list ,@app) :mode :append)))))))
 
 (defvar *metaplate-default-layout*)
 (defvar *metaplate-default-parts*)
@@ -158,14 +162,14 @@
   "This function does not know how to handle function items that are not eitherparts functions or template functions."
   (let* ((templates nil)
          (parts
-          (hu:collecting-hash-table (:mode :append)
+          (hu:collecting-hash-table (:mode :concatenate)
               (%mapc-template-items
                (lambda (item aux)
                  (typecase item
                    (keyword
                     (unless (member item *metaplate-part-names*)
                       (error "Not a metaplate tag"))
-                    (hu:collect item aux))
+                    (hu:collect item aux :mode :append))
                    (hash-table
                     (maphash #'hu:collect item))
                    (function
@@ -174,8 +178,13 @@
                         ((= 3 (length result))
                          (dolist (tmp (reverse (car result)))
                            (push tmp templates))
-                         (maphash (alexandria:rcurry #'hu:collect :mode :push)
-                                  (second result))
+                         (maphash
+                          (alexandria:rcurry
+                           #'hu:collect
+                           :mode
+                           (lambda (existing new)
+                             (concatenate 'list new existing)))
+                          (second result))
                         (maphash #'hu:collect (third result)))
                         ((hash-table-p (car result))
                          (maphash #'hu:collect (car result)))
@@ -251,14 +260,14 @@
 ;;;;;;;;
 
 (define-parts react-parts
-  :@javascript
+  :@javascript-link
   "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js"
-  :@javascript
+  :@javascript-link
   "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js"
   :@javascript #'react:build)
 
 (define-parts redux-parts
-  :@javascript
+  :@javascript-link
   "https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js"
-  :@javascript
+  :@javascript-link
   "https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js")
