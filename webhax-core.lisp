@@ -134,14 +134,11 @@
   (lambda (&optional input)
     (list 200 (list :content-type content-type)
           (list
-           (if *session* ;;We'll assume the other stuff is set too, if sess.
-               (with-output-to-string (*webhax-output*)
-                 (funcall handler))
-               (multiple-value-bind
-                     (*regular-web-input* *key-web-input* *session*)
-                   (normalize-input input)
-                 (with-output-to-string (*webhax-output*)
-                   (funcall handler))))))))
+           (multiple-value-bind
+                 (*regular-web-input* *key-web-input* *session*)
+               (normalize-input input)
+             (with-output-to-string (*webhax-output*)
+               (funcall handler)))))))
 
 (eval-always
   (defmacro with-content-type (ctype &body body)

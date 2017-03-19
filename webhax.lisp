@@ -13,14 +13,16 @@
   (setf (ningle:route app route) func))
 
 (defun normalize-ningle-input (input)
-  (values (awhen (assoc :splat input)
-                 ;;FIXME: Should probably only remove zero lengths in last pos.
-                 (remove-if (lambda (x)
-                              (and (stringp x) (= 0 (length x))))
-                            (split-sequence #\/ (second it))))
-          (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
-                     input)
-          ningle:*session*))
+  (if ningle:*session*
+      (values (awhen (assoc :splat input)
+                ;;FIXME: Should probably only remove zero lengths in last pos.
+                (remove-if (lambda (x)
+                             (and (stringp x) (= 0 (length x))))
+                           (split-sequence #\/ (second it))))
+              (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
+                         input)
+              ningle:*session*)
+      (values *regular-web-input* *key-web-input* *session*)))
 
 ;;;Replace stub in webhax-core
 (setf (symbol-function 'webhax-core:normalize-input) #'normalize-ningle-input)
