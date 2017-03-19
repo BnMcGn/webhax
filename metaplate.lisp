@@ -33,6 +33,12 @@
       (write-line itm *webhax-output*) ;; FIXME: write-string? no newline?
       (funcall-in-macro itm)))
 
+(defun %prep-item (itm)
+  "Returns string of item."
+  (if (stringp itm)
+      itm
+      (funcall-in-macro itm)))
+
 (defun %render-part (key)
   (mapc #'%output-item (gethash key *parts*)))
 
@@ -42,18 +48,19 @@
     (:title
      (mapc #'%output-item (gethash :@title *parts*)))))
 
+;;FIXME: Javascript rendering is different than general. Confusion likely.
 (defun %render-javascript (key)
   (assert (eq key :@javascript))
   (html-out
     (dolist (itm (gethash :@javascript *parts*))
-      (htm (:script :type "text/javascript" (%output-item itm))))))
+      (htm (:script :type "text/javascript" (str (%prep-item itm)))))))
 
 (defun %render-javascript-link (key)
   (assert (eq key :@javascript-link))
   (html-out
     (dolist (itm (gethash :@javascript-link *parts*))
       (htm (:script :type "text/javascript"
-                    :src (%output-item itm))))))
+                    :src (str (%prep-item itm)))))))
 
 (defun %render-css (key)
   (declare (ignore key))
