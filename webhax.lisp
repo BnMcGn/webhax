@@ -22,7 +22,10 @@
               (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
                          input)
               ningle:*session*)
-      (values *regular-web-input* *key-web-input* *session*)))
+      (values (when (boundp '*regular-web-input*) *regular-web-input*)
+              (when (boundp '*key-web-input*) *key-web-input*)
+              (or (when (boundp '*session*) *session*)
+                  (when (boundp '*web-env*) (session-from-env *web-env*))))))
 
 ;;;Replace stub in webhax-core
 (setf (symbol-function 'webhax-core:normalize-input) #'normalize-ningle-input)

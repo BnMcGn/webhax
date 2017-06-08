@@ -273,8 +273,10 @@
       callback
       (lambda (data)
         (ps-gadgets:json-post-bind (res (prop validation-url) data)
-          (set-state errors (getprop res errors)
-                     success (getprop res success))))
+          (set-state errors (if (chain res (has-own-property :errors))
+                                (getprop res 'errors) (create))
+                     success (if (chain res (has-own-property :success))
+                                 (getprop res 'success) (create)))))
       get-initial-state
       (lambda () (create :errors (create) :success (create))))
 
