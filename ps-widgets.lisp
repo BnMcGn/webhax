@@ -143,6 +143,8 @@
                (progn
                  (funcall callback (@ state data))
                  state))
+              (:update ;From server/webhax-form-connector
+               (copy-merge-objects state (@ action data)))
               (:edit
                ;;FIXME: Client-side validation not implemented.
                (let ((data (if (@ action data)
@@ -251,7 +253,7 @@
                                   (copy-merge-all own-props stuff))
                                 (lambda (dispatch)
                                   (create :dispatch dispatch))))
-                webhax-form-toplevel)))
+                webhax-form-connector)))
           (psx
            (:provider
             :store store
@@ -265,20 +267,17 @@
                               (list (chain -react -prop-types string)
                                     (chain -react -prop-types object))))))))
 
+    ;;FIXME: Should add something to tell redux that we are waiting on JSON
     (def-component webhax-form-connector
-        (psx (:webhax-form
-              :fieldspecs (prop fieldspecs) :prefill (prop data)
-              :callback (@ this callback) :errors (state errors)
-              :success (state success)))
-      callback
-      (lambda (data)
-        (ps-gadgets:json-post-bind (res (prop validation-url) data)
-          (set-state errors (if (chain res (has-own-property :errors))
-                                (getprop res 'errors) (create))
-                     success (if (chain res (has-own-property :success))
-                                 (getprop res 'success) (create)))))
-      get-initial-state
-      (lambda () (create :errors (create) :success (create))))
+        (psx (:webhax-form-toplevel
+              :... (@ this props)
+              :dispatch (@ this dispatch)))
+      dispatch
+      (lambda (action)
+        (if (and (eq (@ action type) :submit) (prop validation-url))
+            (ps-gadgets:json-post-bind (res (prop validation-url) (prop data))
+              (funcall (prop dispatch) (create :type :update :data res))
+            (funcall (prop dispatch) action)))))
 
     (defun webhax-form-element (fieldspecs data callback)
       (psx
