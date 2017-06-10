@@ -277,8 +277,8 @@
       (lambda (action)
         (if (and (eq (@ action type) :submit) (prop validation-url))
             (ps-gadgets:json-post-bind (res (prop validation-url) (prop data))
-              (funcall (prop dispatch) (create :type :update :data res))
-            (funcall (prop dispatch) action)))))
+              (funcall (prop dispatch) (create :type :update :data res)))
+            (funcall (prop dispatch) action))))
 
     (defun webhax-form-element (fieldspecs data callback)
       (psx
