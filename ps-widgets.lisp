@@ -141,7 +141,8 @@
             (case (@ action type)
               (:submit
                (progn
-                 (funcall callback (@ state data))
+                 (when (eq (typeof callback) "function")
+                   (funcall callback (@ state data)))
                  state))
               (:update ;From server/webhax-form-connector
                (copy-merge-objects state (@ action data)))
