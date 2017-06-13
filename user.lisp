@@ -15,7 +15,10 @@
    #:get-display-name
    #:get-user-name
    #:login-provider-fields
-   #:user-info-bundle))
+   #:user-info-bundle
+   #:signed-up
+   #:screen-name
+   #:email))
 
 (in-package #:webhax-user)
 
@@ -205,6 +208,7 @@
             (login-destination))))
 
 (defun user-info-bundle ()
+  ;;FIXME: Should userfig fields be in here? probably not.
   (let ((res (login-provider-fields)))
     (push (cons :login-url (clack-openid-connect:login-url)) res)
     (push (cons :logout-url (clack-openid-connect:logout-url)) res)

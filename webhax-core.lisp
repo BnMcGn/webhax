@@ -38,7 +38,9 @@
    #:*clack-app*
    #:with-content-type
    #:as-html
-   #:as-json))
+   #:as-json
+   #:*menu-items*
+   #:*menu-active*))
 
 (in-package #:webhax-core)
 
@@ -152,4 +154,13 @@
 
 (defmacro as-json (&body body)
   `(with-content-type "application/json" ,@body))
+
+;;;;;
+;; Menu stuff
+;;;;;
+
+;;items format: (('mainitem <'subitems...> urlstring), more items...)
+;;active format: match itemspec above, omitting urlstring
+(defparameter *menu-items* nil)
+(defvar *menu-active* nil)
 

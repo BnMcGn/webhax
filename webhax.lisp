@@ -59,14 +59,6 @@
          (collect (cdr item))))))
     (if wrap (cons 'ps:create res) res)))
 
-;;;;;
-; Menu stuff
-;;;;;
-
-;items format: (('mainitem <'subitems...> urlstring), more items...)
-;active format: match itemspec above, omitting urlstring
-(defparameter *menu-items* nil)
-(defvar *menu-active* nil)
 
 (defmacro mount-component ((component-name &key mount-id) &body parameters)
   "Produces html output to mount a named react component in place, creating a named div element, then creating a script element that renders the component in the div. Parameters are alternating keys and values, sent to the component as initial props. Values, therefore, are parenscript. Lisp values must be wrapped in lisp or lisp-raw.

@@ -221,12 +221,14 @@
 
 (defun render-menu (&rest _)
   (declare (ignore _))
-  (dolist (item *menu-items*)
-                                        ;FIXME: handle subitems
+  (dolist (item webhax-core:*menu-items*)
+    ;;FIXME: handle subitems
     (when (= (length item) 2)
       (html-out
-        (:li :class (when (equal (butlast item) *menu-active*) "active")
-             (:a :href (car (last item)) (str (thing-label (car item)))))))))
+        (:li :class (when (equal (butlast item) webhax-core:*menu-active*)
+                      "active")
+             (:a :href (car (last item))
+                 (str (thing-labels:thing-label (car item)))))))))
 
 (define-layout (page-base)
   (html-out
