@@ -245,7 +245,7 @@
         (let ((provider (@ -react-redux -provider))
               (store
                (chain -redux (create-store (webhax-form-dispatcher
-                                            (prop fieldspecs) (prop prefill)
+                                            (prop fieldspecs) (prop data)
                                             (prop callback)))))
               (app
                (funcall
@@ -272,6 +272,7 @@
     (def-component webhax-form-connector
         (psx (:webhax-form-toplevel
               :... (@ this props)
+              :prefill (prop data)
               :dispatch (@ this dispatch)))
       dispatch
       (lambda (action)
