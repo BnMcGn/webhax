@@ -285,12 +285,12 @@ a field."
 
 (defun convert-fieldspecs-to-json (fspecs)
   (json:encode-json-to-string
-   (cl-hash-util:collecting-hash-table (:mode :replace)
-     (gadgets:map-by-2
-      (lambda (k v)
-        (cl-hash-util:collect k
-          (prep-fieldspec-body-for-json v)))
-      fspecs))))
+   (gadgets:collecting
+       (gadgets:map-by-2
+        (lambda (k v)
+          (gadgets:collect k)
+          (gadgets:collect (prep-fieldspec-body-for-json v)))
+        fspecs))))
 
 (defun normalize-input (input fieldspecs &optional translation-table)
   (let ((trans
