@@ -305,7 +305,7 @@ a field."
                         (cons k (gadgets:assoc-all
                                  out-key input
                                  :test #'eq-symb-multiple))
-                        (assoc out-key input :test #'equal))))
+                        (assoc out-key input :test #'eq-symb))))
           (when val
             (collect (cons k (cdr val)))))))))
 
