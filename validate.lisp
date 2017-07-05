@@ -311,6 +311,7 @@ a field."
 
 (defparameter *incoming-values* nil)
 
+;;FIXME: should not validate a batch with empty not-null fields. needs checking.
 (defun validate-batch (input-alist fieldspecs-plist
                        &key existing-hash edit translation-table keylist)
   "Translation-table has the internal key as the key and the input key as the

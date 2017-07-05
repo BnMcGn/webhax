@@ -169,6 +169,7 @@
                            null)))
                res)
              :fieldspecs fieldspecs ;; FIXME: When should validators be created?
+             :success nil
              :errors (let ((res (create)))
                        (do-window ((k v) fieldspecs :step 2)
                          ;; borrow keys from data.
@@ -228,6 +229,7 @@
                 :key 1
                 :formdata data :dispatch dispatch :fieldspecs fspecs
                 :errors errors
+                :success (prop success)
                 (collecting
                     (let ((counter 0))
                       (do-window ((name fspec) fspecs :step 2)
