@@ -22,7 +22,7 @@
 
 (eval-always
   (defparameter *metaplate-part-names*
-    '(:@css :@javascript :@site-index :@title :@menu :@inner
+    '(:@css :@javascript :@head :@site-index :@title :@menu :@inner
       :@side-content :@site-search :@notifications :@external-links :@logo
       :@account-info :@footnotes :@copyright :@messages
       :@css-link :@javascript-link)))
@@ -234,6 +234,7 @@
   (html-out
     (:html
      (:head
+      :@head
       :@title
       :@javascript-link
       :@javascript
