@@ -34,8 +34,9 @@
 
 (defun login-provider-fields (&optional key)
   (when *session*
-    ;;FIXME: This is oid connect specific.
-    (let* ((data (gethash :oid-connect-userinfo *session*))
+    ;;FIXME: This is openid connect specific.
+    ;;FIXME: More keys needed??
+    (let* ((data (gethash :clath-userinfo *session*))
            (result
             (list
              (cons :name (assoc-cdr :name data))
@@ -51,10 +52,10 @@
 
 ;;FIXME: Rethink someday. Oid connect specific.
 (defun login-destination ()
-  clack-openid-connect:*login-destination*)
+  clath:*login-destination*)
 
 (defsetf login-destination () (newval)
-  `(setf clack-openid-connect:*login-destination* ,newval))
+  `(setf clath:*login-destination* ,newval))
 
 (defun authenticated? ()
   (gethash :username *session*))
@@ -79,7 +80,7 @@
 (defun login-method ()
   (when (get-user-name)
     (cond
-      ((key-in-hash? :oid-connect-provider *session*) :openid-connect))))
+      ((key-in-hash? :clath-provider *session*) :openid-connect))))
 
 (defun webhax-user (&key userfig-specs)
   (let ((specs (concatenate 'list *userfig-for-user* userfig-specs)))
@@ -122,8 +123,8 @@
   (check-authenticated)
   (funcall
    (webhax:quick-page
-       (#'webhax::react
-        #'webhax::redux
+       (#'react-parts
+        #'redux-parts
         :@javascript #'webhax-widgets:ps-widgets
         #'webhax:webhax-ask)
      (webhax:html-out
@@ -144,6 +145,7 @@
 (define-middleware webhax-user-core ()
   (url-case
     (:sign-up (sign-up-page))
+    (:user-status (print-user-status))
     (otherwise
      (let ((result (call-endware)))
        ;;FIXME: Sometimes we shouldn't redirect to login page, such as on a
@@ -158,7 +160,7 @@
   "/sign-up/")
 
 ;;;Make the login process send user to sign-up page if not signed up.
-(setf clack-openid-connect:*login-destination-hook*
+(setf clath:*login-destination-hook*
       (lambda (&key username)
         (if (userfig:new-user-p username)
             (signup-url)
@@ -167,20 +169,37 @@
 (defun user-info-bundle ()
   ;;FIXME: Should userfig fields be in here? probably not.
   (let ((res (login-provider-fields)))
-    (push (cons :login-url (clack-openid-connect:login-url)) res)
-    (push (cons :logout-url (clack-openid-connect:logout-url)) res)
+    (push (cons :login-url (clath:login-url)) res)
+    (push (cons :logout-url (clath:logout-url)) res)
     (push (cons :settings-url (userfig:settings-url)) res)
     res))
 
-(register-link 'clack-openid-connect::login
-               (clack-openid-connect:login-url)
+(register-link 'clath::login
+               (clath:login-url)
                :label "Log In")
-(register-link 'clack-openid-connect::logout
-               (clack-openid-connect:logout-url)
+(register-link 'clath::logout
+               (clath:logout-url)
                :label "Sign Out")
 (register-link 'userfig::settings
                (userfig:settings-url)
                :label "Settings")
 
-
-
+(defun print-user-status ()
+  (print "OpenID fields from session:")
+  (print (gethash :clath-userinfo *session*))
+  (print "Session :username")
+  (print (get-user-name))
+  (print "(authenticated?):")
+  (print (authenticated?))
+  (print "Session :display-name")
+  (print (get-display-name))
+  (print "Userfig: (new-user-p (get-user-name))")
+  (print (userfig:new-user-p (get-user-name)))
+  (print "Userfig: what-user?")
+  (print (userfig::what-user?))
+  (print "Userfig: initialized?")
+  (print (userfig:initialized?))
+  (print "Userfig: 'screen-name")
+  (print (userfig:userfig-value 'screen-name))
+  (print "Userfig: 'email")
+  (print (userfig:userfig-value 'email)))

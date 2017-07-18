@@ -13,7 +13,7 @@
                #:ps-gadgets
                #:ps-react-gadgets
                #:webhax-validate
-               #:clack-openid-connect ;FIXME: shouldn't
+               #:clath ;FIXME: shouldn't
                #:userfig)
   :serial t
   :components ((:file "user")))
