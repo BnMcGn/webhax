@@ -13,7 +13,7 @@
     :INPUT
     (list :LACK.SESSION
           (CL-HASH-UTIL:ALIST->HASH
-           '((:OID-CONNECT-DESTINATION
+           '((:clath-DESTINATION
               . "http://logintest.warflagger.com:5000/sign-up"))
            :EXISTING (MAKE-HASH-TABLE :TEST #'EQUAL))
           :REQUEST-METHOD :GET :SCRIPT-NAME "" :PATH-INFO
@@ -54,11 +54,11 @@
          (list
           :LACK.SESSION
           (CL-HASH-UTIL:ALIST->HASH
-           '((:OID-CONNECT-DESTINATION
+           '((:clath-DESTINATION
               . "http://logintest.warflagger.com:5000/sign-up")
-             (:OID-CONNECT-PROVIDER . :GOOGLE)
-             (:OID-CONNECT-ACCESS-TOKEN . "large_random_number")
-             (:OID-CONNECT-USERINFO (:SUB . "large_randomish_number")
+             (:clath-PROVIDER . :GOOGLE)
+             (:clath-ACCESS-TOKEN . "large_random_number")
+             (:clath-USERINFO (:SUB . "large_randomish_number")
               (:NAME . "Joe Random") (:GIVEN--NAME . "Joe")
               (:FAMILY--NAME . "Random") (:PICTURE . "file:///me.jpg")
               (:EMAIL . "joe@random.gov") (:EMAIL--VERIFIED . T)
