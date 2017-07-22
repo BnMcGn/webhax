@@ -91,16 +91,17 @@
                                       (ps-gadgets:strcat
                                        (prop server-url) (prop askname))
                                       updates)
-                                     (let ((res {}))
-                                       (when (chain commands (has-own-property :|next|))
-                                         (setf (@ res commands) (@ commands next))
-                                         (setf (@ res ordering) (@ commands ordering)))
-                                       (setf (@ res errors)
-                                             (if (chain commands (has-own-property :|errors|))
-                                                 (@ commands errors)
-                                                 {}))
-                                       ;;Can't use regular set-state because of pre-made object.
-                                       (chain component-this-ref (#:set-state res))))))
+            (let ((res {}))
+              (when (chain commands (has-own-property "next"))
+                (say "hasprop")
+                (setf (@ res commands) (@ commands next))
+                (setf (@ res ordering) (@ commands ordering)))
+              (setf (@ res errors)
+                    (if (chain commands (has-own-property :|errors|))
+                        (@ commands errors)
+                        {}))
+              ;;Can't use regular set-state because of pre-made object.
+              (chain component-this-ref (#:set-state res))))))
 
       (def-component ask-collection-layer
           (let ((new-data (-object)))
