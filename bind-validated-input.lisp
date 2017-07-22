@@ -85,7 +85,11 @@
 
 (defun %%prep-valspec (vspec)
   `(compile-validator
-    (list ,@(if (keywordp vspec) (list vspec) vspec))))
+    ,(if (and (consp vspec) (eq 'lambda (car vspec)))
+         vspec
+         `(list ,@(if (keywordp vspec)
+                      (list vspec)
+                      vspec)))))
 
 (defun %%default-decider (bindspec inputform foundvar)
   (let ((filledp? (and (listp (car bindspec))

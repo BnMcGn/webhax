@@ -20,7 +20,7 @@
          &optional
          (item3 :integer)
          &key
-         (a :overlength) 
+         (a :overlength)
          (b :email :multiple t)
          ((d 5) :integer))
       (list item2 item3 d item1 b a))))
@@ -39,7 +39,9 @@
         ((item1 (:pickone :options '(one four five)))
          (item2 :integer)
          (item3 :integer))
-      (values (+ item2 item3) item1))))
+      (values (when (and (numberp item2) (numberp item3))
+                (+ item2 item3))
+              item1))))
 
 (defun testfunc4 ()
   (twrap

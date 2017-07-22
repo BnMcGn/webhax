@@ -157,9 +157,11 @@
           (or-test (mapcar #'compile-validator (cdr valspec))))
          (otherwise
           (%handle-keyword (car valspec)))))
+      ;;FIXME: What should the rest of the items in a list with a function do?
       ((and (listp valspec) (functionp (car valspec)))
-        (apply (car valspec) (cdr valspec)))
-       (t (error "Validator type not found")))))
+       ;;(apply (car valspec) (cdr valspec)) ; This ever used? Oddity...
+       (car valspec))
+      (t (error "Validator type not found")))))
 
 (defparameter *ratify-tests*
   '(:bit :day :date :hour :real :time :year :float :month :ratio :minute :number :offset :second :string :boolean :complex :integer :datetime :rational :character :unsigned-integer :ip :tel :uri :url :file :host :ipv4 :ipv6 :name :port :text :user :week :color :email :query :radio :range :domain :failed :object :scheme :search :numeric :checkbox :fragment :hostname :password :property :protocol :textarea :authority :alphabetic :alphanumeric :absolute-path :rootless-path :datetime-local :hierarchical-part))
