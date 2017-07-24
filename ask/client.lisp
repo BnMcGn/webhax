@@ -131,11 +131,11 @@
           (create :data (%extract-default (prop commands))))
         component-will-receive-props
         (lambda (newprops)
-          ((let (new-data (copy-updates
-                           (%extract-default (prop commands))
-                            (%extract-default (@ newprops commands))))
-             (ps-gadgets:do-keyvalue (k v new-data)
-               (set-state data (copy-merge-all (state data) new-data))))))
+          (let (new-data (copy-updates
+                          (%extract-default (prop commands))
+                           (%extract-default (@ newprops commands))))
+            (when new-data
+              (set-state data (copy-merge-all (state data) new-data)))))
         dispatch
         (lambda (action) ;Can be replaced with redux dispatching.
           (case (@ action type)
