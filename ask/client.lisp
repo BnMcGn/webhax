@@ -92,8 +92,7 @@
                                        (prop server-url) (prop askname))
                                       updates)
             (let ((res {}))
-              (when (chain commands (has-own-property "next"))
-                (say "hasprop")
+              (when (chain commands (has-own-property :|next|))
                 (setf (@ res commands) (@ commands next))
                 (setf (@ res ordering) (@ commands ordering)))
               (setf (@ res errors)
@@ -103,20 +102,24 @@
               ;;Can't use regular set-state because of pre-made object.
               (chain component-this-ref (#:set-state res))))))
 
+      (defun %extract-default (arr)
+        (let ((res (create)))
+          (ps-gadgets:do-keyvalue (k v arr)
+            (when (and (chain v (has-own-property "default"))
+                       (@ v default))
+              (setf (getprop res k) (@ v default))))
+          res))
+
       (def-component ask-collection-layer
-          (let ((new-data (-object)))
-            (ps-gadgets:do-keyvalue (k v (prop commands))
-              (when (chain v (has-own-property "default"))
-                (setf (getprop new-data k) (@ v default))))
-            (psx
-             (:update-notify
-              (:ask-displayable-manager
-               :commands (prop commands)
-               :ordering (prop ordering)
-               :info (prop info)
-               :data (copy-merge-all (state data) new-data)
-               :dispatch (@ this dispatch)
-               :errors (prop errors)))))
+          (psx
+           (:update-notify
+            (:ask-displayable-manager
+             :commands (prop commands)
+             :ordering (prop ordering)
+             :info (prop info)
+             :data (state data)
+             :dispatch (@ this dispatch)
+             :errors (prop errors))))
         ;; Prefill: state of fields at start of form, fields optional
         ;; Data: current state of all fields, fields optional
         ;; Current: a copy of Data that contains only items found in
@@ -125,7 +128,14 @@
         ;; even if they aren't found anywhere else
         get-initial-state
         (lambda ()
-          (create :data (-object)))
+          (create :data (%extract-default (prop commands))))
+        component-will-receive-props
+        (lambda (newprops)
+          ((let (new-data (copy-updates
+                           (%extract-default (prop commands))
+                            (%extract-default (@ newprops commands))))
+             (ps-gadgets:do-keyvalue (k v new-data)
+               (set-state data (copy-merge-all (state data) new-data))))))
         dispatch
         (lambda (action) ;Can be replaced with redux dispatching.
           (case (@ action type)
