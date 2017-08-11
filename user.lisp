@@ -18,7 +18,8 @@
    #:user-info-bundle
    #:signed-up
    #:screen-name
-   #:email))
+   #:email
+   #:login-destination))
 
 (in-package #:webhax-user)
 

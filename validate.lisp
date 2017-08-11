@@ -317,7 +317,8 @@ a field."
 (defun validate-batch (input-alist fieldspecs-plist
                        &key existing-hash edit translation-table keylist)
   "Translation-table has the internal key as the key and the input key as the
- value"
+ value. existing-hash is for tests that want to see the previous value of the
+ field."
   (when (and edit (not existing-hash))
     (error "Edit is t, but no existing store supplied"))
   (let ((keylist (or keylist

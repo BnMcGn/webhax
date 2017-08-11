@@ -115,6 +115,35 @@
        #'list
        (list* 'filler code))))
 
+(eval-always
+  (defparameter *component-compile-counts* (make-hash-table)))
+
+(defun %%component-core-with-closure (body name parameters middleware?)
+  (let ((name-int (symb name '-%%)))
+    (with-gensyms (app last-compile cached-component)
+      `(let ((,app nil)
+             (,last-compile nil)
+             (,cached-component nil))
+         (incf (gethash ,name *component-compile-counts* 0))
+         (defun ,name-int ,parameters
+           ,@(if middleware?
+                 `((let ((*clack-app* ,app))
+                     ,@body))
+                 body))
+         (defun ,name (&rest params)
+           ,@(let ((inner
+                   `((when-let
+                         ((lcomp (< ,last-compile
+                                    (gethash ,name *component-compile-counts*))))
+                       (setf ,cached-component (,name-int params))
+                       (setf ,last-compile lcomp))
+                     (wrap-with-webhax-environment ,cached-component))))
+                 (if middleware?
+                     `((lambda (app)
+                         (setf ,app app)
+                         ,@inner))
+                     inner)))))))
+
 (defmacro define-webapp (name parameters &body body)
   (multiple-value-bind (outer ibody) (%%divide-body body)
     (let ((name-int (symb name '-internal)))
