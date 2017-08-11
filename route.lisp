@@ -115,6 +115,22 @@
        #'list
        (list* 'filler code))))
 
+(defun %%component-core (body name parameters middleware?)
+  (let ((name-int (symb name '-%%)))
+    (with-gensyms (app)
+      `(let ((,app nil))
+         (defun ,name-int ,parameters
+           ,@(if middleware?
+                 `((let ((*clack-app* ,app))
+                     ,@body))
+                 body))
+         (defun ,name (&rest params)
+           ,@(if middleware?
+                 `(lambda (app)
+                   (setf ,app app)
+                   (wrap-with-webhax-environment ,name-int))
+                 `(wrap-with-webhax-environment ,name-int)))))))
+
 (eval-always
   (defparameter *component-compile-counts* (make-hash-table)))
 
