@@ -97,6 +97,8 @@
    #:url-case
    #:define-middleware
    #:define-webapp
+   #:define-simple-middleware
+   #:define-simple-webapp
    #:with-content-type
    #:as-html
    #:as-json

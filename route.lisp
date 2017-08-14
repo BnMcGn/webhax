@@ -15,7 +15,9 @@
    #:call-endware
    #:blank-key-p
    #:init
-   #:main))
+   #:main
+   #:define-simple-webapp
+   #:define-simple-middleware))
 (in-package #:webhax-route)
 
 (defmacro quick-page ((&rest parts-and-templates) &body body)
@@ -119,17 +121,19 @@
   (let ((name-int (symb name '-%%)))
     (with-gensyms (app)
       `(let ((,app nil))
+         ;;FIXME: Would be nice to use parameters here so that user options
+         ;;show up in the hints.
          (defun ,name-int ,parameters
            ,@(if middleware?
                  `((let ((*clack-app* ,app))
                      ,@body))
                  body))
          (defun ,name (&rest params)
-           ,@(if middleware?
+           ,(if middleware?
                  `(lambda (app)
                    (setf ,app app)
-                   (wrap-with-webhax-environment ,name-int))
-                 `(wrap-with-webhax-environment ,name-int)))))))
+                   (wrap-with-webhax-environment #',name-int params))
+                 `(wrap-with-webhax-environment #',name-int params)))))))
 
 (eval-always
   (defparameter *component-compile-counts* (make-hash-table)))
@@ -141,6 +145,8 @@
              (,last-compile nil)
              (,cached-component nil))
          (incf (gethash ,name *component-compile-counts* 0))
+         ;;FIXME: Would be nice to use parameters here so that user options
+         ;;show up in the hints.
          (defun ,name-int ,parameters
            ,@(if middleware?
                  `((let ((*clack-app* ,app))
@@ -159,6 +165,18 @@
                          (setf ,app app)
                          ,@inner))
                      inner)))))))
+
+(defmacro define-simple-webapp (name parameters &body body)
+  (%%component-core body name parameters nil))
+
+(defmacro define-simple-middleware (name parameters &body body)
+  (%%component-core body name parameters t))
+
+(defmacro define-webapp (name parameters &body body)
+  (%%component-core-with-closure body name parameters nil))
+
+(defmacro define-middleware (name parameters &body body)
+  (%%component-core-with-closure body name parameters t))
 
 (defmacro define-webapp (name parameters &body body)
   (multiple-value-bind (outer ibody) (%%divide-body body)
