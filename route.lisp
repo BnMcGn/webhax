@@ -142,9 +142,9 @@
   (let ((name-int (symb name '-%%)))
     (with-gensyms (app last-compile cached-component)
       `(let ((,app nil)
-             (,last-compile nil)
+             (,last-compile 0)
              (,cached-component nil))
-         (incf (gethash ,name *component-compile-counts* 0))
+         (incf (gethash ',name *component-compile-counts* 0))
          ;;FIXME: Would be nice to use parameters here so that user options
          ;;show up in the hints.
          (defun ,name-int ,parameters
@@ -154,12 +154,12 @@
                  body))
          (defun ,name (&rest params)
            ,@(let ((inner
-                   `((when-let
-                         ((lcomp (< ,last-compile
-                                    (gethash ,name *component-compile-counts*))))
-                       (setf ,cached-component (,name-int params))
-                       (setf ,last-compile lcomp))
-                     (wrap-with-webhax-environment ,cached-component))))
+                   `((when (< ,last-compile
+                            (gethash ',name *component-compile-counts*))
+                       (setf ,cached-component (apply #',name-int params))
+                       (setf ,last-compile
+                             (gethash ',name *component-compile-counts*)))
+                     (wrap-with-webhax-environment ,cached-component nil))))
                  (if middleware?
                      `((lambda (app)
                          (setf ,app app)
