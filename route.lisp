@@ -120,21 +120,16 @@
 
 (defun %%component-core (body name parameters middleware?)
   (let ((name-int (symb name '-%%)))
-    (with-gensyms (app)
-      `(let ((,app nil))
-         ;;FIXME: Would be nice to use parameters here so that user options
-         ;;show up in the hints.
-         (defun ,name-int ,parameters
-           ,@(if middleware?
-                 `((let ((*clack-app* ,app))
-                     ,@body))
-                 body))
-         (defun ,name (&rest params)
-           ,(if middleware?
-                 `(lambda (app)
-                   (setf ,app app)
-                   (wrap-with-webhax-environment #',name-int params))
-                 `(wrap-with-webhax-environment #',name-int params)))))))
+    ;;FIXME: Would be nice to use parameters here so that user options
+    ;;show up in the hints.
+    `(progn
+       (defun ,name-int ,parameters
+         ,@body)
+       (defun ,name (&rest params)
+         ,(if middleware?
+              `(lambda (app)
+                 (wrap-with-webhax-environment #',name-int params :clack-app app))
+              `(wrap-with-webhax-environment #',name-int params))))))
 
 (eval-always
   (defparameter *component-compile-counts* (make-hash-table)))
@@ -175,31 +170,6 @@
 
 (defmacro define-middleware (name parameters &body body)
   (%%component-core-with-closure body name parameters t))
-
-(defmacro define-webapp (name parameters &body body)
-  (multiple-value-bind (outer ibody) (%%divide-body body)
-    (let ((name-int (symb name '-internal)))
-      `(progn
-         (defun ,name-int ,parameters
-           ,@(cdr ibody))
-         (defun ,name (&rest params)
-           ,@(funcall outer
-                     `(wrap-with-webhax-environment #',name-int params)))))))
-
-(defmacro define-middleware (name parameters &body body)
-  (multiple-value-bind (outer ibody) (%%divide-body body)
-    (let ((name-int (symb name '-internal)))
-      `(let ((%app nil))
-         ;;FIXME: Would be nice to use parameters here so that user options
-         ;;show up in the hints.
-         (defun ,name-int ,parameters
-           (let ((*clack-app* %app))
-             ,@(cdr ibody)))
-         (defun ,name (&rest params)
-           (lambda (app)
-             (setf %app app)
-             ,@(funcall
-               outer `(wrap-with-webhax-environment #',name-int params))))))))
 
 (defun middleware-chain (&rest mwarez)
   "Join a chain of middlewares into a single middleware"
