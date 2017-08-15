@@ -143,7 +143,7 @@
           (client (setf (@ window location)
                         (lisp (login-destination))))))))))
 
-(define-middleware webhax-user-core ()
+(define-simple-middleware webhax-user-core ()
   (url-case
     (:sign-up (sign-up-page))
     (:user-status (print-user-status))

@@ -77,7 +77,7 @@
     (values function (concatenate 'list reg-params key-params))))
 
 ;;;FIXME: No support for authorization checking. Might want.
-(webhax:define-middleware json-call-component ()
+(webhax:define-simple-middleware json-call-component ()
   (webhax:url-case
     (:json-call
      (webhax:as-json
