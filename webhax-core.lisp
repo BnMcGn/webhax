@@ -61,7 +61,7 @@
 (defvar *request* nil)
 (defvar *response* nil)
 (defvar *web-env*)
-(defvar *clack-app*)
+(defvar *clack-app* nil)
 
 (defparameter *default-content-type* "text/html")
 
@@ -80,7 +80,7 @@
 
 (defmacro handle-web-fail (&body body)
   `(handler-case
-       ,@body
+       (progn ,@body)
      (web-fail (fail)
        (with-slots (text response) fail
          `(,response nil (,text))))))

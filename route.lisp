@@ -93,18 +93,19 @@
                  :remove-empty-subseqs t))))
       (funcall func))))
 
-(defun wrap-with-webhax-environment (func params)
+(defun wrap-with-webhax-environment (func params &key clack-app)
   (lambda (env)
-    (call-with-webhax-environment
-     (lambda ()
-       (with-content-type *default-content-type*
-        (let ((res (alexandria:ensure-list (apply func params))))
-          (if (numberp (car res)) ;Test: is already a response
-              res
-              (progn
-                (setf (lack.response:response-body *response*) res)
-                (lack.response:finalize-response *response*))))))
-     env)))
+    (let ((*clack-app* (or clack-app *clack-app*)))
+      (call-with-webhax-environment
+       (lambda ()
+         (with-content-type *default-content-type*
+           (let ((res (alexandria:ensure-list (apply func params))))
+             (if (numberp (car res)) ;Test: is already a response
+                 res
+                 (progn
+                   (setf (lack.response:response-body *response*) res)
+                   (lack.response:finalize-response *response*))))))
+       env))))
 
 (defun %%divide-body (code)
   "See if code has (init ... (main ...)) structure. If so, split them out. Otherwise put everything in the (main ...) position."
@@ -140,18 +141,14 @@
 
 (defun %%component-core-with-closure (body name parameters middleware?)
   (let ((name-int (symb name '-%%)))
-    (with-gensyms (app last-compile cached-component)
-      `(let ((,app nil)
-             (,last-compile 0)
+    (with-gensyms (last-compile cached-component)
+      `(let ((,last-compile 0)
              (,cached-component nil))
          (incf (gethash ',name *component-compile-counts* 0))
          ;;FIXME: Would be nice to use parameters here so that user options
          ;;show up in the hints.
          (defun ,name-int ,parameters
-           ,@(if middleware?
-                 `((let ((*clack-app* ,app))
-                     ,@body))
-                 body))
+           ,@body)
          (defun ,name (&rest params)
            ,@(let ((inner
                    `((when (< ,last-compile
@@ -159,10 +156,11 @@
                        (setf ,cached-component (apply #',name-int params))
                        (setf ,last-compile
                              (gethash ',name *component-compile-counts*)))
-                     (wrap-with-webhax-environment ,cached-component nil))))
+                     (wrap-with-webhax-environment
+                      ,cached-component nil
+                      ,@(when middleware? (list :clack-app 'app))))))
                  (if middleware?
                      `((lambda (app)
-                         (setf ,app app)
                          ,@inner))
                      inner)))))))
 
