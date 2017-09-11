@@ -22,7 +22,7 @@
      thing)))
 
 (defun symbol-handler (thing)
-  (html-out (str (thing-label thing))))
+  (html-out (str (capitalize-first thing))))
 
 (defun misc-handler (thing)
   (html-out (str thing)))

@@ -13,7 +13,7 @@
   (:use #:cl #:gadgets #:parenscript #:anaphora
         #:alexandria #:webhax-validate #:webhax-core
         #:webhax-json-call #:webhax-route #:webhax-metaplate
-        #:cl-who #:thing-labels #:clack
+        #:cl-who #:clack
         #:lack.request #:lack.response #:cl-react)
   (:shadowing-import-from #:parenscript #:switch)
   (:shadowing-import-from #:lack.component #:call)

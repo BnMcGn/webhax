@@ -30,7 +30,7 @@
 ;   (or :validator :and-validator :or-validator)
 ;   :nullok
 ;
-;Symbol-or-string will be used as a visible label (via thing-labels) if no other label is provided. Also used as a key for return data.
+;Symbol-or-string will be used as a visible label if no other label is provided. Also used as a key for return data.
 ;-Q must decide whether it has been successfully filled. Validation. Use 1st return value for value(s), second for status. Can return failed items!
 ;-Maybe should spec. behavior on failure? Error messages? Might be frontend dependent too.
 

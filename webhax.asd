@@ -12,7 +12,6 @@
                #:cl-utilities
                #:cl-cont
                #:cl-json
-               #:thing-labels
                #:clack-v1-compat
                #:clack
                #:ningle

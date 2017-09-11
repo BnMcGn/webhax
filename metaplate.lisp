@@ -228,7 +228,7 @@
         (:li :class (when (equal (butlast item) webhax-core:*menu-active*)
                       "active")
              (:a :href (car (last item))
-                 (str (thing-labels:thing-label (car item)))))))))
+                 (str (capitalize-first (car item)))))))))
 
 (define-layout (page-base)
   (html-out
