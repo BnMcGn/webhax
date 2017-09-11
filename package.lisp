@@ -29,6 +29,7 @@
    #:*session*
    #:*webhax-output*
    #:html-out
+   #:html-out-str
    #:call-ask-manager
    #:->html
    #:*->html-list-handler*
@@ -114,7 +115,8 @@
    #:react-parts
    #:redux-parts
    #:page-base
-   #:two-side-columns))
+   #:two-side-columns
+   #:write-html-file))
 
 
 

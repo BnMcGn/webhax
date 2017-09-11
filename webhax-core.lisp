@@ -40,7 +40,8 @@
    #:as-html
    #:as-json
    #:*menu-items*
-   #:*menu-active*))
+   #:*menu-active*
+   #:write-html-file))
 
 (in-package #:webhax-core)
 
@@ -65,6 +66,9 @@
 
 (defparameter *default-content-type* "text/html")
 
+(defmacro write-html-file (name &body body)
+  `(with-output-to-file (*webhax-output* ,name)
+     ,@body))
 
 (defun output-string (string)
   (princ string *webhax-output*))
