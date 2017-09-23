@@ -36,13 +36,13 @@
       (string
        (dolist (symlist symbol-coll value)
          (dolist (sym symlist)
-           (when (eq-symb sym value)
+           (when (string-equal sym value)
              (return-from string-unless-symbol-unless-number sym))))))))
 
 (defun match-keyword (item symbol-coll)
   (dolist (symlist symbol-coll)
     (dolist (sym symlist)
-      (when (and (keywordp sym) (eq-symb-multiple sym item))
+      (when (and (keywordp sym) (string-equal-multiple sym item))
         (return-from match-keyword sym)))))
 
 (defun prep-keywords-ignorant (params symbol-coll)
@@ -65,7 +65,7 @@
 (defun prep-call-ignorant (params keys
                   &key (symbols (json-symbols))
                     (callables *json-call-callables*))
-  (let ((function (first-match (curry #'eq-symb (car params))
+  (let ((function (first-match (curry #'string-equal (car params))
                                callables))
         (reg-params
          (collecting

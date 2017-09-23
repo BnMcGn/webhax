@@ -306,8 +306,8 @@ a field."
                (val (if (getf v :multiple)
                         (cons k (gadgets:assoc-all
                                  out-key input
-                                 :test #'eq-symb-multiple))
-                        (assoc out-key input :test #'eq-symb))))
+                                 :test #'string-equal-multiple))
+                        (assoc out-key input :test #'string-equal))))
           (when val
             (collect (cons k (cdr val)))))))))
 

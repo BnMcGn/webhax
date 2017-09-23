@@ -7,7 +7,7 @@
 (defun displayable-p (form)
   "Checks a form to see if it is an Ask displayable/needs a label."
   (and (consp form) (member (car form) '(q client client/react)
-                            :test #'eq-symb)))
+                            :test #'string-equal)))
 
 (defun %%displayable/server (displ name)
   (optima:match displ
@@ -247,8 +247,9 @@
         (with-collectors (g< e<)
           (dolist (n names)
             (let ((value (if (multiple-p astor n)
-                             `((,n . ,(assoc-all n input
-                                                 :test #'eq-symb-multiple)))
+                             `((,n . ,(assoc-all
+                                       n input
+                                       :test #'string-equal-multiple)))
                              (assoc n input :test #'equal))))
               (when value
                 (multiple-value-bind (val sig)
@@ -272,7 +273,7 @@
 
 (defgeneric load-prefills (stor dict &key test)
   (:documentation "For loading alists, plists or hash-tables into the prefill store. No validation."))
-(defmethod load-prefills (astor dict &key (test #'eq-symb))
+(defmethod load-prefills (astor dict &key (test #'string-equal))
   (with-slots (qs names prefill-stor) astor
     (let ((table (translation-table astor)))
       (cond ((hash-table-p dict)

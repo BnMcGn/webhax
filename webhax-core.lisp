@@ -11,7 +11,7 @@
    #:*regular-web-input*
    #:*key-web-input*
    #:output-string
-   #:eq-symb-multiple
+   #:string-equal-multiple
    #:logged-in-p
    #:clack-tool
    #:function-wrapper

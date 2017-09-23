@@ -40,7 +40,7 @@
 ;-Should it output a page-parts collection?
 
 ;Prefill:
-;:prefill - uses eq-symb to match prefills to keys. Can be alist or hash.
+;:prefill - uses string-equal to match prefills to keys. Can be alist or hash.
 ;:prefill in a q will override general prefill for that q.
 
 ;Options: bad choice of name. Could be configuration options. But: matches html

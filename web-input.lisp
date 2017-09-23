@@ -23,13 +23,13 @@
      (defparameter ,sym ,default)))
 
 (defmacro bind-webspecials (input &body body)
-  `(let 
+  `(let
        ,(collecting
 	 (dolist (var (bound-webspecials))
-	   (collect `(,var (aif 
-			    (assoc ,(symbol-name var) ,input 
-				   :test #'eq-symb)
-			    (fail-if-not-valid 
+	   (collect `(,var (aif
+			    (assoc ,(symbol-name var) ,input
+				   :test #'string-equal)
+			    (fail-if-not-valid
 			     (gethash ',var *webspecial-validators*)
 			     (cdr it))
 			    ,var)))))
