@@ -7,7 +7,7 @@
 (defun displayable-p (form)
   "Checks a form to see if it is an Ask displayable/needs a label."
   (and (consp form) (member (car form) '(q client client/react)
-                            :test #'string-equal)))
+                            :test #'string-equal*)))
 
 (defun %%displayable/server (displ name)
   (optima:match displ
