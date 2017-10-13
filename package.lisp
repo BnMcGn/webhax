@@ -116,7 +116,9 @@
    #:redux-parts
    #:page-base
    #:two-side-columns
-   #:write-html-file))
+   #:write-html-file
+   #:*named-text-locations*
+   #:named-text))
 
 
 

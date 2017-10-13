@@ -115,3 +115,20 @@ to mount-component."
 
 (defun register-link (key link &key (label ""))
   (setf (gethash key *webhax-link-collection*) (list link label)))
+
+;;;;;;;;;;;;;;;;;;;
+;;; Named text
+;;;;;;;;;;;;;;;;;;;
+
+(defparameter *named-text-locations* nil)
+
+(defun named-text (name)
+  (let ((fname
+         (loop
+            for dir in *named-text-locations*
+            with file = (make-pathname :directory dir :type "md"
+                                  :name (string-downcase (mkstr name)))
+            if (probe-file file)
+            return file
+            finally (error "Couldn't find named text"))))
+    (markdown:markdown fname :stream *webhax-output*)))

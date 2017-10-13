@@ -23,7 +23,8 @@
                #:webhax-core
                #:webhax-route
                #:userfig
-               #:optima)
+               #:optima
+               #:markdown)
   :serial t
   :components ((:file "package")
                (:file "web-input")
