@@ -126,8 +126,9 @@ to mount-component."
   (let ((fname
          (loop
             for dir in *named-text-locations*
-            with file = (make-pathname :directory dir :type "md"
-                                  :name (string-downcase (mkstr name)))
+            for file = (make-pathname :directory (pathname-directory dir)
+                                       :type "md"
+                                       :name (string-downcase (mkstr name)))
             if (probe-file file)
             return file
             finally (error "Couldn't find named text"))))
