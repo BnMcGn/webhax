@@ -267,12 +267,16 @@
 ;;; React
 ;;;;;;;;
 
+;;FIXME: Because the server can't access the cl-react.lisp file. Whole JS
+;; deployment needs reworking.
+(defvar *clreact-build* (react:build))
+
 (define-parts react-parts
   :@javascript-link
   "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js"
   :@javascript-link
   "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js"
-  :@javascript #'react:build)
+  :@javascript (lambda () *clreact-build*))
 
 (define-parts redux-parts
   :@javascript-link
