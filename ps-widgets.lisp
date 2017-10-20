@@ -202,7 +202,7 @@
                   :prefilled (chain data (has-own-property name))
                   :formdata data
                   :dispatch (prop dispatch)
-                  :... (prop fieldspec config)))))
+                  :... (or (prop fieldspec config) (create))))))
           (if wrapwidget
               (create-element
                wrapwidget
