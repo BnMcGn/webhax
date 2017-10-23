@@ -60,9 +60,10 @@
                                   (event-dispatcher
                                    (@ props name) (@ props dispatch))
                                   :value value
-                                  :... (when (eq (-string (@ props value))
+                                  :... (if (eq (-string (@ props value))
                                                  valstr)
-                                         (create :checked "checked")))
+                                           (create :checked "checked")
+                                           (create)))
                           label))))
                     (prop options))))))
 
