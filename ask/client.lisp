@@ -100,7 +100,7 @@
                         (@ commands errors)
                         {}))
               ;;Can't use regular set-state because of pre-made object.
-              (chain component-this-ref (#:set-state res))))))
+              (chain %thisref (#:set-state res))))))
 
       (defun %extract-default (arr)
         (let ((res (create)))

@@ -33,13 +33,13 @@
             (:input :type "radio" :key 1
                     :name (prop name) :value "true"
                     :on-change (event-dispatcher (prop name) (prop dispatch))
-                    :... (when value (create :checked "checked")))
+                    :... (if value (create :checked "checked") (create)))
             "No"
             (:input :type "radio" :key 2
                     :name (prop name) :value "false"
                     :on-change (event-dispatcher (prop name) (prop dispatch))
-                    :... (when  (and (not value) (prop prefilled))
-                           (create :checked "checked")))))))
+                    :... (if  (and (not value) (prop prefilled))
+                           (create :checked "checked") (create)))))))
 
     (def-component ww-pickone
         (let ((props (@ this props)))
