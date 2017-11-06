@@ -14,8 +14,6 @@
    #:middleware-chain
    #:call-endware
    #:blank-key-p
-   #:init
-   #:main
    #:define-simple-webapp
    #:define-simple-middleware))
 (in-package #:webhax-route)
@@ -106,17 +104,6 @@
                    (setf (lack.response:response-body *response*) res)
                    (lack.response:finalize-response *response*))))))
        env))))
-
-(defun %%divide-body (code)
-  "See if code has (init ... (main ...)) structure. If so, split them out. Otherwise put everything in the (main ...) position."
-  (if (and (listp code) (listp (car code)) (eq 'init (caar code)))
-      (preserve-other-values
-       (divide-tree (lambda (x) (and (listp x) (eq 'main (car x))))
-                    (cdar code))
-       (lambda (x) (or x (error "Web component body has init without main"))))
-      (values
-       #'list
-       (list* 'filler code))))
 
 (defun %%component-core (body name parameters middleware?)
   (let ((name-int (symb name '-%%)))
