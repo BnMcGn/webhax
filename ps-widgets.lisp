@@ -115,7 +115,7 @@
         (psx
          (:div
           (:span :class "webhax-label" :key 1
-                 (or (prop description) (prop name))
+                 (or (prop description) (capitalize-first (ensure-string (prop name))))
                  (unless (prop nullok)
                    (psx
                     (:span :style :key 3 (create "fontColor" "red") " *"))))

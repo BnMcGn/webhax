@@ -117,7 +117,8 @@
    #:two-side-columns
    #:write-html-file
    #:*named-text-locations*
-   #:named-text))
+   #:named-text
+   #:*catch-errors*))
 
 
 
