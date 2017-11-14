@@ -59,7 +59,7 @@
   `(setf clath:*login-destination* ,newval))
 
 (defun authenticated? ()
-  (gethash :username *session*))
+  (and (hash-table-p *session*) (gethash :username *session*)))
 
 (defun signed-up? (&optional user)
   "Because a user could sign in, say with OpenID, yet not be known on the site"
