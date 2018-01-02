@@ -60,7 +60,7 @@
   (html-out
     (dolist (itm (gethash :@javascript-link *parts*))
       (htm (:script :type "text/javascript"
-                    :src (str (%prep-item itm)))))))
+                    :src (%prep-item itm))))))
 
 (defun %render-css (key)
   (declare (ignore key))
