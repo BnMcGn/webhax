@@ -79,7 +79,7 @@
     (defun send-edit (tree name value)
       "Use internal dispatch function to place a value into a test Ask form."
       (let ((widget-container
-             (first-match
+             (find-if
               (lambda (x)
                 (equal name (@ x props name)))
               (get-current-qs tree))))

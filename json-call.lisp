@@ -65,7 +65,7 @@
 (defun prep-call-ignorant (params keys
                   &key (symbols (json-symbols))
                     (callables *json-call-callables*))
-  (let ((function (first-match (curry #'string-equal (car params))
+  (let ((function (find-if (curry #'string-equal (car params))
                                callables))
         (reg-params
          (collecting
