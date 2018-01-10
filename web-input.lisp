@@ -25,14 +25,14 @@
 (defmacro bind-webspecials (input &body body)
   `(let
        ,(collecting
-	 (dolist (var (bound-webspecials))
-	   (collect `(,var (aif
-			    (assoc ,(symbol-name var) ,input
-				   :test #'string-equal)
-			    (fail-if-not-valid
-			     (gethash ',var *webspecial-validators*)
-			     (cdr it))
-			    ,var)))))
+         (dolist (var (bound-webspecials))
+           (collect `(,var (aif
+                            (assoc ,(symbol-name var) ,input
+                                   :test #'string-equal)
+                            (fail-if-not-valid
+                             (gethash ',var *webspecial-validators*)
+                             (cdr it))
+                            ,var)))))
      ,@body))
 
 ;;;;;;;;;;;;

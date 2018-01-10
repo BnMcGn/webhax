@@ -273,9 +273,9 @@
 
 (define-parts react-parts
   :@javascript-link
-  "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react.js"
+  "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.9/react.js"
   :@javascript-link
-  "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.2/react-dom.js"
+  "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.9/react-dom.js"
   :@javascript (lambda () *clreact-build*))
 
 (define-parts redux-parts
