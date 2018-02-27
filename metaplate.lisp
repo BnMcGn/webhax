@@ -271,12 +271,27 @@
 ;; deployment needs reworking.
 (defvar *clreact-build* (react:build))
 
+#|
 (define-parts react-parts
   :@javascript-link
   "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.9/react.js"
   :@javascript-link
   "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.9/react-dom.js"
   :@javascript (lambda () *clreact-build*))
+|#
+
+(define-parts react-parts
+  :@javascript-link "/static/javascript/warflagger-bundle.js"
+  :@javascript-link "https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.js"
+  :@javascript-link "https://unpkg.com/react@16.0.0/umd/react.development.js"
+  :@javascript-link "https://unpkg.com/react-dom@16.0.0/umd/react-dom.development.js"
+  :@javascript (ps:ps (setf (ps:@ -react create-class) (require "create-react-class"))
+                      (setf (ps:@ -react -d-o-m) (require "react-dom-factories")))
+ ; :@javascript-link ""
+  :@javascript (lambda () *clreact-build*))
+
+  ;  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
 
 (define-parts redux-parts
   :@javascript-link
