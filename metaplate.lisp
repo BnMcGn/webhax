@@ -288,8 +288,8 @@
   :@javascript (ps:ps (setf (ps:@ -react create-class) (require "create-react-class"))
                       (setf (ps:@ -react -d-o-m) (require "react-dom-factories")))
  ; :@javascript-link ""
-  :@javascript (lambda () *clreact-build*))
-
+  :@javascript (lambda () *clreact-build*)
+  :@javascript #'ps-react-gadgets:ps-react-gadgets)
   ;  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
 
