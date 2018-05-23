@@ -21,7 +21,7 @@
          (:input :type "text" :class "webhax-widget"
                  :key 1
                  ;:default-value (prop value)
-                 :value (prop value)
+                 :value (or (prop value) "")
                  :on-change (event-dispatcher (prop name) (prop dispatch)))))
 
     (def-component ww-yesno
@@ -73,7 +73,7 @@
            (:select :class "webhax-widget"
             :key 1
             :name (prop name)
-            :value (prop value)
+            :value (or (prop value) "")
             :on-change (event-dispatcher (prop name) (prop dispatch))
             (mapcar
              (lambda (option)
@@ -131,10 +131,11 @@
                   "pickoneLong" ww-pickone-long :yesno ww-yesno)
           (prop widget))
          (@ this props)
-         nil)
-      prop-types
-      (create
-       widget (@ -react -prop-types string is-required)))
+         nil))
+    ;;FIXME: type checking currently unavailable
+      ;;prop-types
+      ;;(create
+      ;; widget (@ -react -prop-types string is-required)))
 
     (defun webhax-form-dispatcher (fieldspecs data callback)
       (lambda (state action)
@@ -261,7 +262,8 @@
           (psx
            (:provider
             :store store
-            (:app :... (@ this props)))))
+            (:app :... (@ this props))))))
+      #|
       prop-types
       (create :fieldspecs
               (chain -react -prop-types
@@ -270,6 +272,7 @@
                              (one-of-type
                               (list (chain -react -prop-types string)
                                     (chain -react -prop-types object))))))))
+      |#
 
     ;;FIXME: Should add something to tell redux that we are waiting on JSON
     (def-component webhax-form-connector

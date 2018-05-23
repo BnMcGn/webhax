@@ -295,6 +295,6 @@
 
 (define-parts redux-parts
   :@javascript-link
-  "https://cdnjs.cloudflare.com/ajax/libs/redux/3.5.2/redux.js"
+  "https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.0/redux.js"
   :@javascript-link
-  "https://cdnjs.cloudflare.com/ajax/libs/react-redux/4.4.5/react-redux.js")
+  "https://cdnjs.cloudflare.com/ajax/libs/react-redux/5.0.7/react-redux.js")
