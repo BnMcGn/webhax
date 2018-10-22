@@ -202,6 +202,7 @@
                   :options (prop fieldspec options)
                   :value (getprop data name) :name name
                   :prefilled (chain data (has-own-property name))
+                  :error (getprop (prop errors) name)
                   :formdata data
                   :dispatch (prop dispatch)
                   :... (or (prop fieldspec config) (create))))))
