@@ -118,7 +118,8 @@
    #:write-html-file
    #:*named-text-locations*
    #:named-text
-   #:*catch-errors*))
+   #:*catch-errors*
+   #:write-js-resources))
 
 
 

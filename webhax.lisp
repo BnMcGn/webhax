@@ -131,3 +131,16 @@ to mount-component."
             return file
             finally (error "Couldn't find named text"))))
     (markdown:markdown fname :stream *webhax-output*)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Javascript resource collector
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun write-js-resources (path &rest function-symbols-and-strings)
+  (with-open-file
+      (fh path :direction :output :if-exists :supersede :if-does-not-exist :create)
+    (dolist (itm function-symbols-and-strings)
+      (write-string (typecase itm
+                      (symbol (the string (funcall (symbol-function itm))))
+                      (string itm))
+             fh))))

@@ -271,15 +271,6 @@
 ;; deployment needs reworking.
 (defparameter *clreact-build* (react:build))
 
-#|
-(define-parts react-parts
-  :@javascript-link
-  "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.9/react.js"
-  :@javascript-link
-  "https://cdnjs.cloudflare.com/ajax/libs/react/0.14.9/react-dom.js"
-  :@javascript (lambda () *clreact-build*))
-|#
-
 (define-parts react-parts
   :@javascript-link "/static/javascript/warflagger-bundle.js"
   :@javascript-link "https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.js"
