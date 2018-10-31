@@ -140,7 +140,8 @@ to mount-component."
   (with-open-file
       (fh path :direction :output :if-exists :supersede :if-does-not-exist :create)
     (dolist (itm function-symbols-and-strings)
-      (write-string (typecase itm
-                      (symbol (the string (funcall (symbol-function itm))))
-                      (string itm))
+      (write-string (princ-to-string
+                     (typecase itm
+                       (symbol (funcall (symbol-function itm)))
+                       (string itm)))
              fh))))
