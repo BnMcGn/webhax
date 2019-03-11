@@ -136,9 +136,9 @@
   (declare (ignore input))
   (error "No input handler activated. This code shouldn't be reached."))
 
-(defun input-function-wrapper (handler &key (content-type "text/html"))
+(defun input-function-wrapper (handler &key (content-type "text/html") headers)
   (lambda (&optional input)
-    (list 200 (list :content-type content-type)
+    (list 200 (list* :content-type content-type headers)
           (list
            (multiple-value-bind
                  (*regular-web-input* *key-web-input* *session*)
