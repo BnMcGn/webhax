@@ -124,10 +124,9 @@
   (check-authenticated)
   (funcall
    (webhax:quick-page
-       (#'react-parts
-        #'redux-parts
+       (#'react-part#'redux-parts
         :@javascript #'webhax-widgets:ps-widgets
-        #'webhax:webhax-ask)
+        :@javascript #'webhax:webhax-ask)
      (webhax:html-out
        (:h2 "New Account")
        (:p "Please confirm a few details to create your account.")

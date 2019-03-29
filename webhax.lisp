@@ -145,3 +145,18 @@ to mount-component."
                        (symbol (funcall (symbol-function itm)))
                        (string itm)))
              fh))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Header setting middleware
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun header-adder (pattern headers)
+  "A simple middleware to add specified headers to the response from any urls that start with pattern."
+  (lambda (app)
+    (lambda (env)
+     (if (starts-with-subseq pattern (getf env :path-info))
+         (let ((response (funcall app env)))
+           (list* (car response)
+                  (concatenate 'list (second response) headers)
+                  (cddr response)))
+         (funcall app env)))))

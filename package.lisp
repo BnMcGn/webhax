@@ -119,7 +119,8 @@
    #:*named-text-locations*
    #:named-text
    #:*catch-errors*
-   #:write-js-resources))
+   #:write-js-resources
+   #:header-adder))
 
 
 
