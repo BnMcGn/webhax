@@ -124,7 +124,7 @@
   (check-authenticated)
   (funcall
    (webhax:quick-page
-       (#'react-part#'redux-parts
+       (#'react-parts #'redux-parts
         :@javascript #'webhax-widgets:ps-widgets
         :@javascript #'webhax:webhax-ask)
      (webhax:html-out
