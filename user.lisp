@@ -19,7 +19,8 @@
    #:signed-up
    #:screen-name
    #:email
-   #:login-destination))
+   #:login-destination
+   #:get-user-by-screenname))
 
 (in-package #:webhax-user)
 
@@ -95,6 +96,12 @@
               (lambda (user data)
                 (declare (ignore user))
                 (and data (gethash 'screen-name data))))))
+
+(defun get-user-by-screenname (sname)
+  (declare (type string sname))
+  (userfig:map-users (lambda (user data)
+               (when (equal (gethash 'screen-name data) sname)
+                 (return-from get-user-by-screenname user)))))
 
 (defparameter *userfig-for-user*
   '(signed-up
