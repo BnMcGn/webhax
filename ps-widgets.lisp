@@ -129,7 +129,7 @@
                     (:span :style :key 3 (create "fontColor" "red") " *"))))
           (prop children)
           (when (prop error)
-            (psx (:span :key 2 (prop error)))))))
+            (psx (:span :class "webhax-error" :key 2 (prop error)))))))
 
     (def-component widgi-select
         (create-element
