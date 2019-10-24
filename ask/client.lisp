@@ -5,8 +5,8 @@
 ;;; Ask clientside/javascript stuff goes here.
 
 (defun generate-q-data (q)
-  `(lisp-raw
-    (json:encode-json-alist-to-string
+  `(lisp
+    (ps-gadgets:as-ps-data
      (list*
       (cons :real-name ',(%q-real-name q))
       (webhax-validate:prep-fieldspec-body-for-json
@@ -199,7 +199,7 @@
                      ,(create-ask-manager nbody qs names)))
           (initial-display (call-ask-manager formname :update nil)))
      (mount-component (ask-main :mount-id ,*ask-mount-name*)
-       :commands (lisp-raw (json:encode-json-alist-to-string initial-display))
+       :commands (lisp (ps-gadgets:as-ps-data initial-display))
        :askname (lisp formname)
        :info ,(generate-client-data names qs)
        :server-url  (lisp *ask-control-url*))))
@@ -212,7 +212,7 @@
                      ,(create-ask-manager nbody qs names)))
           (initial-display (call-ask-manager formname :update nil)))
      (test-component (ask-main ,*ask-mount-name*)
-       :commands (lisp-raw (json:encode-json-alist-to-string initial-display))
+       :commands (lisp (ps-gadgets:as-ps-data initial-display))
        :askname (lisp formname)
        :info ,(generate-client-data names qs)
        :server-url (lisp *ask-control-url*))))

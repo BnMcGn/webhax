@@ -50,7 +50,7 @@
                :content-type ,content-type)))
 
 (defmacro mount-component ((component-name &key mount-id) &body parameters)
-  "Produces html output to mount a named react component in place, creating a named div element, then creating a script element that renders the component in the div. Parameters are alternating keys and values, sent to the component as initial props. Values, therefore, are parenscript. Lisp values must be wrapped in lisp or lisp-raw.
+  "Produces html output to mount a named react component in place, creating a named div element, then creating a script element that renders the component in the div. Parameters are alternating keys and values, sent to the component as initial props. Values, therefore, are parenscript. Lisp values must be wrapped in (lisp ...).
 
 Mount-id, when specified, causes the component to be mounted to the element named by mount-id, instead of in place."
   (let ((tagid (unless mount-id
