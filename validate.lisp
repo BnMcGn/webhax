@@ -17,7 +17,8 @@
    #:convert-fieldspecs-to-json
    #:multiple?
    #:validate-batch
-   #:batch-response-json))
+   #:batch-response-json
+   #:convert-fieldspecs-to-ps-data))
 
 (in-package :webhax-validate)
 
@@ -285,14 +286,21 @@ a field."
     1 (gadgets:extract-keywords
        '(:compiled-validator :options-func :autofill-func) fspec))))
 
+(defun prep-fieldspecs-for-json (fspecs)
+  (gadgets:collecting
+    (gadgets:map-by-2
+     (lambda (k v)
+       (gadgets:collect k)
+       (gadgets:collect (prep-fieldspec-body-for-json v)))
+     fspecs)))
+
 (defun convert-fieldspecs-to-json (fspecs)
   (json:encode-json-to-string
-   (gadgets:collecting
-       (gadgets:map-by-2
-        (lambda (k v)
-          (gadgets:collect k)
-          (gadgets:collect (prep-fieldspec-body-for-json v)))
-        fspecs))))
+   (prep-fieldspecs-for-json fspecs)))
+
+(defun convert-fieldspecs-to-ps-data (fspecs)
+  (ps-gadgets:as-ps-data
+   (prep-fieldspecs-for-json fspecs)))
 
 (defun normalize-input (input fieldspecs &optional translation-table)
   (let ((trans
