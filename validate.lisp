@@ -281,7 +281,7 @@ a field."
 
 (defun prep-fieldspec-body-for-json (fspec)
   ;;Doesn't handle name
-  (cl-hash-util:plist->alist
+  (cl-hash-util:plist->hash
    (nth-value
     1 (gadgets:extract-keywords
        '(:compiled-validator :options-func :autofill-func) fspec))))
@@ -299,8 +299,9 @@ a field."
    (prep-fieldspecs-for-json fspecs)))
 
 (defun convert-fieldspecs-to-ps-data (fspecs)
-  (ps-gadgets:as-ps-data
-   (prep-fieldspecs-for-json fspecs)))
+  (let ((ps-gadgets:*assume-list* t))
+    (ps-gadgets:as-ps-data
+     (prep-fieldspecs-for-json fspecs))))
 
 (defun normalize-input (input fieldspecs &optional translation-table)
   (let ((trans
