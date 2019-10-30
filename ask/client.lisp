@@ -7,10 +7,11 @@
 (defun generate-q-data (q)
   `(lisp
     (ps-gadgets:as-ps-data
-     (list*
-      (cons :real-name ',(%q-real-name q))
-      (webhax-validate:prep-fieldspec-body-for-json
-       (%q-validator ,(%%unquote-q q)))))))
+     (hu:alist->hash
+      (list*
+       (cons :real-name ',(%q-real-name q))
+       (webhax-validate:prep-fieldspec-body-for-json
+        (%q-validator ,(%%unquote-q q))))))))
 
 (defun prep-client-code-block (spec)
   `(create
