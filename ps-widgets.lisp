@@ -136,7 +136,7 @@
          (getprop
           (create :string ww-simple :integer ww-simple :boolean ww-yesno
                   :pickone ww-pickone :picksome ww-picksome
-                  "pickoneLong" ww-pickone-long :yesno ww-yesno)
+                  "pickoneLong" ww-pickone-long :yesno ww-yesno :textentry ww-textentry)
           (prop widget))
          (@ this props)
          nil))

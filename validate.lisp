@@ -146,6 +146,8 @@
        (ratify-wrapper :boolean))
       ((eq valspec :overlength)
        (ratify-wrapper :overlength))
+      ((eq valspec :textentry)
+       (ratify-wrapper :string))
       ((and (listp valspec) (symbolp (car valspec)))
        (case (car valspec)
          (:pickone
