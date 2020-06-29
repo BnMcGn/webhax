@@ -3,7 +3,7 @@
 (in-package #:webhax)
 
 (defun %%reg-params-splitter (bindspecs)
-  (with-collectors (reg< opt< rest<)
+  (cl-utilities:with-collectors (reg< opt< rest<)
     (let ((collect #'reg<))
       (dolist (b bindspecs)
         (case b
@@ -98,8 +98,8 @@
                        (symbolp (third (car bindspec)))))
         (multiple (or (fetch-keyword :multiple bindspec) *rest-toggled*)))
     (with-gensyms (item found vitem valid)
-      (collecting
-        (collect
+      (cl-utilities:collecting
+        (cl-utilities:collect
             (list (%spec-name bindspec)
                   `(multiple-value-bind (,item ,found) ,inputform
                      ,@(when filledp?
@@ -125,7 +125,7 @@
                               (second (car bindspec))
                               nil)))))
         (when filledp?
-          (collect
+          (cl-utilities:collect
               (list (third (car bindspec)) foundvar)))))))
 
 ;bindspec:
@@ -155,9 +155,9 @@
                                                           (elt ,regfill ,i))
                                                 foundp))
                            regular)
-                          (collecting
+                          (cl-utilities:collecting
                               (dolist (kspec (cdr keys))
-                                (collect
+                                (cl-utilities:collect
                                     (%%default-decider
                                      kspec
                                      (%%make-key-param-fetcher kspec key-input)

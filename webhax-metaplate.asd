@@ -7,6 +7,7 @@
   :depends-on (#:alexandria
                #:cl-utilities
                #:gadgets
+               #:proto
                #:cl-hash-util
                #:cl-who
                #:webhax-core

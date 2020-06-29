@@ -44,7 +44,7 @@
 (defmacro url-case (&body clauses)
   (with-gensyms (matfunc input foundkey)
     (multiple-value-bind (keys cases)
-        (with-collectors (keys< cases<)
+        (cl-utilities:with-collectors (keys< cases<)
           (dolist (clause clauses)
             (destructuring-bind (key clause-body) clause
               (if (atom key)
@@ -66,7 +66,7 @@
                      (cases< `((eq ,foundkey ,key) ,clause-body))
                      (keys< key)))
                   (error "Non-atomic routes not supported yet.")))))
-      `(let* ((,matfunc (gadgets:match-various ',keys))
+      `(let* ((,matfunc (proto:match-various ',keys))
               (,input (car *regular-web-input*))
               (,foundkey (when ,input (funcall ,matfunc ,input)))
               (*url-parentage* (cons (car *regular-web-input*)

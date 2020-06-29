@@ -289,11 +289,11 @@ a field."
        '(:compiled-validator :options-func :autofill-func) fspec))))
 
 (defun prep-fieldspecs-for-json (fspecs)
-  (gadgets:collecting
+  (cl-utilities:collecting
     (gadgets:map-by-2
      (lambda (k v)
-       (gadgets:collect k)
-       (gadgets:collect (prep-fieldspec-body-for-json v)))
+       (cl-utilities:collect k)
+       (cl-utilities:collect (prep-fieldspec-body-for-json v)))
      fspecs)))
 
 (defun convert-fieldspecs-to-json (fspecs)

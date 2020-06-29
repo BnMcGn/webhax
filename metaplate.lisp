@@ -211,7 +211,7 @@
        ;;Sometimes we'll get macro-style function designators coming through...
        (mapcar
         (lambda (x)
-          (if-let ((fname (gadgets:get-function-name-in-macro x)))
+          (if-let ((fname (proto:get-function-name-in-macro x)))
             (symbol-function fname)
             x))
         templates-and-parts))

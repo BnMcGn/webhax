@@ -155,9 +155,7 @@
                  (progn
                    `((:errors . ,it)))
                  (progn
-                   (when (with-any/all/none
-                           (dolist (keyname (%dispatch-keys ,dispatch))
-                             (all (exists-answer ,stor keyname))) t)
+                   (when (every (lambda (itm) (exists-answer ,stor itm)) (%dispatch-keys ,dispatch))
                      (funcall (car ,continuations)))
                    (when ,destroy
                      (remove-ask-manager *ask-formname*))

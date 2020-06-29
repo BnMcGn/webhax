@@ -68,9 +68,9 @@
   (let ((function (find-if (curry #'string-equal (car params))
                                callables))
         (reg-params
-         (collecting
+         (cl-utilities:collecting
              (dolist (param (cdr params))
-               (collect
+               (cl-utilities:collect
                    (string-unless-symbol-unless-number param symbols)))))
         (key-params
          (prep-keywords-ignorant keys symbols)))
