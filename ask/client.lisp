@@ -24,12 +24,12 @@
 
 (defun generate-client-data (symbols qs)
   `(create
-    ,@(collecting
+    ,@(cl-utilities:collecting
        (loop for s in symbols
           for q in qs
           do (progn
-               (collect s)
-               (collect (case (car q)
+               (cl-utilities:collect s)
+               (cl-utilities:collect (case (car q)
                           (q (generate-q-data q))
                           (client (prep-client-code-block q))
                           (client/react (prep-react-element q)))))))))

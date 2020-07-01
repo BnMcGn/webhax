@@ -23,7 +23,7 @@
 (defun process-ask-code (code)
   (let (res)
     (multiple-value-bind (syms qs)
-        (with-collectors (syms< qs<)
+        (cl-utilities:with-collectors (syms< qs<)
           (labels ((treeproc (tree)
                      (if (atom tree)
                          tree
@@ -45,9 +45,9 @@
                                       (plist-hash-table
                                        (list :default
                                              (if prev-val prev-val
-                                                 (aif2only
-                                                  (keyword-value :default q)
-                                                  it nil)))))))))
+                                                 (multiple-value-bind (val sig)
+                                                     (proto:keyword-value :default q)
+                                                   (when sig val))))))))))
 
 (defun %%unquote-q (q)
   "Decide what portions of the q should not be executed."
@@ -69,7 +69,7 @@
 
 (defun %%store-gen (qs names &aux (qs (mapcar #'%%unquote-q qs)))
   (multiple-value-bind (qs+ names+)
-      (with-collectors (qs< names<)
+      (cl-utilities:with-collectors (qs< names<)
         (loop for q in qs for n in names
            when q do (progn (qs< q) (names< n))))
     `(make-instance 'ask-store
@@ -81,9 +81,9 @@
 
 (defun %process-form (code)
   `(%form-display
-    (collecting
+    (cl-utilities:collecting
         (labels ((display (name)
-                   (collect name)))
+                   (cl-utilities:collect name)))
           ,@code))))
 
 (defun %%ask-proc-exit/server (exit-body)
@@ -151,9 +151,9 @@
        (lambda (command data)
          (case command
            (:update
-            (aif (add-input ,stor data)
+            (alexandria:if-let ((inp (add-input ,stor data)))
                  (progn
-                   `((:errors . ,it)))
+                   `((:errors . ,inp)))
                  (progn
                    (when (every (lambda (itm) (exists-answer ,stor itm)) (%dispatch-keys ,dispatch))
                      (funcall (car ,continuations)))
@@ -184,14 +184,14 @@
   (let ((askdata (gethash :askdata session)))
     (unless (hash-table-p askdata)
       (error "Askdata not found."))
-    (aif (gethash aname askdata)
-         (let ((*ask-formname* aname))
-           ;(print command)
-           ;(print data)
-           ;(print "response:")
-           (funcall it command data))
-         (error
-          (format nil "Form ~a not found in askdata." aname)))))
+    (if-let ((man (gethash aname askdata)))
+      (let ((*ask-formname* aname))
+        ;;(print command)
+        ;;(print data)
+        ;;(print "response:")
+        (funcall man command data))
+      (error
+       (format nil "Form ~a not found in askdata." aname)))))
 
 (eval-always
   (defun remove-ask-manager (aname &key (session *session*))
@@ -219,10 +219,10 @@
 (defmethod initialize-instance :after ((stor ask-store) &key)
   (with-slots (qs names validators) stor
     (setf validators
-          (collecting-hash-table (:mode :replace :test #'equal)
+          (hu:collecting-hash-table (:mode :replace :test #'equal)
             (loop for q in qs
                for n in names
-               do (collect n (%q-validator q)))))))
+               do (hu:collect n (%q-validator q)))))))
 
 (defgeneric nullok-p (stor name))
 (defmethod nullok-p (astor name)
@@ -242,7 +242,7 @@
 (defmethod add-input ((astor ask-store) input)
   (with-slots (validators names stor) astor
     (multiple-value-bind (good errors)
-        (with-collectors (g< e<)
+        (cl-utilities:with-collectors (g< e<)
           (dolist (n names)
             (let ((value (if (multiple-p astor n)
                              `((,n . ,(assoc-all
@@ -311,12 +311,13 @@ applicable numbered key."))
     (if (exists-answer astor key)
         (car (answer astor key))
         (multiple-value-bind (val sig)
-            (keyword-value :default (assoc-cdr key (pairlis names qs)))
+            ;;FIXME: getf?
+            (proto:keyword-value :default (assoc-cdr key (pairlis names qs)))
           (if sig
               (values val t)
-              (aif2only (gethash key prefill-stor)
-                        (values it t)
-                        (values nil nil)))))))
+              (if (key-in-hash? key prefill-stor)
+                  (values (gethash key prefill-stor) t)
+                  (values nil nil)))))))
 
 ;;;FIXME: should all-answers return cleaned up stuff?
 (defgeneric all-answers (stor &key translate strip))
@@ -325,16 +326,16 @@ applicable numbered key."))
     (funcall
      (if strip
          (lambda (x)
-           (collecting-hash-table (:mode :replace)
-             (maphash (lambda (k v) (collect k (car v))) x)))
+           (hu:collecting-hash-table (:mode :replace)
+             (maphash (lambda (k v) (hu:collect k (car v))) x)))
          #'identity)
      (if translate
          (let ((trans-table
                 (pairlis names (mapcar #'second qs))))
-           (collecting-hash-table (:mode :replace)
+           (hu:collecting-hash-table (:mode :replace)
              (maphash
               (lambda (k v)
-                (collect (assoc-cdr k trans-table) v))
+                (hu:collect (assoc-cdr k trans-table) v))
               stor)))
          stor))))
 
@@ -345,9 +346,9 @@ applicable numbered key."))
   (with-slots (qs stor names) astor
     (list
      (cons :next
-           (collecting-hash-table (:mode :replace)
+           (hu:collecting-hash-table (:mode :replace)
              (dolist (n namelist)
-               (collect n
+               (hu:collect n
                  (plist-hash-table
                   `(,@(multiple-value-bind (val sig)
                                            (calculate-prefill astor n)

@@ -86,7 +86,7 @@
             ;;How to handle mounted sub-apps?
             (if (boundp '*regular-web-input*)
                 *regular-web-input*
-                (split-sequence
+                (cl-utilities:split-sequence
                  #\/ (lack.request:request-path-info *request*)
                  :remove-empty-subseqs t))))
       (funcall func))))

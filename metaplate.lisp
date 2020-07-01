@@ -31,7 +31,7 @@
   "Return value of this function should be ignored. "
   (if (stringp itm)
       (write-line itm *webhax-output*) ;; FIXME: write-string? no newline?
-      (funcall-in-macro itm)))
+      (proto:funcall-in-macro itm)))
 
 (defun %prep-item (itm)
   "Returns string of item."

@@ -65,21 +65,23 @@
                                   *webhax-input-limit*))))
 
 (defun mkparse-in-list (items)
-  (let ((matcher (match-various (mapcar #'car items))))
+  (let ((matcher (proto:match-various (mapcar #'car items))))
     (lambda (item)
-      (aif2only (funcall matcher item)
-                (values it t)
-                (values "Value not in list of options" nil)))))
+      (multiple-value-bind (val sig) (funcall matcher item)
+        (if sig
+            (values val t)
+            (values "Value not in list of options" nil))))))
 
 (defun mkparse-all-members (subtest)
   (lambda (itemlist)
     (block exit
       (values
-       (collecting
+       (cl-utilities:collecting
          (dolist (itm itemlist)
-           (aif2only (funcall subtest itm)
-                     (collect it)
-                     (return-from exit (values it nil)))))
+           (multiple-value-bind (val sig) (funcall subtest itm)
+             (if sig
+                 (cl-utilities:collect val)
+                 (return-from exit (values val nil))))))
        t))))
 
 ;;;FIXME: Should be handling lists of items too?
@@ -126,8 +128,8 @@
 
 (let ((keymap '((:yesno . :boolean))))
   (defun %handle-keyword (valkey)
-    (anaphora:aif (assoc valkey keymap)
-                  (ratify-wrapper (cdr anaphora:it))
+    (alexandria:if-let ((vkey (assoc valkey keymap)))
+                  (ratify-wrapper (cdr vkey))
                   (ratify-wrapper valkey))))
 
 ;;;FIXME: Badly needs tidying
@@ -311,7 +313,7 @@ a field."
              (lambda (key)
                (gethash key translation-table))
              #'identity)))
-    (collecting
+    (cl-utilities:collecting
       (gadgets:do-window ((k v) fieldspecs :step 2)
         (let* ((out-key (funcall trans k))
                (val (if (getf v :multiple)
@@ -320,7 +322,7 @@ a field."
                                  :test #'string-equal-multiple))
                         (assoc out-key input :test #'string-equal))))
           (when val
-            (collect (cons k (cdr val)))))))))
+            (cl-utilities:collect (cons k (cdr val)))))))))
 
 (defparameter *incoming-values* nil)
 
@@ -363,9 +365,9 @@ a field."
                     errors)
                 nil)
         (values (if edit
-                    (collecting-hash-table (:existing existing-hash :mode :replace)
+                    (hu:collecting-hash-table (:existing existing-hash :mode :replace)
                       (do-hash-table (k v results)
-                        (collect k v)))
+                        (hu:collect k v)))
                     results)
                 t))))
 

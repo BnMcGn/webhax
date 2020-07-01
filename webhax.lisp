@@ -12,11 +12,11 @@
 
 (defun normalize-ningle-input (input)
   (if ningle:*session*
-      (values (awhen (assoc :splat input)
+      (values (when-let ((inp (assoc :splat input)))
                 ;;FIXME: Should probably only remove zero lengths in last pos.
                 (remove-if (lambda (x)
                              (and (stringp x) (= 0 (length x))))
-                           (split-sequence #\/ (second it))))
+                           (cl-utilities:split-sequence #\/ (second inp))))
               (remove-if (lambda (x) (and (consp x) (eq :splat (car x))))
                          input)
               ningle:*session*)

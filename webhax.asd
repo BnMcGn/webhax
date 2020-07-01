@@ -5,6 +5,7 @@
   :author "Your Name <your.name@example.com>"
   :license "Specify license here"
   :depends-on (#:gadgets
+               #:proto
                #:cl-who
                #:parenscript
                #:alexandria

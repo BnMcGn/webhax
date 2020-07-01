@@ -1,7 +1,7 @@
 (in-package :webhax)
 
 (defun extract-webspecials-from-parameters (params)
-  (with-collectors (norm< spec<)
+  (cl-utilities:with-collectors (norm< spec<)
     (dolist (p params)
       (if
        (ppcre:scan "^~(.*)~" (car p))
@@ -24,9 +24,9 @@
 
 (defmacro bind-webspecials (input &body body)
   `(let
-       ,(collecting
+       ,(cl-utilities:collecting
          (dolist (var (bound-webspecials))
-           (collect `(,var (aif
+           (cl-utilities:collect `(,var (aif
                             (assoc ,(symbol-name var) ,input
                                    :test #'string-equal)
                             (fail-if-not-valid
