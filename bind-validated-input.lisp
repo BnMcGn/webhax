@@ -136,7 +136,7 @@
 
 (defmacro bind-validated-input ((&rest bindspecs) &body body)
   (multiple-value-bind (regular keys)
-      (divide-on-true (curry #'eq '&key) bindspecs)
+      (part-on-true (curry #'eq '&key) bindspecs)
     (with-gensyms (foundp regvals regfill reg-input key-input)
       `(let ((,reg-input *regular-web-input*)
              (,key-input *key-web-input*))
