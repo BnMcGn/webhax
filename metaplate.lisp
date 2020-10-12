@@ -37,7 +37,7 @@
   "Returns string of item."
   (if (stringp itm)
       itm
-      (funcall-in-macro itm)))
+      (proto:funcall-in-macro itm)))
 
 (defun %render-part (key)
   (mapc #'%output-item (gethash key *parts*)))
@@ -278,9 +278,10 @@
   :@javascript-link "https://unpkg.com/react-dom@16.4.2/umd/react-dom.development.js"
   :@javascript (ps:ps (setf (ps:@ -react create-class) (require "create-react-class"))
                       (setf (ps:@ -react -d-o-m) (require "react-dom-factories")))
- ; :@javascript-link ""
   :@javascript (lambda () *clreact-build*)
-  :@javascript #'ps-react-gadgets:ps-react-gadgets)
+  ;;  :@javascript #'ps-react-gadgets:ps-react-gadgets)
+  :@javascript (lambda () (ps-lib-tool:get-code 'ps-react-gadgets)))
+
   ;  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
 

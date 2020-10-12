@@ -10,6 +10,7 @@
                #:proto
                #:cl-hash-util
                #:cl-who
+               #:ps-lib-tool
                #:webhax-core
                #:cl-react)
   :serial t
