@@ -126,28 +126,29 @@
   (setf (userfig:userfig-value 'signed-up)
         (local-time:now)))
 
-;;;FIXME: Need good way to test this page.
 (defun sign-up-page ()
-  (check-authenticated)
-  (funcall
-   (webhax:quick-page
-       (#'react-parts #'redux-parts
-        :@javascript #'webhax-widgets:ps-widgets
-        :@javascript #'webhax:webhax-ask)
-     (webhax:html-out
-       (:h2 "New Account")
-       (:p "Please confirm a few details to create your account.")
-       (ask
-         :prefill (list :screen-name (get-display-name)
-                        :email (login-provider-fields :email))
-         (form
-          (q screen-name "Your preferred screen name"
-             (:unique :options-func 'list-of-screen-names))
-          (q email "Your email address" :email))
-         (done
-          (server (save-signed-up-user (answers)))
-          (client (setf (@ window location)
-                        (lisp (login-destination))))))))))
+  (bind-validated-input
+      (&key (page-test-enabled :boolean))
+    (unless page-test-enabled (check-authenticated))
+    (funcall
+     (webhax:quick-page
+         (#'react-parts #'redux-parts
+          :@javascript #'webhax-widgets:ps-widgets
+          :@javascript #'webhax:webhax-ask)
+       (webhax:html-out
+         (:h2 "New Account")
+         (:p "Please confirm a few details to create your account.")
+         (ask
+           :prefill (list :screen-name (get-display-name)
+                          :email (login-provider-fields :email))
+           (form
+            (q screen-name "Your preferred screen name"
+               (:unique :options-func 'list-of-screen-names))
+            (q email "Your email address" :email))
+           (done
+            (server (save-signed-up-user (answers)))
+            (client (setf (@ window location)
+                          (lisp (login-destination)))))))))))
 
 (define-simple-middleware webhax-user-core ()
   (url-case
