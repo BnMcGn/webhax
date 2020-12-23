@@ -18,7 +18,8 @@
    #:multiple?
    #:validate-batch
    #:batch-response-json
-   #:convert-fieldspecs-to-ps-data))
+   #:convert-fieldspecs-to-ps-data
+   #:*decamelize*))
 
 (in-package :webhax-validate)
 
@@ -307,6 +308,12 @@ a field."
     (ps-gadgets:as-ps-data
      (prep-fieldspecs-for-json fspecs))))
 
+(defparameter *decamelize* t)
+
+(defun string-equal-decamelize (string1 string2)
+  (or (string-equal string1 string2)
+      (string-equal (kebab:to-lisp-case string1) (kebab:to-lisp-case string2))))
+
 (defun normalize-input (input fieldspecs &optional translation-table)
   (let ((trans
          (if translation-table
@@ -320,7 +327,8 @@ a field."
                         (cons k (gadgets:assoc-all
                                  out-key input
                                  :test #'string-equal-multiple))
-                        (assoc out-key input :test #'string-equal))))
+                        (assoc out-key input
+                               :test (if *decamelize* #'string-equal-decamelize #'string-equal)))))
           (when val
             (cl-utilities:collect (cons k (cdr val)))))))))
 

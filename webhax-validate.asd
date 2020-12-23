@@ -7,6 +7,7 @@
   :depends-on (#:gadgets
                #:alexandria
                #:anaphora
+               #:kebab
                #:cl-utilities
                #:ratify)
   :serial t
