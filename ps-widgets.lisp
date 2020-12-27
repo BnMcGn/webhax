@@ -92,7 +92,7 @@
     (def-component ww-textentry
         (psx
          (:textarea :rows 5 :cols 40 :class "webhax-widget"
-                    :value (prop value)
+                    :value (or (prop value) "")
                     :id (prop name)
                     :on-change (event-dispatcher (prop name) (prop dispatch)))))
 
