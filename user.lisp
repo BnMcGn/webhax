@@ -12,7 +12,6 @@
    #:check-signed-up
    #:authenticated?
    #:signed-up?
-   #:get-display-name
    #:get-user-name
    #:login-provider-fields
    #:user-info-bundle
@@ -20,17 +19,20 @@
    #:screen-name
    #:email
    #:login-destination
-   #:get-user-by-screenname))
+   #:get-user-by-screenname
+   #:get-openid-display-name))
 
 (in-package #:webhax-user)
 
 ;;; User identification stuff goes here.
 
 (defun get-user-name ()
+  "This is the unique identifier from OpenID"
   (when *session*
     (gethash :username *session*)))
 
-(defun get-display-name ()
+(defun get-openid-display-name ()
+  "Taken from OpenID data"
   (when *session*
     (gethash :display-name *session*)))
 
@@ -139,7 +141,7 @@
          (:h2 "New Account")
          (:p "Please confirm a few details to create your account.")
          (ask
-           :prefill (list :screen-name (get-display-name)
+           :prefill (list :screen-name (get-openid-display-name)
                           :email (login-provider-fields :email))
            (form
             (q screen-name "Your preferred screen name"
@@ -200,7 +202,7 @@
   (print "(authenticated?):")
   (print (authenticated?))
   (print "Session :display-name")
-  (print (get-display-name))
+  (print (get-openid-display-name))
   (print "Userfig: (new-user-p (get-user-name))")
   (print (userfig:new-user-p (get-user-name)))
   (print "Userfig: what-user?")
