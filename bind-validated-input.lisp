@@ -25,16 +25,18 @@
       `(lambda (input)
          (let ((l-in (length input)))
           (when (< l-in ,(length regular))
-            (error
-             (format nil "~a web parameters found, ~a required"
-                     l-in ,min-vals)))
+            ;;(error
+            ;; (format nil "~a web parameters found, ~a required"
+            ;;         l-in ,min-vals))
+            (web-fail-404))
           ,@(unless rest
                     `((when (> l-in ,max-vals)
-                        (error
-                         (format
-                          nil
-                          "Too many web parameters: ~a found, ~a specified."
-                          l-in ,max-vals)))))
+                        ;;(error
+                        ;; (format
+                        ;;  nil
+                        ;;  "Too many web parameters: ~a found, ~a specified."
+                        ;;  l-in ,max-vals))
+                        (web-fail-404))))
           (if (< l-in ,max-vals)
               (values
                (concatenate 'list input (make-list (- ,max-vals l-in)))
@@ -62,9 +64,10 @@
          ,@(when required
              `((unless ,value
                  (error
-                  (format nil
-                          "No value found for required keyword parameter ~a"
-                          ',(%spec-name other))))))
+                  ;;(format nil
+                  ;;        "No value found for required keyword parameter ~a"
+                  ;;        ',(%spec-name other))
+                  (web-fail-404)))))
          (if ,value
              (values ,(if multiple value `(cdr ,value)) t)
              (values nil nil))))))

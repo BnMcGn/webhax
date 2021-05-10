@@ -41,7 +41,8 @@
    #:as-json
    #:*menu-items*
    #:*menu-active*
-   #:write-html-file))
+   #:write-html-file
+   #:web-fail-404))
 
 (in-package #:webhax-core)
 
@@ -88,6 +89,9 @@
      (web-fail (fail)
        (with-slots (text response) fail
          `(,response nil (,text))))))
+
+(defun web-fail-404 ()
+  (error 'web-fail :response 404 :text "Page not found"))
 
 (defun env-from-url (url)
   "Create a minimal clack-style env from a url. Mostly for quick testing."
@@ -138,13 +142,15 @@
 
 (defun input-function-wrapper (handler &key (content-type "text/html") headers)
   (lambda (&optional input)
-    (list 200 (list* :content-type content-type headers)
-          (list
-           (multiple-value-bind
-                 (*regular-web-input* *key-web-input* *session*)
-               (normalize-input input)
-             (with-output-to-string (*webhax-output*)
-               (funcall handler)))))))
+    ;; FIXME: This the right place? Feels like a crutch for ningle.
+    (handle-web-fail
+      (list 200 (list* :content-type content-type headers)
+            (list
+             (multiple-value-bind
+                   (*regular-web-input* *key-web-input* *session*)
+                 (normalize-input input)
+               (with-output-to-string (*webhax-output*)
+                 (funcall handler))))))))
 
 (eval-always
   (defmacro with-content-type (ctype &body body)
