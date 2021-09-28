@@ -121,7 +121,7 @@ to mount-component."
             if (probe-file file)
             return file
             finally (error "Couldn't find named text"))))
-    (markdown:markdown fname :stream *webhax-output*)))
+    (3bmd:parse-and-print-to-stream fname *webhax-output*)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Javascript resource collector

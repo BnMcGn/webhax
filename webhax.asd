@@ -25,7 +25,7 @@
                #:webhax-route
                #:userfig
                #:optima
-               #:cl-markdown)
+               #:3bmd)
   :serial t
   :components ((:file "package")
                (:file "web-input")
