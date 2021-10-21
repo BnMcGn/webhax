@@ -13,7 +13,6 @@
                #:cl-utilities
                #:cl-cont
                #:cl-json
-               #:clack-v1-compat
                #:clack
                #:ningle
                #:cl-react
