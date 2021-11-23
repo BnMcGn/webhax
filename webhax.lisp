@@ -53,19 +53,19 @@
   "Produces html output to mount a named react component in place, creating a named div element, then creating a script element that renders the component in the div. Parameters are alternating keys and values, sent to the component as initial props. Values, therefore, are parenscript. Lisp values must be wrapped in (lisp ...).
 
 Mount-id, when specified, causes the component to be mounted to the element named by mount-id, instead of in place."
-  (let ((tagid (unless mount-id
-                 (mkstr (gensym (mkstr "mount-" component-name #\-))))))
-    `(html-out
-       (when ,tagid (htm (:div :id ,tagid)))
-       (:script
-        :type "text/javascript"
-        (str
-         (ps
-           (react:render
-            (react:create-element ,component-name
-                            (create ,@parameters))
-            (chain document
-                   (get-element-by-id ,(or tagid mount-id))))))))))
+  (let ((tagid (gensym "tagid")))
+    `(let ((,tagid ,(or mount-id (mkstr (gensym (mkstr "mount-" component-name #\-))))))
+       (html-out
+         (when ,tagid (htm (:div :id ,tagid)))
+         (:script
+          :type "text/javascript"
+          (str
+           (ps
+             (react:render
+              (react:create-element ,component-name
+                                    (create ,@parameters))
+              (chain document
+                     (get-element-by-id (lisp ,tagid)))))))))))
 
 ;;;FIXME: Assumes that ReactTestUtils is loaded
 (defmacro test-component ((component-name func-name) &body parameters)
