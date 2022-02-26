@@ -83,18 +83,7 @@ Mount-id, when specified, causes the component to be mounted to the element name
                     (payload
                       (chain cljs core (vector kw params))))
                (chain re_frame core (dispatch payload))
-               (chain flaglib2 core (mount_registered_elements))
-               (chain
-               re_frame
-               core
-               (dispatch
-                (chain cljs core (vector )))
-               )))
-           (ps
-             (funcall
-              ,function-spec
-              (chain document (get-element-by-id (lisp ,tagid)))
-              (create ,@parameters)))))))))
+               (chain flaglib2 core (mount_registered_elements))))))))))
 
 ;;;FIXME: Assumes that ReactTestUtils is loaded
 (defmacro test-component ((component-name func-name) &body parameters)
