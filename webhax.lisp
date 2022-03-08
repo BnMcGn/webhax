@@ -67,29 +67,6 @@ Mount-id, when specified, causes the component to be mounted to the element name
               (chain document
                      (get-element-by-id (lisp ,tagid)))))))))))
 
-(defmacro mount-cljs-component ((function-spec &key mount-id) &body parameters)
-  "  "
-  (let ((tagid (gensym "tagid")))
-    `(let ((,tagid ,(or mount-id (mkstr (gensym "mount-cljs-component-")))))
-       (html-out
-         (when ,tagid (htm (:div :id ,tagid)))
-         (:script
-          :type "text/javascript"
-          (str
-           (ps
-             (let* ((kw (chain cljs core (keyword "store-server-parameters")))
-                    (params
-                      (create "mount-point" (lisp ,tagid) "entry-point" ,function-spec
-                              "options" (create ,@parameters)))
-                    (payload
-                      (chain cljs core (vector kw params))))
-               (chain
-                window
-                (add-event-listener
-                 "load"
-                 (lambda (ev)
-                   (chain re_frame core (dispatch payload)))))))))))))
-
 (defmacro mount-cljs-component ((initial-event &key mount-id) &body parameters)
   "  "
   (let ((tagid (gensym "tagid")))

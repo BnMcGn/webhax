@@ -120,7 +120,8 @@
    #:named-text
    #:*catch-errors*
    #:write-js-resources
-   #:header-adder))
+   #:header-adder
+   #:mount-cljs-component))
 
 
 
