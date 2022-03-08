@@ -79,11 +79,31 @@ Mount-id, when specified, causes the component to be mounted to the element name
            (ps
              (let* ((kw (chain cljs core (keyword "store-server-parameters")))
                     (params
-                      (create "mount-point" ,tagid "entry-point" ,function-spec "options" ,parameters))
+                      (create "mount-point" (lisp ,tagid) "entry-point" ,function-spec
+                              "options" (create ,@parameters)))
                     (payload
                       (chain cljs core (vector kw params))))
-               (chain re_frame core (dispatch payload))
-               (chain flaglib2 core (mount_registered_elements))))))))))
+               (chain
+                window
+                (add-event-listener
+                 "load"
+                 (lambda (ev)
+                   (chain re_frame core (dispatch payload)))))))))))))
+
+(defmacro mount-cljs-component ((initial-event &key mount-id) &body parameters)
+  "  "
+  (let ((tagid (gensym "tagid")))
+    `(let ((,tagid ,(or mount-id (mkstr (gensym "mount-cljs-component-")))))
+       (html-out
+         (when ,tagid (htm (:div :id ,tagid)))
+         (:script
+          :type "text/javascript"
+          (str
+           (ps
+             (let ((params
+                     (create "mount-point" (lisp ,tagid) "entry-point" ,initial-event
+                             ,@parameters)))
+               (chain flaglib2 init (server_side_setup params))))))))))
 
 ;;;FIXME: Assumes that ReactTestUtils is loaded
 (defmacro test-component ((component-name func-name) &body parameters)
