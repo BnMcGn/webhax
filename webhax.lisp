@@ -80,7 +80,12 @@ Mount-id, when specified, causes the component to be mounted to the element name
              (let ((params
                      (create "mount-point" (lisp ,tagid) "entry-point" ,initial-event
                              ,@parameters)))
-               (chain flaglib2 init (server_side_setup params))))))))))
+               (chain
+                window
+                (add-event-listener
+                 "load"
+                 (lambda (ev)
+                   (chain flaglib2 init (server_side_setup params)))))))))))))
 
 ;;;FIXME: Assumes that ReactTestUtils is loaded
 (defmacro test-component ((component-name func-name) &body parameters)
