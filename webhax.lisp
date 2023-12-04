@@ -67,7 +67,7 @@ Mount-id, when specified, causes the component to be mounted to the element name
               (chain document
                      (get-element-by-id (lisp ,tagid)))))))))))
 
-(defmacro mount-cljs-component ((initial-event &key mount-id) &body parameters)
+(defmacro mount-cljs-component ((initial-event &key mount-id key) &body parameters)
   "  "
   (let ((tagid (gensym "tagid")))
     `(let ((,tagid ,(or mount-id (mkstr (gensym "mount-cljs-component-")))))
@@ -85,7 +85,7 @@ Mount-id, when specified, causes the component to be mounted to the element name
                 (add-event-listener
                  "load"
                  (lambda (ev)
-                   (chain flaglib2 init (server_side_setup params)))))))))))))
+                   (chain flaglib2 init (server_side_setup (lisp ,key) params)))))))))))))
 
 ;;;FIXME: Assumes that ReactTestUtils is loaded
 (defmacro test-component ((component-name func-name) &body parameters)
