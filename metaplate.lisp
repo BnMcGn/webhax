@@ -232,6 +232,7 @@
 
 (define-layout (page-base)
   (html-out
+   (str "<!DOCTYPE html>")
     (:html
      (:head
       :@head
