@@ -42,7 +42,8 @@
    #:*menu-items*
    #:*menu-active*
    #:write-html-file
-   #:web-fail-404))
+   #:web-fail-404
+   #:web-fail-400))
 
 (in-package #:webhax-core)
 
@@ -92,6 +93,9 @@
 
 (defun web-fail-404 ()
   (error 'web-fail :response 404 :text "Page not found"))
+
+(defun web-fail-400 (&optional message)
+  (error 'web-fail :response 400 :text (or message "Invalid Request")))
 
 (defun env-from-url (url)
   "Create a minimal clack-style env from a url. Mostly for quick testing."
