@@ -19,7 +19,8 @@
    #:validate-batch
    #:batch-response-json
    #:convert-fieldspecs-to-ps-data
-   #:*decamelize*))
+   #:*decamelize*
+   #:predicate-test))
 
 (in-package :webhax-validate)
 
@@ -125,7 +126,14 @@
 (defun string-check (str)
   (if (stringp str)
       str
-      (error (make-condition 'type-error :datum str :expected-type 'string))))
+    (error (make-condition 'type-error :datum str :expected-type 'string))))
+
+(defun predicate-test (pred message)
+  (lambda (item)
+    (let ((res (funcall pred item)))
+      (if res
+          (values res t)
+          (values message nil)))))
 
 (let ((keymap '((:yesno . :boolean))))
   (defun %handle-keyword (valkey)
