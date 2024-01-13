@@ -58,8 +58,8 @@
 (defmacro html-out-str (&body body)
   `(with-html-output-to-string (*webhax-output* nil :indent t) ,@body))
 
-(defvar *regular-web-input*)
-(defvar *key-web-input*)
+(defvar *regular-web-input* nil)
+(defvar *key-web-input* nil)
 (defvar *session* nil)
 (defvar *request* nil)
 (defvar *response* nil)
