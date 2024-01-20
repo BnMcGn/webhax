@@ -20,7 +20,8 @@
    #:email
    #:login-destination
    #:get-user-by-screenname
-   #:get-openid-display-name))
+   #:get-openid-display-name
+   #:sign-up-page))
 
 (in-package #:webhax-user)
 

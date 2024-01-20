@@ -2,6 +2,12 @@
 
 (in-package #:webhax)
 
+(defparameter *raise-on-invalid* t)
+(defvar *bvi-errors*)
+
+(defun error-stacker (key msg)
+  (push (cons key msg) *bvi-errors*))
+
 (defun %%reg-params-splitter (bindspecs)
   (cl-utilities:with-collectors (reg< opt< rest<)
     (let ((collect #'reg<))
@@ -63,11 +69,13 @@
                                   ,input :test #'string-equal))))
          ,@(when required
              `((unless ,value
-                 (error
-                  ;;(format nil
-                  ;;        "No value found for required keyword parameter ~a"
-                  ;;        ',(%spec-name other))
-                  (web-fail-404)))))
+                 (if *raise-on-invalid*
+                     (error
+                   ;;(format nil
+                   ;;        "No value found for required keyword parameter ~a"
+                   ;;        ',(%spec-name other))
+                      (web-fail-404))
+                     (error-stacker ,(%spec-name other) "No value found for required keyword")))))
          (if ,value
              (values ,(if multiple value `(cdr ,value)) t)
              (values nil nil))))))
@@ -120,10 +128,14 @@
                                     ,item))
                            (if ,valid
                                ,vitem
-                               (error
-                                (format nil "~a: ~a"
-                                        ,(mkstr
-                                          (%spec-name bindspec)) ,vitem))))
+                             (if *raise-on-invalid*
+                                 (web-fail-400
+                                  (format nil "~a: ~a"
+                                          ,(mkstr
+                                            (%spec-name bindspec)) ,vitem))
+                                 (progn
+                                   (error-stacker ,(mkstr (%spec-name bindspec)) ,vitem)
+                                   nil))))
                          ,(if (listp (car bindspec))
                               (second (car bindspec))
                               nil)))))
@@ -166,3 +178,8 @@
                                      (%%make-key-param-fetcher kspec key-input)
                                      foundp)))))
                ,@body)))))))
+
+;;Doesn't raise error on failures
+(defmacro bind-tested-input ((&rest bindspecs) &body body)
+  `(let ((*raise-on-invalid* nil))
+     (bind-validated-input (,@bindspecs) ,@body)))
