@@ -121,7 +121,9 @@
    #:*catch-errors*
    #:write-js-resources
    #:header-adder
-   #:mount-cljs-component))
+   #:mount-cljs-component
+   #:bind-tested-input
+   #:*bvi-errors*))
 
 
 

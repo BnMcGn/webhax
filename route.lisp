@@ -84,7 +84,7 @@
            (*key-web-input* (lack.request:request-parameters *request*))
            (*regular-web-input*
             ;;How to handle mounted sub-apps?
-            (if (boundp '*regular-web-input*)
+             (if (and (boundp '*regular-web-input*) *regular-web-input*)
                 *regular-web-input*
                 (cl-utilities:split-sequence
                  #\/ (lack.request:request-path-info *request*)

@@ -181,5 +181,6 @@
 
 ;;Doesn't raise error on failures
 (defmacro bind-tested-input ((&rest bindspecs) &body body)
-  `(let ((*raise-on-invalid* nil))
+  `(let ((*raise-on-invalid* nil)
+         (*bvi-errors* nil))
      (bind-validated-input (,@bindspecs) ,@body)))
