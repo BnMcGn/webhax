@@ -57,10 +57,12 @@
 
 ;;FIXME: Rethink someday. Oid connect specific.
 (defun login-destination ()
-  clath:*login-destination*)
+  (when *session*
+    (gethash :clath-destination *session*)))
 
 (defsetf login-destination () (newval)
-  `(setf clath:*login-destination* ,newval))
+  `(when *session*
+     (setf (gethash :clath-destination *session*) ,newval)))
 
 (defun authenticated? ()
   (and (hash-table-p *session*) (gethash :username *session*)))
@@ -172,10 +174,10 @@
 
 ;;;Make the login process send user to sign-up page if not signed up.
 (setf clath:*login-destination-hook*
-      (lambda (&key username)
+      (lambda (&key username session)
         (if (userfig:new-user-p username)
             (signup-url)
-            (login-destination))))
+            (gethash :clath-destination session))))
 
 (defun user-info-bundle ()
   ;;FIXME: Should userfig fields be in here? probably not.
