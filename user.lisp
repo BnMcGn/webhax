@@ -131,29 +131,41 @@
   (setf (userfig:userfig-value 'signed-up)
         (local-time:now)))
 
+(defun sign-up-page-display (fill &optional errors)
+  (let ((name (getf fill :screen-name))
+        (email (getf fill :email)))
+    (webhax:html-out
+      (:form
+       :action (str (sign-up-url)) :method "post"
+       (:h2 "New Account")
+       (:p "Please confirm a few details to create your account.")
+       (:h3 "Your preferred screen name")
+       (:input :type "text" :name "screen-name" :value (str name))
+       (alexandria:when-let ((err (getf errors :screen-name)))
+         (htm (:h4 err)))
+       (:h3 "Your email address")
+       (:input :type "text" :name "email" :value (str email))
+       (alexandria:when-let ((err (getf errors :email)))
+         (htm (:h4 err)))
+       (:input :type "hidden" :name "posted" :value "true")
+       (:input :type "submit" :value "Confirm")))))
+
 (defun sign-up-page ()
-  (bind-validated-input
-      (&key (page-test-enabled :boolean))
-    (unless page-test-enabled (check-authenticated))
-    (funcall
-     (webhax:quick-page
-         (#'react-parts #'redux-parts
-          :@javascript #'webhax-widgets:ps-widgets
-          :@javascript #'webhax:webhax-ask)
-       (webhax:html-out
-         (:h2 "New Account")
-         (:p "Please confirm a few details to create your account.")
-         (ask
-           :prefill (list :screen-name (get-openid-display-name)
-                          :email (login-provider-fields :email))
-           (form
-            (q screen-name "Your preferred screen name"
-               (:unique :options-func 'list-of-screen-names))
-            (q email "Your email address" :email))
-           (done
-            (server (save-signed-up-user (answers)))
-            (client (setf (@ window location)
-                          (lisp (login-destination)))))))))))
+  (check-authenticated)
+  (bind-tested-input
+      (&key
+       (screen-name (:unique :options-func 'list-of-screen-names))
+       (email :email)
+       (posted :string))
+    (cond
+      ((not posted) (sign-up-page-display (list :email (login-provider-fields :email)
+                                                :screen-name (get-openid-display-name))))
+      (webhax:*bvi-errors*
+       (sign-up-page-display (list :email email :screen-name screen-name)
+                             (hu:alist->plist webhax:*bvi-errors*)))
+      (t (progn
+           (save-signed-up-user (hu:hash ('email email) ('screen-name screen-name)))
+           `(302 (:location ,(login-destination))))))))
 
 (define-simple-middleware webhax-user-core ()
   (url-case
