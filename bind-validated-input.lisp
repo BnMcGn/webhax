@@ -6,7 +6,7 @@
 (defvar *bvi-errors*)
 
 (defun error-stacker (key msg)
-  (push (cons key msg) *bvi-errors*))
+  (push (cons (alexandria:make-keyword key) msg) *bvi-errors*))
 
 (defun %%reg-params-splitter (bindspecs)
   (cl-utilities:with-collectors (reg< opt< rest<)
