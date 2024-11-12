@@ -66,7 +66,7 @@
   (assert (eq key :@css))
   (html-out
     (dolist (itm (gethash :@css *parts*))
-      (htm (:style :type "text/css" (%prep-item itm))))))
+      (htm (:style :type "text/css" (str (%prep-item itm)))))))
 
 (defun %render-css-link (key)
   (assert (eq key :@css-link))
