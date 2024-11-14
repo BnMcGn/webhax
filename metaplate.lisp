@@ -266,7 +266,7 @@
     (:div :id "footer" :@copyright)))
 
 (defun title-part (title)
-  (hu:hash (:@title title)))
+  (hu:hash (:@title (list title))))
 
 ;;;;;;;;
 ;;; React
