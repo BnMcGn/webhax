@@ -73,6 +73,7 @@
    #:define-default-parts
    #:display-page
    #:quick-page
+   #:title-part
    #:*metaplate-default-layout*
    #:*metaplate-default-parts*
    #:register-json-call

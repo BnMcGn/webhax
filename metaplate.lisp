@@ -16,7 +16,8 @@
    #:react-parts
    #:redux-parts
    #:display-page
-   #:page-base))
+   #:page-base
+   #:title-part))
 
 (in-package #:webhax-metaplate)
 
@@ -263,6 +264,9 @@
           :@messages :@inner :@footnotes)
                                         ;Footer
     (:div :id "footer" :@copyright)))
+
+(defun title-part (title)
+  (hu:hash (:@title title)))
 
 ;;;;;;;;
 ;;; React
