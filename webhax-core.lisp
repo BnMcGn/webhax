@@ -44,7 +44,8 @@
    #:write-html-file
    #:web-fail-404
    #:web-fail-400
-   #:web-redirect))
+   #:web-redirect
+   #:web-fail-500))
 
 (in-package #:webhax-core)
 
@@ -104,6 +105,9 @@
 (defun web-fail-400 (&optional message)
   (error 'web-fail :response 400 :text (or message "Invalid Request")))
 
+(defun web-fail-500 (&optional message)
+  (error 'web-fail :response 500 :text (or message "Wrongness Has Happened")))
+
 (defun web-redirect (to)
   (error 'web-redirect :location to))
 
@@ -154,7 +158,10 @@
   (declare (ignore input))
   (error "No input handler activated. This code shouldn't be reached."))
 
-(defun input-function-wrapper (handler &key (content-type "text/html") headers)
+;;FIXME: as-html, with-content-type don't work with this. Should be more coherent.
+;;FIXME: handle response better. capture-html is a bit of a hack. Separate func?
+(defun input-function-wrapper (handler &key (content-type "text/html") headers
+                                         (capture-html t))
   (lambda (&optional input)
     ;; FIXME: This the right place? Feels like a crutch for ningle.
     (handle-web-fail
@@ -163,8 +170,10 @@
              (multiple-value-bind
                    (*regular-web-input* *key-web-input* *session*)
                  (normalize-input input)
-               (with-output-to-string (*webhax-output*)
-                 (funcall handler))))))))
+               (if capture-html
+                   (with-output-to-string (*webhax-output*)
+                     (funcall handler))
+                   (funcall handler))))))))
 
 (eval-always
   (defmacro with-content-type (ctype &body body)
