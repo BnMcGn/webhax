@@ -166,14 +166,13 @@
     ;; FIXME: This the right place? Feels like a crutch for ningle.
     (handle-web-fail
       (list 200 (list* :content-type content-type headers)
-            (list
              (multiple-value-bind
                    (*regular-web-input* *key-web-input* *session*)
                  (normalize-input input)
                (if capture-html
-                   (with-output-to-string (*webhax-output*)
-                     (funcall handler))
-                   (funcall handler))))))))
+                   (list (with-output-to-string (*webhax-output*)
+                           (funcall handler)))
+                   (funcall handler)))))))
 
 (eval-always
   (defmacro with-content-type (ctype &body body)
