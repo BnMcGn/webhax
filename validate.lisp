@@ -190,7 +190,7 @@
 ;;;FIXME: Mostly just a placeholder for now. Will fill out with time.
 (defun recommend-widget (valspec)
   (let ((valsym (or (and (listp valspec) (car valspec)) valspec)))
-    (if (member valsym '(:integer :string :boolean :pickone :picksome :yesno))
+    (if (member valsym '(:integer :string :boolean :pickone :picksome :yesno :date))
         valsym
         :string)))
 
