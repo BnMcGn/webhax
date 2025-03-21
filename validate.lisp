@@ -353,7 +353,8 @@ a field."
   (let ((keylist (or keylist
                      (gadgets:map-by-2
                       (lambda (&rest x) (car x)) fieldspecs-plist)))
-        (results (make-hash-table))
+        ;; equal test as convenience for userfig
+        (results (make-hash-table :test #'equal))
         (errors (make-hash-table))
         (input
          (normalize-input input-alist fieldspecs-plist translation-table)))
