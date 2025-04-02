@@ -95,6 +95,20 @@
             (values "Value needs to be unique" nil)
             (values item t)))))
 
+(defun replace-message (test message)
+  (lambda (item)
+    (multiple-value-bind (val sig) (funcall test item)
+      (if sig
+          (values val t)
+          (values message nil)))))
+
+(defun message? (vspec)
+  (when (listp vspec)
+    (let ((message (getf (cdr vspec) :message)))
+      (unless (or (null message) (stringp message))
+        (error "Message must be a string"))
+      message)))
+
 (defun nullok-test (subtest)
   (lambda (item)
     (if (and item (< 0 (length item)))
@@ -147,35 +161,41 @@
 ;;;FIXME: Options handling for vals needs rethinking
 
 (defun compile-validator (valspec)
-  (let ((optionspecs (options-handler valspec)))
-    (cond
-      ((functionp valspec)
-       valspec)
-      ((member valspec *ratify-tests*)
-       (ratify-wrapper valspec))
-      ((eq valspec :yesno)
-       (ratify-wrapper :boolean))
-      ((eq valspec :overlength)
-       (ratify-wrapper :overlength))
-      ((eq valspec :textentry)
-       (ratify-wrapper :string))
-      ((and (listp valspec) (symbolp (car valspec)))
-       (case (car valspec)
-         (:pickone
-          (mkparse-in-list (getf optionspecs :options)))
-         (:picksome
-          (mkparse-all-members (mkparse-in-list (getf optionspecs :options))))
-         (:unique
-          (mkparse-unique (getf optionspecs :options-func)))
-         (:or
-          (or-test (mapcar #'compile-validator (cdr valspec))))
-         (otherwise
-          (%handle-keyword (car valspec)))))
-      ;;FIXME: What should the rest of the items in a list with a function do?
-      ((and (listp valspec) (functionp (car valspec)))
-       ;;(apply (car valspec) (cdr valspec)) ; This ever used? Oddity...
-       (car valspec))
-      (t (error "Validator type not found")))))
+  (let* ((optionspecs (options-handler valspec))
+         (message (message? valspec))
+         (val
+           (cond
+             ((functionp valspec)
+              valspec)
+             ;;FIXME: probably redundant: they should all be normalized by this point.
+             ((member valspec *ratify-tests*)
+              (ratify-wrapper valspec))
+             ((eq valspec :yesno)
+              (ratify-wrapper :boolean))
+             ((eq valspec :overlength)
+              (ratify-wrapper :overlength))
+             ((eq valspec :textentry)
+              (ratify-wrapper :string))
+             ((and (listp valspec) (symbolp (car valspec)))
+              (case (car valspec)
+                (:pickone
+                 (mkparse-in-list (getf optionspecs :options)))
+                (:picksome
+                 (mkparse-all-members (mkparse-in-list (getf optionspecs :options))))
+                (:unique
+                 (mkparse-unique (getf optionspecs :options-func)))
+                (:or
+                 (or-test (mapcar #'compile-validator (cdr valspec))))
+                (otherwise
+                 (%handle-keyword (car valspec)))))
+             ;;FIXME: What should the rest of the items in a list with a function do?
+             ((and (listp valspec) (functionp (car valspec)))
+              ;;(apply (car valspec) (cdr valspec)) ; This ever used? Oddity...
+              (car valspec))
+             (t (error "Validator type not found")))))
+    (if message
+        (replace-message val message)
+        val)))
 
 (defparameter *ratify-tests*
   '(:bit :day :date :hour :real :time :year :float :month :ratio :minute :number :offset :second :string :boolean :complex :integer :datetime :rational :character :unsigned-integer :ip :tel :uri :url :file :host :ipv4 :ipv6 :name :port :text :user :week :color :email :query :radio :range :domain :failed :object :scheme :search :numeric :checkbox :fragment :hostname :password :property :protocol :textarea :authority :alphabetic :alphanumeric :absolute-path :rootless-path :datetime-local :hierarchical-part))
@@ -276,18 +296,21 @@ a field."
              (fspec (cdr fieldspec))
              (widget (getf fspec :widget
                            (recommend-widget vspec)))
-             (nullok (nullok? vspec)))
+             (message (getf fspec :message))
+             (nullok (nullok? vspec))
+             (cval (compile-validator vspec))
+             (cval (if nullok (nullok-test cval) (notnull-test cval))))
         ;;Doesn't handle name
         (list*
          :description (getf fspec :description "")
          :initial (getf fspec :initial)
-         :compiled-validator (if nullok
-                                 (nullok-test (compile-validator vspec))
-                                 (notnull-test (compile-validator vspec)))
+         :compiled-validator cval
          :widget widget
          :multiple (multiple? widget)
          :nullok nullok
+         :message message
          :type vspec
+         ;Config is for widget options
          :config (getf fspec :config)
          :documentation (getf fspec :documentation "")
          (options-handler vspec)))))
