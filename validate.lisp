@@ -104,7 +104,7 @@
 
 (defun message? (vspec)
   (when (listp vspec)
-    (let ((message (getf (cdr vspec) :message)))
+    (let ((message (gadgets:fetch-keyword :message vspec :in-list nil)))
       (unless (or (null message) (stringp message))
         (error "Message must be a string"))
       message)))
