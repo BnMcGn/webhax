@@ -111,7 +111,10 @@
 
 (defun nullok-test (subtest)
   (lambda (item)
-    (if (and item (< 0 (length item)))
+    (if (cond
+          ((null item) nil)
+          ((and (stringp item) (not (not-empty item))) nil)
+          (t t))
         (funcall subtest item)
         (values nil t))))
 
